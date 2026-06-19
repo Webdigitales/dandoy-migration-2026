@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Magento catalog_product CSV  →  Shopify products CSV
+Magento catalog_product CSV  →  Shopify products CSV (Matrixify format)
 
 Rules:
 - Only base store_view_code rows (= English / default prices)
@@ -11,6 +11,7 @@ Rules:
 - special_price present → Variant Price = special_price, Compare At = regular price
 - product_online 1 = active, 2 = draft
 - Variant options mapped per attribute_set (Handle, Color, Size, Thickness…)
+- Product-level metafields extracted from additional_attributes
 """
 
 import csv
@@ -21,30 +22,9 @@ INPUT      = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_magento_pro
 OUTPUT     = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_products.csv'
 IMAGE_BASE = 'https://www.dandoy-sports.com/pub/media/catalog/product'
 
-SHOPIFY_COLS = [
-    'Handle', 'Title', 'Body (HTML)', 'Vendor', 'Product Category', 'Type',
-    'Tags', 'Published',
-    'Option1 Name', 'Option1 Value',
-    'Option2 Name', 'Option2 Value',
-    'Option3 Name', 'Option3 Value',
-    'Variant SKU', 'Variant Grams',
-    'Variant Inventory Tracker', 'Variant Inventory Qty',
-    'Variant Inventory Policy', 'Variant Fulfillment Service',
-    'Variant Price', 'Variant Compare At Price',
-    'Variant Requires Shipping', 'Variant Taxable',
-    'Variant Barcode',
-    'Image Src', 'Image Position', 'Image Alt Text',
-    'Gift Card', 'SEO Title', 'SEO Description', 'Status',
-]
 
 # ---------------------------------------------------------------------------
 # Option mapping per attribute_set
-#
-# Each entry: list of (shopify_option_name, source, transform_fn)
-#   source = attribute key in additional_attributes, or special:
-#     '_name_suffix'         → child name minus parent name
-#     '_name_suffix_numeric' → numeric part extracted from name suffix
-#   transform_fn = None (use raw) or callable(value) → cleaned value
 # ---------------------------------------------------------------------------
 
 def _clean_handle(v):
@@ -81,6 +61,68 @@ OPTION_MAP = {
         ('Size', 'size', None),
     ],
 }
+
+
+# ---------------------------------------------------------------------------
+# Metafield mapping: Magento attribute → Shopify metafield
+#
+# Format: magento_key → (namespace.key, shopify_type, is_list)
+#   is_list = True  → pipe-separated values in Magento become semicolon-separated
+#   is_list = False → single value
+#
+# Two Magento keys can map to the same metafield (technology_stiga +
+# technology_butterfly both → custom.technology): they are merged.
+# ---------------------------------------------------------------------------
+
+METAFIELD_MAP = {
+    'promotion_type':       ('custom.promotion',        'single_line_text_field', False),
+    'blades_type':          ('custom.blade_category',   'single_line_text_field', False),
+    'blades_layers':        ('custom.blade_layers',     'single_line_text_field', False),
+    'blades_feeling':       ('custom.blade_feeling',    'single_line_text_field', False),
+    'rubbers_type':         ('custom.rubber_category',  'single_line_text_field', False),
+    'rubbers_pimples':      ('custom.pimples',          'single_line_text_field', False),
+    'rubbers_hardness':     ('custom.hardness',         'single_line_text_field', False),
+    'technology_stiga':     ('custom.technology',        'list.single_line_text_field', True),
+    'technology_butterfly': ('custom.technology',        'list.single_line_text_field', True),
+    'gender':               ('custom.gender',            'list.single_line_text_field', True),
+    'shoes_type':           ('custom.shoe_type',         'single_line_text_field', False),
+    'bags_model':           ('custom.bag_model',         'single_line_text_field', False),
+    'balls_usage':          ('custom.ball_usage',        'single_line_text_field', False),
+    'balls_material':       ('custom.ball_material',     'single_line_text_field', False),
+    'usage':                ('custom.usage',             'single_line_text_field', False),
+    'accessories':          ('custom.accessory_type',    'single_line_text_field', False),
+    'tables_type':          ('custom.environment',       'single_line_text_field', False),
+    'cover':                ('custom.cover_included',    'boolean',                False),
+    'dimension':            ('custom.dimension',         'single_line_text_field', False),
+    'videos':               ('custom.video_url',         'url',                    False),
+}
+
+
+def _build_metafield_columns():
+    """Build the ordered list of Matrixify metafield column names."""
+    seen = {}
+    for mkey, mtype, _ in METAFIELD_MAP.values():
+        if mkey not in seen:
+            seen[mkey] = mtype
+    return [f"Metafield: {k} [{v}]" for k, v in seen.items()]
+
+METAFIELD_COLS = _build_metafield_columns()
+
+SHOPIFY_COLS = [
+    'Handle', 'Title', 'Body (HTML)', 'Vendor', 'Product Category', 'Type',
+    'Tags', 'Published',
+    'Option1 Name', 'Option1 Value',
+    'Option2 Name', 'Option2 Value',
+    'Option3 Name', 'Option3 Value',
+    'Variant SKU', 'Variant Grams',
+    'Variant Inventory Tracker', 'Variant Inventory Qty',
+    'Variant Inventory Policy', 'Variant Fulfillment Service',
+    'Variant Price', 'Variant Compare At Price',
+    'Variant Requires Shipping', 'Variant Taxable',
+    'Variant Barcode',
+    'Image Src', 'Image Position', 'Image Alt Text',
+    'Gift Card', 'SEO Title', 'SEO Description', 'Status',
+] + METAFIELD_COLS
 
 
 # ---------------------------------------------------------------------------
@@ -147,7 +189,6 @@ def extract_numeric(s):
 
 
 def resolve_options(parent_row, child_row, option_defs):
-    """Resolve Shopify Option1/2/3 from a child row using option definitions."""
     attrs = parse_additional_attrs(child_row.get('additional_attributes', ''))
     suffix = name_suffix(parent_row.get('name', ''), child_row.get('name', child_row['sku']))
     result = {}
@@ -165,6 +206,42 @@ def resolve_options(parent_row, child_row, option_defs):
 
         result[f'Option{i} Name'] = opt_name
         result[f'Option{i} Value'] = raw if raw else ''
+
+    return result
+
+
+def resolve_metafields(row):
+    """Extract metafield values from a Magento row's additional_attributes."""
+    attrs = parse_additional_attrs(row.get('additional_attributes', ''))
+    result = {col: '' for col in METAFIELD_COLS}
+
+    # Group by target metafield key to handle merges (e.g. technology)
+    merged = {}
+    for mag_key, (mf_key, mf_type, is_list) in METAFIELD_MAP.items():
+        raw = attrs.get(mag_key, '')
+        if not raw:
+            continue
+
+        col_name = f"Metafield: {mf_key} [{mf_type}]"
+
+        if mf_type == 'boolean':
+            val = 'true' if raw.lower() in ('yes', '1', 'true') else 'false'
+            result[col_name] = val
+        elif is_list:
+            items = [v.strip() for v in raw.split('|') if v.strip()]
+            if col_name in merged:
+                merged[col_name].extend(items)
+            else:
+                merged[col_name] = items
+        else:
+            result[col_name] = raw
+
+    for col_name, items in merged.items():
+        seen = []
+        for item in items:
+            if item not in seen:
+                seen.append(item)
+        result[col_name] = ';'.join(seen)
 
     return result
 
@@ -255,6 +332,7 @@ def main():
                     grouped_child_skus.add(child)
 
     print(f"  Grouped children: {len(grouped_child_skus)}")
+    print(f"  Metafield columns: {len(METAFIELD_COLS)}")
 
     counters = {'products': 0, 'rows': 0, 'skipped': 0}
     skipped_types = {}
@@ -286,6 +364,7 @@ def main():
 
                 images  = collect_images(row)
                 pfields = product_fields(row, handle)
+                mfields = resolve_metafields(row)
                 img_pos = 1
                 first   = True
 
@@ -305,6 +384,7 @@ def main():
 
                     if first:
                         out.update(pfields)
+                        out.update(mfields)
                         if images:
                             out['Image Src']      = images[0]
                             out['Image Position'] = '1'
@@ -332,10 +412,12 @@ def main():
 
             # --- Standalone simple ---
             elif pt == 'simple' and sku not in grouped_child_skus:
-                images = collect_images(row)
-                out    = blank()
+                images  = collect_images(row)
+                mfields = resolve_metafields(row)
+                out     = blank()
                 out.update(product_fields(row, handle))
                 out.update(variant_fields(row))
+                out.update(mfields)
                 out['Option1 Name']  = 'Title'
                 out['Option1 Value'] = 'Default Title'
                 out['Variant SKU']   = sku
