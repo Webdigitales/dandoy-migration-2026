@@ -1,2 +1,3 @@
 01_DATA_RAW/*.csv
 04_SHOPIFY_IMPORTS/shopify_products.csv
+.idea
