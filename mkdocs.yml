@@ -1,0 +1,51 @@
+site_name: Migration Dandoy-Sports → Shopify
+site_description: Documentation de la migration Magento vers Shopify pour Dandoy-Sports / Butterfly TT
+site_url: https://webdigitales.github.io/dandoy-migration-2026/
+
+theme:
+  name: material
+  language: fr
+  palette:
+    - scheme: default
+      primary: blue
+      accent: orange
+      toggle:
+        icon: material/brightness-7
+        name: Mode sombre
+    - scheme: slate
+      primary: blue
+      accent: orange
+      toggle:
+        icon: material/brightness-4
+        name: Mode clair
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - tables
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.details
+  - attr_list
+
+nav:
+  - Accueil: index.md
+  - Avancement: avancement.md
+  - Données & Mapping:
+    - Matrice de mapping: mapping/matrice.md
+    - Metafields Shopify: mapping/metafields.md
+    - Custom options: mapping/custom-options.md
+    - Bundles: mapping/bundles.md
+  - Multi-sites & Langues:
+    - Gestion multi-sites: architecture/multi-sites.md
+    - Gestion des langues: architecture/langues.md
+  - Import Shopify:
+    - Règles Matrixify: import/matrixify.md
+    - Redirections 301: import/redirections.md
+  - Stock Sync:
+    - Guide prestataire: stock/guide-prestataire.md
