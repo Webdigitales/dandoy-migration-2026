@@ -17,18 +17,20 @@ Migration Magento 2 vers Shopify pour **Dandoy-Sports / Butterfly TT** (6 domain
 
 ## Régénérer les fichiers
 
+Après mise à jour de l'export Magento (`01_DATA_RAW/export_magento_products_all.csv`) :
+
 ```bash
-# Produits + traductions
-python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/magento_to_shopify.py
-
-# Collections
-python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/generate_collections.py
-
-# Redirections 301
-python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/generate_redirects.py
+# Tout régénérer (produits, traductions, collections, redirections, fichiers de purge)
+bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-Source : `01_DATA_RAW/export_magento_products_all.csv`
+Ou individuellement :
+
+```bash
+python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/magento_to_shopify.py    # Produits + traductions
+python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/generate_collections.py  # Collections
+python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/generate_redirects.py    # Redirections 301
+```
 
 ## Structure
 

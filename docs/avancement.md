@@ -14,7 +14,8 @@ dandoy/
 │   ├── SCRIPTS/
 │   │   ├── magento_to_shopify.py                ← script principal (produits + traductions)
 │   │   ├── generate_redirects.py                ← script redirections 301
-│   │   └── generate_collections.py              ← script smart collections
+│   │   ├── generate_collections.py              ← script smart collections
+│   │   └── regenerate_all.sh                    ← tout régénérer en une commande
 │   ├── SCREENSHOTS_CATALOGUE/                   (8 captures Magento)
 │   ├── matrice_data_mapping_products.md
 │   ├── metafields_shopify.md                    (19 metafields)
@@ -30,7 +31,10 @@ dandoy/
     ├── shopify_products.csv                     (25 514 lignes, gitignored)
     ├── shopify_translations.csv                 (6 723 lignes)
     ├── shopify_collections.csv                  (58 lignes, 37 collections)
-    └── shopify_products_sample.csv              (10 produits)
+    ├── shopify_products_sample.csv              (10 produits)
+    ├── shopify_products_PURGE.csv               (purge produits pour tests)
+    ├── shopify_collections_PURGE.csv            (purge collections)
+    └── shopify_redirects_PURGE.csv              (purge redirections)
 ```
 
 ---
@@ -43,6 +47,7 @@ dandoy/
 | `shopify_translations.csv` | 6 723 | Traductions FR (93% couvert) + NL (71% couvert) |
 | `shopify_collections.csv` | 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects.csv` | 2 368 | Redirections 301 (produits actifs + catégories) |
+| `*_PURGE.csv` (×3) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
 | `shopify_products_sample.csv` | 53 | Échantillon 10 produits (tous types) |
 
 ### Ordre d'import recommandé
@@ -51,6 +56,24 @@ dandoy/
 2. `shopify_collections.csv` — collections (se remplissent automatiquement via les tags/types)
 3. `shopify_translations.csv` — traductions FR/NL (après activation des langues)
 4. `shopify_redirects.csv` — redirections 301 (après vérification que les URLs cibles existent)
+
+### Régénération
+
+Après mise à jour de l'export Magento :
+
+```bash
+bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
+```
+
+Régénère tout : produits, traductions, collections, redirections et fichiers de purge.
+
+### Purge (pour repartir à zéro entre tests)
+
+Importer via Matrixify dans l'ordre inverse :
+
+1. `shopify_redirects_PURGE.csv`
+2. `shopify_collections_PURGE.csv`
+3. `shopify_products_PURGE.csv`
 
 ---
 

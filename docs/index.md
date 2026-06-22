@@ -24,6 +24,16 @@ Documentation technique de la migration Magento 2 vers Shopify pour **Dandoy-Spo
 
 1. **Produits** → Collections → Langues (activer FR/NL) → **Traductions** → **Redirections**
 
+## Régénération
+
+Après mise à jour de l'export Magento :
+
+```bash
+bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
+```
+
+Des fichiers `*_PURGE.csv` sont aussi générés pour repartir à zéro entre tests (import via Matrixify avec commande DELETE).
+
 ## Navigation
 
 - [Avancement du projet](./avancement.md)
