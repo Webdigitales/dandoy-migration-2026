@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Magento catalog_product CSV  →  Shopify products CSV (Matrixify format)
+                               + Shopify translations CSV (Matrixify Translations format)
 
 Rules:
 - Only base store_view_code rows (= English / default prices)
@@ -12,15 +13,17 @@ Rules:
 - product_online 1 = active, 2 = draft
 - Variant options mapped per attribute_set (Handle, Color, Size, Thickness…)
 - Product-level metafields extracted from additional_attributes
+- Translations exported from eu_fr, eu_nl, bt_be_fr store views
 """
 
 import csv
 import re
 import sys
 
-INPUT      = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_magento_products_all.csv'
-OUTPUT     = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_products.csv'
-IMAGE_BASE = 'https://www.dandoy-sports.com/pub/media/catalog/product'
+INPUT       = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_magento_products_all.csv'
+OUTPUT      = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_products.csv'
+OUTPUT_TR   = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_translations.csv'
+IMAGE_BASE  = 'https://www.dandoy-sports.com/pub/media/catalog/product'
 
 
 # ---------------------------------------------------------------------------
@@ -65,13 +68,6 @@ OPTION_MAP = {
 
 # ---------------------------------------------------------------------------
 # Metafield mapping: Magento attribute → Shopify metafield
-#
-# Format: magento_key → (namespace.key, shopify_type, is_list)
-#   is_list = True  → pipe-separated values in Magento become semicolon-separated
-#   is_list = False → single value
-#
-# Two Magento keys can map to the same metafield (technology_stiga +
-# technology_butterfly both → custom.technology): they are merged.
 # ---------------------------------------------------------------------------
 
 METAFIELD_MAP = {
@@ -99,7 +95,6 @@ METAFIELD_MAP = {
 
 
 def _build_metafield_columns():
-    """Build the ordered list of Matrixify metafield column names."""
     seen = {}
     for mkey, mtype, _ in METAFIELD_MAP.values():
         if mkey not in seen:
@@ -123,6 +118,27 @@ SHOPIFY_COLS = [
     'Image Src', 'Image Position', 'Image Alt Text',
     'Gift Card', 'SEO Title', 'SEO Description', 'Status',
 ] + METAFIELD_COLS
+
+# ---------------------------------------------------------------------------
+# Translation config
+#
+# Store view priority per language:
+#   FR: bt_be_fr (Butterfly own) → eu_fr (Dandoy, shared) → skip
+#   NL: eu_nl (main source) → skip
+#
+# bt_be_nl and bt_nl are too incomplete to be useful.
+# eu_en and ww_en contain no real translations.
+# ---------------------------------------------------------------------------
+
+TRANSLATION_COLS = [
+    'Entity', 'Entity Handle', 'Field',
+    'Translation Value: fr', 'Translation Value: nl',
+]
+
+TRANSLATABLE_FIELDS = [
+    ('title',            'name'),
+    ('body_html',        'description'),
+]
 
 
 # ---------------------------------------------------------------------------
@@ -211,11 +227,9 @@ def resolve_options(parent_row, child_row, option_defs):
 
 
 def resolve_metafields(row):
-    """Extract metafield values from a Magento row's additional_attributes."""
     attrs = parse_additional_attrs(row.get('additional_attributes', ''))
     result = {col: '' for col in METAFIELD_COLS}
 
-    # Group by target metafield key to handle merges (e.g. technology)
     merged = {}
     for mag_key, (mf_key, mf_type, is_list) in METAFIELD_MAP.items():
         raw = attrs.get(mag_key, '')
@@ -312,16 +326,23 @@ def product_fields(row, handle):
 # ---------------------------------------------------------------------------
 
 def main():
+    # ------------------------------------------------------------------
+    # Pass 1: Load ALL rows, indexed by (sku, store_view_code)
+    # ------------------------------------------------------------------
     print("Loading CSV…")
-    base_rows = {}
+    all_by_sku_sv = {}   # (sku, store_view_code) → row
+    base_rows = {}       # sku → row  (base store only)
+
     with open(INPUT, encoding='utf-8') as f:
         for row in csv.DictReader(f):
-            if row.get('store_view_code', '') == '':
-                sku = row['sku']
-                if sku not in base_rows:
-                    base_rows[sku] = row
+            sv = row.get('store_view_code', '') or ''
+            sku = row['sku']
+            all_by_sku_sv[(sku, sv)] = row
+            if sv == '' and sku not in base_rows:
+                base_rows[sku] = row
 
-    print(f"  Base rows loaded: {len(base_rows)}")
+    print(f"  Total rows loaded: {len(all_by_sku_sv)}")
+    print(f"  Base rows: {len(base_rows)}")
 
     grouped_child_skus = set()
     for row in base_rows.values():
@@ -334,9 +355,14 @@ def main():
     print(f"  Grouped children: {len(grouped_child_skus)}")
     print(f"  Metafield columns: {len(METAFIELD_COLS)}")
 
+    # ------------------------------------------------------------------
+    # Pass 2: Write products CSV (same as before)
+    # ------------------------------------------------------------------
+    print("\nWriting products CSV…")
     counters = {'products': 0, 'rows': 0, 'skipped': 0}
     skipped_types = {}
     fallback_count = 0
+    exported_handles = {}  # sku → handle (for translations)
 
     with open(OUTPUT, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=SHOPIFY_COLS)
@@ -346,7 +372,6 @@ def main():
             pt = row['product_type']
             handle = (row.get('url_key', '') or sku).strip()
 
-            # --- Grouped → product with variants ---
             if pt == 'grouped':
                 child_skus = [s.split('=')[0].strip()
                               for s in (row.get('associated_skus', '') or '').split(',')
@@ -408,9 +433,9 @@ def main():
                     img_pos += 1
                     counters['rows'] += 1
 
+                exported_handles[sku] = handle
                 counters['products'] += 1
 
-            # --- Standalone simple ---
             elif pt == 'simple' and sku not in grouped_child_skus:
                 images  = collect_images(row)
                 mfields = resolve_metafields(row)
@@ -435,14 +460,13 @@ def main():
                     writer.writerow(img_out)
                     counters['rows'] += 1
 
+                exported_handles[sku] = handle
                 counters['products'] += 1
 
-            # --- Skipped types ---
             else:
                 skipped_types[pt] = skipped_types.get(pt, 0) + 1
                 counters['skipped'] += 1
 
-    print(f"\nDone.")
     print(f"  Products written : {counters['products']}")
     print(f"  CSV rows written : {counters['rows']}")
     print(f"  Skipped          : {counters['skipped']}")
@@ -451,7 +475,77 @@ def main():
             print(f"    └─ {t}: {n}")
     if fallback_count:
         print(f"  Fallback (name suffix) : {fallback_count} grouped products")
-    print(f"\nOutput → {OUTPUT}")
+    print(f"  Output → {OUTPUT}")
+
+    # ------------------------------------------------------------------
+    # Pass 3: Write translations CSV
+    # ------------------------------------------------------------------
+    print("\nWriting translations CSV…")
+    tr_counters = {'rows': 0, 'products_fr': 0, 'products_nl': 0}
+
+    def get_translation(sku, store_view, field):
+        """Get a translated field value from a specific store view."""
+        row = all_by_sku_sv.get((sku, store_view))
+        if row:
+            return (row.get(field, '') or '').strip()
+        return ''
+
+    def get_fr(sku, field):
+        """FR: try bt_be_fr first (Butterfly own), then eu_fr (Dandoy/shared)."""
+        val = get_translation(sku, 'bt_be_fr', field)
+        if val:
+            return val
+        return get_translation(sku, 'eu_fr', field)
+
+    def get_nl(sku, field):
+        """NL: eu_nl is the main source."""
+        return get_translation(sku, 'eu_nl', field)
+
+    with open(OUTPUT_TR, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=TRANSLATION_COLS)
+        writer.writeheader()
+
+        for sku, handle in exported_handles.items():
+            has_fr = False
+            has_nl = False
+
+            for shopify_field, magento_field in TRANSLATABLE_FIELDS:
+                fr_val = get_fr(sku, magento_field)
+                nl_val = get_nl(sku, magento_field)
+
+                if magento_field == 'description':
+                    if fr_val:
+                        fr_val = fr_val.replace('\n', '<br>\n')
+                    if nl_val:
+                        nl_val = nl_val.replace('\n', '<br>\n')
+
+                if fr_val or nl_val:
+                    row = {
+                        'Entity':                 'Product',
+                        'Entity Handle':          handle,
+                        'Field':                  shopify_field,
+                        'Translation Value: fr':  fr_val,
+                        'Translation Value: nl':  nl_val,
+                    }
+                    writer.writerow(row)
+                    tr_counters['rows'] += 1
+
+                    if fr_val:
+                        has_fr = True
+                    if nl_val:
+                        has_nl = True
+
+            if has_fr:
+                tr_counters['products_fr'] += 1
+            if has_nl:
+                tr_counters['products_nl'] += 1
+
+    print(f"  Translation rows  : {tr_counters['rows']}")
+    print(f"  Products with FR  : {tr_counters['products_fr']}")
+    print(f"  Products with NL  : {tr_counters['products_nl']}")
+    print(f"  Output → {OUTPUT_TR}")
+
+    print("\nDone.")
 
 
 if __name__ == '__main__':
