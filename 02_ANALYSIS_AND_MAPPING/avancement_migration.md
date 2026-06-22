@@ -106,6 +106,7 @@ dandoy/
 | `regles_import_matrixify.md` | Règles CSV, commandes, variantes, images, metafields |
 | `redirections_301.md` | Stratégie SEO, types de redirections, workflow |
 | `bundles_shopify.md` | 105 bundles analysés : 17 promos 3=4 → remises auto, 4 divers → app Bundles, 84 ignorés |
+| `GUIDE_PRESTATAIRE.md` (racine) | Guide prestataire stock sync : flux SFTP, config Stock Sync, contraintes SKU, checklist |
 
 ---
 
@@ -125,7 +126,7 @@ dandoy/
 |---|---|---|
 | Décision multi-sites (A ou B) | **Haute** | En attente validation client |
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — pas de migration data, remises auto Shopify |
-| Stock Sync (config SFTP + mapping SKU) | **Haute** | Post-import |
+| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (`GUIDE_PRESTATAIRE.md`) |
 | Migration clients / commandes | À évaluer | Fresh start ou historique ? |
 | Pages CMS Magento | Basse | Non commencé |
 | Thème Shopify + branding Butterfly | Hors périmètre data | — |
@@ -136,6 +137,8 @@ dandoy/
 
 | Date | Commit | Description |
 |---|---|---|
+| 22 juin | `a12d458` | Guide prestataire stock sync (SFTP + Stock Sync) |
+| 22 juin | `96861ce` | Mise à jour avancement (bundles) |
 | 22 juin | `4259c2a` | Documentation stratégie bundles |
 | 22 juin | `4954217` | Mise à jour avancement (collections) |
 | 22 juin | `6ecc8d0` | 37 smart collections + 22 tags sous-catégories |
