@@ -105,6 +105,7 @@ dandoy/
 | `multi_sites_shopify.md` | Option A (instance unique) vs B (deux boutiques) |
 | `regles_import_matrixify.md` | Règles CSV, commandes, variantes, images, metafields |
 | `redirections_301.md` | Stratégie SEO, types de redirections, workflow |
+| `bundles_shopify.md` | 105 bundles analysés : 17 promos 3=4 → remises auto, 4 divers → app Bundles, 84 ignorés |
 
 ---
 
@@ -123,7 +124,7 @@ dandoy/
 | Sujet | Priorité | Statut |
 |---|---|---|
 | Décision multi-sites (A ou B) | **Haute** | En attente validation client |
-| Bundle products (105 ignorés) | Moyenne | Non commencé — décision : scinder ou app ? |
+| Bundle products (105) | ~~Moyenne~~ | **Documenté** — pas de migration data, remises auto Shopify |
 | Stock Sync (config SFTP + mapping SKU) | **Haute** | Post-import |
 | Migration clients / commandes | À évaluer | Fresh start ou historique ? |
 | Pages CMS Magento | Basse | Non commencé |
@@ -135,6 +136,8 @@ dandoy/
 
 | Date | Commit | Description |
 |---|---|---|
+| 22 juin | `4259c2a` | Documentation stratégie bundles |
+| 22 juin | `4954217` | Mise à jour avancement (collections) |
 | 22 juin | `6ecc8d0` | 37 smart collections + 22 tags sous-catégories |
 | 22 juin | `fd25dc8` | Document d'avancement migration |
 | 22 juin | `4b56906` | Traductions, redirections 301, documentation multi-sites/langues/Matrixify |
