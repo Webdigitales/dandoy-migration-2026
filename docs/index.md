@@ -1,6 +1,6 @@
 # Migration Dandoy-Sports → Shopify
 
-Documentation technique de la migration Magento 2 vers Shopify pour **Dandoy-Sports / Butterfly TT**
+Documentation technique de la migration Magento 2 vers Shopify pour **Dandoy-Sports / Butterfly TT**.
 
 ---
 
@@ -26,8 +26,8 @@ Documentation technique de la migration Magento 2 vers Shopify pour **Dandoy-Spo
 
 ## Navigation
 
-- [Avancement du projet](avancement.md)
-- [Matrice de mapping](mapping/matrice.md)
-- [Metafields](mapping/metafields.md)
-- [Multi-sites](architecture/multi-sites.md)
-- [Guide prestataire stock](stock/guide-prestataire.md)
+- [Avancement du projet](./avancement.md)
+- [Matrice de mapping](./mapping/matrice.md)
+- [Metafields](./mapping/metafields.md)
+- [Multi-sites](./architecture/multi-sites.md)
+- [Guide prestataire stock](./stock/guide-prestataire.md)
