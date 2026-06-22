@@ -1,6 +1,6 @@
 # Migration Dandoy-Sports → Shopify
 
-Documentation technique de la migration Magento 2 vers Shopify pour **Dandoy-Sports / Butterfly TT**.
+Documentation technique de la migration Magento 2 vers Shopify pour **Dandoy-Sports / Butterfly TT**
 
 ---
 
