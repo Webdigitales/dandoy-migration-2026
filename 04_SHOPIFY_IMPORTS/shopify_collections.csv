@@ -1,0 +1,59 @@
+Handle,Command,Title,Body HTML,Published,Sort Order,Must Match,Rule: Column,Rule: Relation,Rule: Condition
+blades,MERGE,Blades,,true,best-selling,all conditions,Product type,equals,Blades
+rubbers,MERGE,Rubbers,,true,best-selling,all conditions,Product type,equals,Rubbers
+clothing,MERGE,Clothing,,true,best-selling,all conditions,Product type,equals,Clothing
+shoes,MERGE,Shoes,,true,best-selling,all conditions,Product type,equals,Shoes
+luggages,MERGE,Luggages,,true,best-selling,all conditions,Product type,equals,Bags
+balls,MERGE,Balls,,true,best-selling,all conditions,Product type,equals,Balls
+tables-nets,MERGE,Tables & Nets,,true,best-selling,all conditions,Product type,equals,Tables and Nets
+rackets,MERGE,Rackets,,true,best-selling,all conditions,Product type,equals,Rackets
+robots,MERGE,Robots,,true,best-selling,all conditions,Product type,equals,Robots
+accessories,MERGE,Accessories,,true,best-selling,all conditions,Product type,equals,Accessories
+cleaners-glue,MERGE,Cleaners & Glue,,true,best-selling,all conditions,Product type,equals,Cleaners
+clubs,MERGE,Clubs,,true,best-selling,all conditions,Product type,equals,Clubs
+padel,MERGE,Padel,,true,best-selling,all conditions,Product tag,equals,Padel
+pickleball,MERGE,Pickleball,,true,best-selling,all conditions,Product tag,equals,Pickleball
+promo-special,MERGE,Promo Special,,true,best-selling,all conditions,Product tag,equals,Promo special
+liquidations-football,MERGE,Liquidations Football,,true,best-selling,all conditions,Product tag,equals,Liquidations Football
+polos,MERGE,Polos,,true,best-selling,all conditions,Product type,equals,Clothing
+polos,,,,,,,Product tag,equals,polos
+shorts,MERGE,Shorts,,true,best-selling,all conditions,Product type,equals,Clothing
+shorts,,,,,,,Product tag,equals,shorts
+t-shirts,MERGE,T-Shirts,,true,best-selling,all conditions,Product type,equals,Clothing
+t-shirts,,,,,,,Product tag,equals,t-shirts
+jackets,MERGE,Jackets,,true,best-selling,all conditions,Product type,equals,Clothing
+jackets,,,,,,,Product tag,equals,jackets
+socks,MERGE,Socks,,true,best-selling,all conditions,Product type,equals,Clothing
+socks,,,,,,,Product tag,equals,socks
+suits,MERGE,Suits,,true,best-selling,all conditions,Product type,equals,Clothing
+suits,,,,,,,Product tag,equals,suits
+sweater,MERGE,Sweater,,true,best-selling,all conditions,Product type,equals,Clothing
+sweater,,,,,,,Product tag,equals,sweater
+bags,MERGE,Bags,,true,best-selling,all conditions,Product type,equals,Bags
+bags,,,,,,,Product tag,equals,bags
+batcover,MERGE,Bat Covers,,true,best-selling,all conditions,Product type,equals,Bags
+batcover,,,,,,,Product tag,equals,batcover
+tables,MERGE,Tables,,true,best-selling,all conditions,Product type,equals,Tables and Nets
+tables,,,,,,,Product tag,equals,tables
+nets,MERGE,Nets,,true,best-selling,all conditions,Product type,equals,Tables and Nets
+nets,,,,,,,Product tag,equals,nets
+cleaners,MERGE,Cleaners,,true,best-selling,all conditions,Product type,equals,Cleaners
+cleaners,,,,,,,Product tag,equals,cleaners
+glue,MERGE,Glue,,true,best-selling,all conditions,Product type,equals,Cleaners
+glue,,,,,,,Product tag,equals,glue
+colours-rubbers,MERGE,Coloured Rubbers,,true,best-selling,all conditions,Product type,equals,Rubbers
+colours-rubbers,,,,,,,Product tag,equals,colours-rubbers
+robots-machines,MERGE,Robots,,true,best-selling,all conditions,Product type,equals,Robots
+robots-machines,,,,,,,Product tag,equals,robots-machines
+robots-accessories,MERGE,Robot Accessories,,true,best-selling,all conditions,Product type,equals,Robots
+robots-accessories,,,,,,,Product tag,equals,robots-accessories
+accessories-rackets,MERGE,Racket Accessories,,true,best-selling,all conditions,Product type,equals,Accessories
+accessories-rackets,,,,,,,Product tag,equals,accessories-rackets
+accessories-textiles,MERGE,Textile Accessories,,true,best-selling,all conditions,Product type,equals,Accessories
+accessories-textiles,,,,,,,Product tag,equals,accessories-textiles
+football-maillot,MERGE,Football Jerseys,,true,best-selling,all conditions,Product tag,equals,Liquidations Football
+football-maillot,,,,,,,Product tag,equals,football-maillot
+football-short,MERGE,Football Shorts,,true,best-selling,all conditions,Product tag,equals,Liquidations Football
+football-short,,,,,,,Product tag,equals,football-short
+football-bas,MERGE,Football Socks,,true,best-selling,all conditions,Product tag,equals,Liquidations Football
+football-bas,,,,,,,Product tag,equals,football-bas

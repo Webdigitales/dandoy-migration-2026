@@ -181,12 +181,42 @@ def to_grams(weight_str):
         return ''
 
 
+SUBCATEGORY_TAG_MAP = {
+    'Clothing/Polos':               'polos',
+    'Clothing/Shorts':              'shorts',
+    'Clothing/T-shirts':            't-shirts',
+    'Clothing/Jackets':             'jackets',
+    'Clothing/Socks':               'socks',
+    'Clothing/Suits':               'suits',
+    'Clothing/Sweater':             'sweater',
+    'Luggages/Bags':                'bags',
+    'Luggages/Batcover':            'batcover',
+    'Tables & Nets/Tables':         'tables',
+    'Tables & Nets/Nets':           'nets',
+    'Cleaners & Glue/Cleaners':     'cleaners',
+    'Cleaners & Glue/Glue':         'glue',
+    'Rubbers/Colours rubbers':      'colours-rubbers',
+    'Robots/Robots':                'robots-machines',
+    'Robots/Accessories':           'robots-accessories',
+    'Accessories/Rackets':          'accessories-rackets',
+    'Accessories/Textiles':         'accessories-textiles',
+    'Accessories/Robots':           'accessories-robots',
+    'Liquidations Football/Maillot': 'football-maillot',
+    'Liquidations Football/Short':  'football-short',
+    'Liquidations Football/Bas':    'football-bas',
+}
+
+
 def categories_to_tags(categories_str):
     tags = set()
-    for part in (categories_str or '').replace('/', ',').split(','):
-        part = part.strip()
-        if part and part.lower() not in ('all', 'default category', ''):
-            tags.add(part)
+    for cat_path in (categories_str or '').split(','):
+        parts = [p.strip() for p in cat_path.strip().split('/') if p.strip() != 'All']
+        for part in parts:
+            if part and part.lower() not in ('all', 'default category', ''):
+                tags.add(part)
+        subpath = '/'.join(parts)
+        if subpath in SUBCATEGORY_TAG_MAP:
+            tags.add(SUBCATEGORY_TAG_MAP[subpath])
     return ','.join(sorted(tags))
 
 

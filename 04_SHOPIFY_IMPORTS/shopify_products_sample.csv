@@ -28,7 +28,7 @@ stiga-titanium-5-4-wrb-flared,Stiga Titanium 5.4 WRB Flared," - Offensive blade 
 stiga-titanium-5-4-wrb-flared,,,,,,,,,,,,,,,,,,,,,,,,,https://www.dandoy-sports.com/pub/media/catalog/product/2/0/2091_xx_titanium_5.4_wrb_2_1_1.jpg,2,,,,,,,,,,,,,,,,,,,,,,,,
 stiga-titanium-5-4-wrb-flared,,,,,,,,,,,,,,,,,,,,,,,,,https://www.dandoy-sports.com/pub/media/catalog/product/2/0/2091-xx_titanium_5.4_wrb_1_1.jpg,3,,,,,,,,,,,,,,,,,,,,,,,,
 stiga-titanium-5-4-wrb-flared,,,,,,,,,,,,,,,,,,,,,,,,,https://www.dandoy-sports.com/pub/media/catalog/product/2/0/2091_xx_titanium_5.4_wrb_3_1_1.jpg,4,,,,,,,,,,,,,,,,,,,,,,,,
-stiga-shirt-conquer-red,Stiga Shirt Conquer Red/Navy/White,"Pique knit 100% polyester, dry fit.",STIGA,,Clothing,"Clothing,Polos",FALSE,Size,XXS,,,,,24519,,shopify,0,deny,manual,12.000000,44.900000,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/1/8/1854-1965-xx_conquer_shirt_red-navy_2.jpg,1,,FALSE,Stiga Shirt Conquer Red/Navy/White,,draft,Liquidation,,,,,,,,,,,,,,,,,,
+stiga-shirt-conquer-red,Stiga Shirt Conquer Red/Navy/White,"Pique knit 100% polyester, dry fit.",STIGA,,Clothing,"Clothing,Polos,polos",FALSE,Size,XXS,,,,,24519,,shopify,0,deny,manual,12.000000,44.900000,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/1/8/1854-1965-xx_conquer_shirt_red-navy_2.jpg,1,,FALSE,Stiga Shirt Conquer Red/Navy/White,,draft,Liquidation,,,,,,,,,,,,,,,,,,
 stiga-shirt-conquer-red,,,,,,,,Size,XS,,,,,24520,,shopify,2,deny,manual,12.000000,44.900000,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
 stiga-shirt-conquer-red,,,,,,,,Size,S,,,,,24521,,shopify,1,deny,manual,12.000000,44.900000,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
 stiga-shirt-conquer-red,,,,,,,,Size,M,,,,,24522,,shopify,0,deny,manual,12.000000,44.900000,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
@@ -51,11 +51,11 @@ center-court,,,,,,,,Size,40,,,,,26064,,shopify,0,deny,manual,29.900000,74.900000
 center-court,,,,,,,,Size,43,,,,,26067,,shopify,0,deny,manual,29.900000,74.900000,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
 center-court,,,,,,,,Size,46,,,,,26070,,shopify,0,deny,manual,29.900000,74.900000,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
 andro-rubber-protection-sheet-pro-foil-black-yellow,Andro Rubber protection sheet Pro-Foil Black/Yellow,"Permanently usable adhesive foil for optimum surface protection.<br>
-Washable and easy handling.",ANDRO,,Accessories,"Accessories,Rackets",FALSE,Title,Default Title,,,,,17118,,shopify,4,deny,manual,3.950000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/a/n/andro_protection_sheet_black_yellow.png,1,,FALSE,Andro Rubber protection sheet Pro-Foil Black/Yellow,,draft,,,,,,,,,,,,,,,Protectors Sheets,,,,
+Washable and easy handling.",ANDRO,,Accessories,"Accessories,Rackets,accessories-rackets",FALSE,Title,Default Title,,,,,17118,,shopify,4,deny,manual,3.950000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/a/n/andro_protection_sheet_black_yellow.png,1,,FALSE,Andro Rubber protection sheet Pro-Foil Black/Yellow,,draft,,,,,,,,,,,,,,,Protectors Sheets,,,,
 donic-blue-contact-glue,Donic Blue Contact Glue,"The DONIC Blue Contact Glue has been specially developed to improve the playing effects of large-pored sponges such as the DONIC Bluefire series. The glues sticky consistency guarantees a strong adhesion but also allows the rubber sheet to be easily detached when changing rubbers without damaging the sponge. In addition if several layers of the glue are applied, spin and speed playing qualities of the rubber are enhanced.<br>
 90 ml bottle sold in set with accessories<br>
 1 litre polythene screw cap bottle sold without accessories<br>
-",DONIC,,Cleaners,"Cleaners & Glue,Glue",TRUE,Quantity,90ml,,,,,17057,,shopify,12,continue,manual,19.900000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/d/o/donic_blue_contact_2.jpg,1,,FALSE,Donic Blue Contact Glue,,active,,,,,,,,,,,,,,,,,,,
+",DONIC,,Cleaners,"Cleaners & Glue,Glue,glue",TRUE,Quantity,90ml,,,,,17057,,shopify,12,continue,manual,19.900000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/d/o/donic_blue_contact_2.jpg,1,,FALSE,Donic Blue Contact Glue,,active,,,,,,,,,,,,,,,,,,,
 donic-blue-contact-glue,,,,,,,,Quantity,1l,,,,,17056,,shopify,1,deny,manual,64.900000,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
 donic-table-world-champion-tc,Donic Table World Champion TC,"The official table of the 2006 Liebherr World Team Championships in Bremen and 2007 Liebherr European Championships in Belgrade.<br>
 The highest quality standard and design.<br>
@@ -77,7 +77,7 @@ Storage dimensions: 1600 x 810 x 1580 mm <br>
 Weight: approx. 150 kg <br>
 Suitable for wheelchair players (40cm leg space, 35cm height). <br>
 The table can be adjusted for playback.<br>
-",DONIC,,Tables and Nets,"Tables,Tables & Nets",TRUE,Title,Blue,,,,,T19067,135000,shopify,-4,continue,manual,1295.000000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/d/o/donic_table_world_champion_tc_blue.jpg,1,,FALSE,Donic Table World Champion TC,,active,,,,,,,,,,,,,,Pro,,Indoor,false,1600 x 810 x 1580 mm,
+",DONIC,,Tables and Nets,"Tables,Tables & Nets,tables",TRUE,Title,Blue,,,,,T19067,135000,shopify,-4,continue,manual,1295.000000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/d/o/donic_table_world_champion_tc_blue.jpg,1,,FALSE,Donic Table World Champion TC,,active,,,,,,,,,,,,,,Pro,,Indoor,false,1600 x 810 x 1580 mm,
 donic-table-world-champion-tc,,,,,,,,Title,Green,,,,,T19068,135000,shopify,0,continue,manual,1295.000000,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
 xushaofa-balls-40,Xushaofa Balls *** 40+,"De Xushaofa *** 40+ ballen zijn ontworpen met een exclusieve technologie die het mogelijk maakt om een bal uit één stuk te maken, en niet – zoals het vroeger werd gedaan – door twee helften samen te voegen. Dankzij deze methode zitten er geen oneffenheden meer in de vorm, het gewicht of de dikte, wat resulteert in een perfecte opstuit. Deze ongemakken, die meer met de bal te maken hadden dan met uw spelwijze, hebben we voor u weggewerkt. Zo krijgt u eindelijk de volledige controle over uw spel.<br>
 Alle Xushaofa ballen zijn ITTF goedgekeurd.<br>
@@ -85,7 +85,7 @@ Alle Xushaofa ballen zijn ITTF goedgekeurd.<br>
 xushaofa-balls-40,,,,,,,,Quantity,30,Color,,,,3599,,shopify,0,deny,manual,45.000000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/x/u/xusahofab_1_1_1_1.jpg,2,,,,,,,,,,,,,,,,,,,,,,,,
 xushaofa-balls-40,,,,,,,,Quantity,72,Color,,,,3603,,shopify,0,deny,manual,99.000000,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
 xushaofa-balls-40,,,,,,,,Quantity,144,Color,,,,3605,,shopify,1,continue,manual,179.000000,,TRUE,TRUE,,,,,,,,,,,,,,,,,,,,,,,,,,,
-joola-batcover-pocket,Joola Batcover Pocket,<p>Nylon bat case with ball compartment</p>,,,Bags,"Batcover,Luggages",TRUE,Color,Green,,,,,17471,,shopify,0,deny,manual,7.900000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/b/a/batcover_pocket.jpg,1,,FALSE,Joola Batcover Pocket,Joola Batcover Pocket Nylon bat case with ball compartment,active,,,,,,,,,,,BatcoverSimple,,,,,,,,
+joola-batcover-pocket,Joola Batcover Pocket,<p>Nylon bat case with ball compartment</p>,,,Bags,"Batcover,Luggages,batcover",TRUE,Color,Green,,,,,17471,,shopify,0,deny,manual,7.900000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/b/a/batcover_pocket.jpg,1,,FALSE,Joola Batcover Pocket,Joola Batcover Pocket Nylon bat case with ball compartment,active,,,,,,,,,,,BatcoverSimple,,,,,,,,
 joola-batcover-pocket,,,,,,,,Color,Blue,,,,,17472,,shopify,28,continue,manual,7.900000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/b/a/batcover_pocket_black_blue_01_1.jpg,2,,,,,,,,,,,,,,,,,,,,,,,,
 joola-batcover-pocket,,,,,,,,Color,Red,,,,,17473,,shopify,26,continue,manual,7.900000,,TRUE,TRUE,,https://www.dandoy-sports.com/pub/media/catalog/product/b/a/batcover_pocket_black_blue_02_1.jpg,3,,,,,,,,,,,,,,,,,,,,,,,,
 joola-batcover-pocket,,,,,,,,,,,,,,,,,,,,,,,,,https://www.dandoy-sports.com/pub/media/catalog/product/b/a/batcover_pocket_black_green_01_1.jpg,4,,,,,,,,,,,,,,,,,,,,,,,,
