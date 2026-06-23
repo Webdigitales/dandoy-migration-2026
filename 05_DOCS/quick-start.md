@@ -37,13 +37,27 @@ Et dans `03_SEO_AND_REDIRECTS/` :
 
 ---
 
-## Étape 2 — Importer les produits
+## Étape 2 — Tester avec le sample
+
+Avant d'importer les 4 834 produits, vérifier le format avec l'échantillon :
 
 1. Ouvrir Shopify Admin → **Apps → Matrixify**
 2. Cliquer **Import**
-3. Uploader `shopify_products.csv`
-4. Vérifier le mapping des colonnes (Matrixify les reconnaît automatiquement)
-5. Lancer l'import
+3. Uploader `shopify_products_sample.csv` (10 produits, tous types représentés)
+4. Lancer l'import
+5. Vérifier dans l'admin : variantes, metafields, tags, images
+
+Si tout est OK, purger le sample (`shopify_products_PURGE.csv` ou suppression manuelle)
+puis passer à l'étape 3.
+
+---
+
+## Étape 3 — Importer les produits
+
+1. Dans Matrixify, cliquer **Import**
+2. Uploader `shopify_products.csv`
+3. Vérifier le mapping des colonnes (Matrixify les reconnaît automatiquement)
+4. Lancer l'import
 
 !!! warning "Images"
     Les URLs images pointent vers `dandoy-sports.com`. Le site Magento doit rester
@@ -58,7 +72,7 @@ Et dans `03_SEO_AND_REDIRECTS/` :
 
 ---
 
-## Étape 3 — Importer les collections
+## Étape 4 — Importer les collections
 
 1. Dans Matrixify, cliquer **Import**
 2. Uploader `shopify_collections.csv`
@@ -69,7 +83,7 @@ Et dans `03_SEO_AND_REDIRECTS/` :
 
 ---
 
-## Étape 4 — Activer les langues
+## Étape 5 — Activer les langues
 
 1. Aller dans **Settings → Languages**
 2. Ajouter **Français (fr)** et **Néerlandais (nl)**
@@ -77,7 +91,7 @@ Et dans `03_SEO_AND_REDIRECTS/` :
 
 ---
 
-## Étape 5 — Importer les traductions
+## Étape 6 — Importer les traductions
 
 1. Dans Matrixify, cliquer **Import**
 2. Uploader `shopify_translations.csv`
@@ -87,7 +101,7 @@ Et dans `03_SEO_AND_REDIRECTS/` :
 
 ---
 
-## Étape 6 — Configurer les metafields
+## Étape 7 — Configurer les metafields
 
 Après l'import, Matrixify a créé les définitions automatiquement.
 Aller dans **Settings → Custom data → Products** pour :
@@ -104,7 +118,7 @@ Puis configurer les **filtres** dans **Search & Discovery** :
 
 ---
 
-## Étape 7 — Importer les redirections
+## Étape 8 — Importer les redirections
 
 1. Dans Matrixify, cliquer **Import**
 2. Uploader `shopify_redirects.csv` (depuis `03_SEO_AND_REDIRECTS/`)
