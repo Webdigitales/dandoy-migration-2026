@@ -239,7 +239,8 @@ def resolve_options(parent_row, child_row, option_defs):
     suffix = name_suffix(parent_row.get('name', ''), child_row.get('name', child_row['sku']))
     result = {}
 
-    for i, (opt_name, source, transform) in enumerate(option_defs[:3], 1):
+    slot = 1
+    for opt_name, source, transform in option_defs[:3]:
         if source == '_name_suffix':
             raw = suffix
         elif source == '_name_suffix_numeric':
@@ -250,8 +251,12 @@ def resolve_options(parent_row, child_row, option_defs):
         if transform and raw:
             raw = transform(raw)
 
-        result[f'Option{i} Name'] = opt_name
-        result[f'Option{i} Value'] = raw if raw else ''
+        if not raw:
+            continue
+
+        result[f'Option{slot} Name'] = opt_name
+        result[f'Option{slot} Value'] = raw
+        slot += 1
 
     return result
 
