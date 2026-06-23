@@ -1,6 +1,7 @@
 site_name: Migration Dandoy-Sports → Shopify
 site_description: Documentation de la migration Magento vers Shopify pour Dandoy-Sports / Butterfly TT
 site_url: https://webdigitales.github.io/dandoy-migration-2026/
+docs_dir: 05_DOCS
 
 theme:
   name: material
