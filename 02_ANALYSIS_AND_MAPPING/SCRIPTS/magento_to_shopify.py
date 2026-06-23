@@ -74,7 +74,7 @@ OPTION_MAP = {
 # ---------------------------------------------------------------------------
 
 METAFIELD_MAP = {
-    'promotion_type':       ('custom.promotion',        'single_line_text_field', False),
+    'promotion_type':       ('custom.promotion',        'list.single_line_text_field', True),
     'blades_type':          ('custom.blade_category',   'single_line_text_field', False),
     'blades_layers':        ('custom.blade_layers',     'single_line_text_field', False),
     'blades_feeling':       ('custom.blade_feeling',    'single_line_text_field', False),
@@ -84,7 +84,7 @@ METAFIELD_MAP = {
     'technology_stiga':     ('custom.technology',        'list.single_line_text_field', True),
     'technology_butterfly': ('custom.technology',        'list.single_line_text_field', True),
     'gender':               ('custom.gender',            'list.single_line_text_field', True),
-    'shoes_type':           ('custom.shoe_type',         'single_line_text_field', False),
+    'shoes_type':           ('custom.shoe_type',         'list.single_line_text_field', True),
     'bags_model':           ('custom.bag_model',         'single_line_text_field', False),
     'balls_usage':          ('custom.ball_usage',        'single_line_text_field', False),
     'balls_material':       ('custom.ball_material',     'single_line_text_field', False),

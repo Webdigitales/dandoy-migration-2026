@@ -9,7 +9,7 @@ Définitions des custom metafields à créer dans Shopify Admin
 
 | Namespace.Key | Nom affiché | Type Shopify | Valeurs possibles | Source Magento |
 |---|---|---|---|---|
-| `custom.promotion` | Promotion | Single line text | Liquidation, NEW, promo, solde, 2 = 3, 3 = 4 | `promotion_type` |
+| `custom.promotion` | Promotion | List of single line text | Liquidation, NEW, promo, solde, 2 = 3, 3 = 4 | `promotion_type` (séparateur `\|`) |
 
 ---
 
@@ -54,7 +54,7 @@ Définitions des custom metafields à créer dans Shopify Admin
 
 | Namespace.Key | Nom affiché | Type Shopify | Valeurs possibles | Source Magento |
 |---|---|---|---|---|
-| `custom.shoe_type` | Type de chaussure | Single line text | Interior, Exterior, Exterior\|Interior | `shoes_type` |
+| `custom.shoe_type` | Type de chaussure | List of single line text | Interior, Exterior | `shoes_type` (séparateur `\|`) |
 | `custom.gender` | Genre | List of single line text | *(partagé avec Clothing)* | `gender` |
 
 > **Options de variantes (non metafield) :** `size_shoes` → **Option1 = Size** (36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46)
@@ -154,7 +154,7 @@ Définitions des custom metafields à créer dans Shopify Admin
 
 | # | Namespace.Key | Type | Partagé entre |
 |---|---|---|---|
-| 1 | `custom.promotion` | Single line text | Tous |
+| 1 | `custom.promotion` | List of single line text | Tous |
 | 2 | `custom.blade_category` | Single line text | Blades |
 | 3 | `custom.blade_layers` | Single line text | Blades |
 | 4 | `custom.blade_feeling` | Single line text | Blades |
@@ -163,7 +163,7 @@ Définitions des custom metafields à créer dans Shopify Admin
 | 7 | `custom.hardness` | Single line text | Rubbers |
 | 8 | `custom.technology` | List of single line text | Blades, Rubbers, Clothing, Rackets |
 | 9 | `custom.gender` | List of single line text | Clothing, Shoes |
-| 10 | `custom.shoe_type` | Single line text | Shoes |
+| 10 | `custom.shoe_type` | List of single line text | Shoes |
 | 11 | `custom.bag_model` | Single line text | Bags |
 | 12 | `custom.ball_usage` | Single line text | Balls |
 | 13 | `custom.ball_material` | Single line text | Balls |
