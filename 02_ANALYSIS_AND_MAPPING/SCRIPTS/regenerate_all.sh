@@ -10,15 +10,15 @@ echo "=== Régénération complète ==="
 echo "Source: $DIR/01_DATA_RAW/export_magento_products_all.csv"
 echo ""
 
-echo "[1/3] Produits + traductions..."
+echo "[1/4] Produits + traductions..."
 python3 "$SCRIPTS/magento_to_shopify.py"
 echo ""
 
-echo "[2/3] Collections..."
+echo "[2/4] Collections..."
 python3 "$SCRIPTS/generate_collections.py"
 echo ""
 
-echo "[3/3] Redirections..."
+echo "[3/4] Redirections..."
 python3 "$SCRIPTS/generate_redirects.py"
 echo ""
 

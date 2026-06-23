@@ -42,7 +42,7 @@ Le projet est organisé selon l'arborescence suivante. Tout script ou fichier g�
 📁 MIGRATION_DANDOY_SHOPIFY/
 │
 ├── 📁 01_DATA_RAW/             # Exports bruts CSV/XML de Magento
-│   └── 📄 export_catalog_product_all.csv
+│   └── 📄 export_magento_products_all.csv
 │
 ├── 📁 02_ANALYSIS_AND_MAPPING/   # Scripts Python/Node, matrices de mapping, audits
 │   └── 📄 Intitulés colonnes fichier export

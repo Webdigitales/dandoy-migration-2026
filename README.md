@@ -41,5 +41,5 @@ python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/generate_redirects.py    # Redirections 
 │   └── *.md                        Documentation technique
 ├── 03_SEO_AND_REDIRECTS/           Redirections 301
 ├── 04_SHOPIFY_IMPORTS/             Fichiers prêts pour Matrixify
-└── docs/                           Source du site MkDocs
+└── 05_DOCS/                        Source du site MkDocs
 ```

@@ -60,7 +60,7 @@
 
 ### Principe
 
-Tous les produits (27 939) dans **un seul catalogue** Shopify. La séparation Dandoy / Butterfly
+Tous les produits (4 941 produits uniques, soit 4 834 exportés vers Shopify) dans **un seul catalogue** Shopify. La séparation Dandoy / Butterfly
 est gérée par **Shopify Markets** + **collections automatiques** basées sur des tags.
 
 ### Mise en oeuvre
@@ -124,8 +124,8 @@ Deux instances Shopify indépendantes, chacune avec son propre catalogue.
 
 | Boutique | Domaines | Produits |
 |---|---|---|
-| **Dandoy-Sports** | `dandoy-sports.com`, `fr/en/nl.dandoy-sports.eu` | ~24 023 (base + ds_ww + partagés) |
-| **Butterfly TT** | `be.butterfly.tt`, `nl.butterfly.tt` | ~5 277 (bt_be + bt_nl + partagés) |
+| **Dandoy-Sports** | `dandoy-sports.com`, `fr/en/nl.dandoy-sports.eu` | 4 258 (dont 2 033 actifs) |
+| **Butterfly TT** | `be.butterfly.tt`, `nl.butterfly.tt` | 882 (dont 351 actifs) |
 
 Les **199 produits partagés (dont 35 actifs)** sont dupliqués dans les deux boutiques.
 
