@@ -23,16 +23,27 @@
 > **Important :** ces store views doivent être **exclues** lors de l'extraction des traductions
 > pour Shopify. Seules les store views listées dans le tableau ci-dessus sont à migrer.
 
-### Distribution des produits par website
+### Distribution des produits par domaine
 
-| Combinaison `product_websites` | Produits | Signification |
+| Domaine | Total | Actifs | Désactivés |
+|---|---|---|---|
+| `dandoy-sports.com` | 4 258 | 2 033 | 2 225 |
+| `fr.dandoy-sports.eu` | 4 248 | 2 029 | 2 219 |
+| `en.dandoy-sports.eu` | 4 248 | 2 029 | 2 219 |
+| `nl.dandoy-sports.eu` | 4 248 | 2 029 | 2 219 |
+| `be.butterfly.tt` | 880 | 350 | 530 |
+| `nl.butterfly.tt` | 881 | 351 | 530 |
+
+> Les 3 sous-domaines Dandoy EU (fr/en/nl) partagent le même catalogue — seule la langue change.
+
+### Produits partagés entre Dandoy et Butterfly
+
+| | Total | Actifs |
 |---|---|---|
-| `base,ds_ww` | 20 986 | Dandoy EU + International |
-| `bt_be,bt_nl` | 3 890 | Butterfly uniquement |
-| `base` | 1 651 | Dandoy EU uniquement |
-| `base,ds_ww,bt_be,bt_nl` | 1 386 | **Partagés** (tous les sites) |
-| Divers | 26 | Combinaisons marginales |
-| **Total** | **27 939** | |
+| Dandoy uniquement | 4 059 | 1 998 |
+| Butterfly uniquement | 683 | 316 |
+| **Partagés** (sur les deux) | **199** | **35** |
+| **Total produits uniques** | **4 941** | **2 349** |
 
 ### Périmètre cible Shopify (6 domaines)
 
@@ -93,7 +104,7 @@ Un seul flux Stock Sync → **un seul inventaire** pour tous les marchés. Pas d
 - **Stock unifié** : une seule source de vérité, pas de risque de survente
 - **Un seul abonnement** Shopify
 - **Gestion centralisée** : prix, descriptions, images au même endroit
-- **Produits partagés** (1 386) : aucune duplication, visibles sur les deux marques
+- **Produits partagés** (199, dont 35 actifs) : aucune duplication, visibles sur les deux marques
 
 ### Inconvénients
 
@@ -116,7 +127,7 @@ Deux instances Shopify indépendantes, chacune avec son propre catalogue.
 | **Dandoy-Sports** | `dandoy-sports.com`, `fr/en/nl.dandoy-sports.eu` | ~24 023 (base + ds_ww + partagés) |
 | **Butterfly TT** | `be.butterfly.tt`, `nl.butterfly.tt` | ~5 277 (bt_be + bt_nl + partagés) |
 
-Les **1 386 produits partagés** sont dupliqués dans les deux boutiques.
+Les **199 produits partagés (dont 35 actifs)** sont dupliqués dans les deux boutiques.
 
 ### Mise en oeuvre
 
@@ -149,7 +160,7 @@ Le même fichier CSV de stock alimente les deux (les SKU sont identiques).
 
 ### Inconvénients
 
-- **1 386 produits dupliqués** → double maintenance (prix, descriptions, images)
+- **199 produits dupliqués** (dont 35 actifs) → double maintenance (prix, descriptions, images)
 - **Risque de survente** sur les produits partagés : la sync stock est 1×/jour,
   si le dernier stock est vendu sur Dandoy, Butterfly ne le sait pas avant le lendemain
 - **Deux abonnements** Shopify (coût doublé)
@@ -163,7 +174,7 @@ Le même fichier CSV de stock alimente les deux (les SKU sont identiques).
 | Critère | Option A (instance unique) | Option B (deux boutiques) |
 |---|---|---|
 | Stock | Unifié, pas de survente | Dupliqué, risque de survente (sync 1×/jour) |
-| Produits partagés (1 386) | Gérés nativement | Dupliqués manuellement |
+| Produits partagés (199) | Gérés nativement | Dupliqués manuellement |
 | Coût Shopify | 1 abonnement | 2 abonnements |
 | Branding Butterfly | Thème adaptatif ou sections conditionnelles | Thème 100% dédié |
 | Complexité initiale | Plus élevée (Markets, Catalogs) | Plus simple |
@@ -178,7 +189,7 @@ Le même fichier CSV de stock alimente les deux (les SKU sont identiques).
 **Option A (instance unique)** est recommandée pour ce projet car :
 
 1. Le stock sans ERP et la sync 1×/jour rendent la **survente** très probable avec deux boutiques
-2. Les **1 386 produits partagés** représentent un effort de maintenance significatif en double
+2. Les **199 produits partagés (dont 35 actifs)** représentent un effort de maintenance significatif en double
 3. Shopify Markets couvre le besoin multi-domaine / multi-langue nativement
 4. Un seul flux Stock Sync simplifie l'infrastructure
 

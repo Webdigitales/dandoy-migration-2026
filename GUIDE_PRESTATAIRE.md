@@ -139,7 +139,7 @@ Si l'architecture Shopify retenue est l'**instance unique** (recommandé) :
 Si **deux boutiques** séparées :
 - Deux connexions Stock Sync nécessaires (une par boutique)
 - Le même fichier CSV peut alimenter les deux (SKU identiques)
-- **Risque de survente** sur les 1 386 produits partagés entre les deux boutiques
+- **Risque de survente** sur les 199 produits partagés (35 actifs) entre les deux boutiques
   (le stock est décrémenté indépendamment, sync seulement 1×/jour)
 
 ### 6.3 SKU absents du fichier stock

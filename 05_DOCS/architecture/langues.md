@@ -132,7 +132,7 @@ Les produits Butterfly ont leur propre traduction FR dans `bt_be_fr` (5 191 prod
 
 Si Dandoy et Butterfly partagent une seule boutique Shopify :
 - Shopify ne supporte qu'**une seule traduction FR** par produit
-- Pour les 1 386 produits partagés : prioriser `bt_be_fr` ou `eu_fr` (les différences sont mineures)
+- Pour les 199 produits partagés (35 actifs) : prioriser `bt_be_fr` ou `eu_fr` (les différences sont mineures)
 - **Recommandation** : utiliser `eu_fr` comme source FR principale, les 6 différences de noms sont négligeables
 
 ### Option B — Deux boutiques
