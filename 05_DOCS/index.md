@@ -36,6 +36,7 @@ Des fichiers `*_PURGE.csv` sont aussi générés pour repartir à zéro entre te
 
 ## Navigation
 
+- [Quick Start — Mode d'emploi](./quick-start.md)
 - [Avancement du projet](./avancement.md)
 - [Matrice de mapping](./mapping/matrice.md)
 - [Metafields](./mapping/metafields.md)
