@@ -60,6 +60,9 @@ OPTION_MAP = {
     'Migration_Cleaners': [
         ('Quantity', 'quantity', None),
     ],
+    'Migration_Tables and Nets': [
+        ('Color', '_name_suffix', None),
+    ],
     'Migration_Default': [
         ('Size', 'size', None),
     ],
