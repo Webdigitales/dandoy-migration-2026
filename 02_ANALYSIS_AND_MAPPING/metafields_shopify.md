@@ -152,27 +152,30 @@ Définitions des custom metafields à créer dans Shopify Admin
 
 ## Récapitulatif : 19 metafields uniques
 
-| # | Namespace.Key | Type | Valeur | Partagé entre |
-|---|---|---|---|---|
-| 1 | `custom.promotion` | List of single line text | Multiple | Tous |
-| 2 | `custom.blade_category` | Single line text | Simple | Blades |
-| 3 | `custom.blade_layers` | Single line text | Simple | Blades |
-| 4 | `custom.blade_feeling` | Single line text | Simple | Blades |
-| 5 | `custom.rubber_category` | Single line text | Simple | Rubbers, Rackets |
-| 6 | `custom.pimples` | Single line text | Simple | Rubbers |
-| 7 | `custom.hardness` | Single line text | Simple | Rubbers |
-| 8 | `custom.technology` | List of single line text | Multiple | Blades, Rubbers, Clothing, Rackets |
-| 9 | `custom.gender` | List of single line text | Multiple | Clothing, Shoes |
-| 10 | `custom.shoe_type` | List of single line text | Multiple | Shoes |
-| 11 | `custom.bag_model` | Single line text | Simple | Bags |
-| 12 | `custom.ball_usage` | Single line text | Simple | Balls |
-| 13 | `custom.ball_material` | Single line text | Simple | Balls |
-| 14 | `custom.usage` | Single line text | Simple | Rackets, Tables |
-| 15 | `custom.accessory_type` | Single line text | Simple | Accessories |
-| 16 | `custom.environment` | Single line text | Simple | Rackets, Tables |
-| 17 | `custom.cover_included` | Boolean | Simple | Tables |
-| 18 | `custom.dimension` | Single line text | Simple | Tables |
-| 19 | `custom.video_url` | URL | Simple | Blades, Rubbers, Shoes |
+| # | Namespace.Key | Type | Valeur | Filtre Magento | Usage Shopify |
+|---|---|---|---|---|---|
+| 1 | `custom.promotion` | List of single line text | Multiple | Oui (tous) | Filtre |
+| 2 | `custom.blade_category` | Single line text | Simple | Oui (Blades) | Filtre |
+| 3 | `custom.blade_layers` | Single line text | Simple | Oui (Blades) | Filtre |
+| 4 | `custom.blade_feeling` | Single line text | Simple | Oui (Blades) | Filtre |
+| 5 | `custom.rubber_category` | Single line text | Simple | Oui (Rubbers) | Filtre |
+| 6 | `custom.pimples` | Single line text | Simple | Oui (Rubbers) | Filtre |
+| 7 | `custom.hardness` | Single line text | Simple | Non | Filtre (nouveau) |
+| 8 | `custom.technology` | List of single line text | Multiple | Non | Affichage fiche |
+| 9 | `custom.gender` | List of single line text | Multiple | Non | Filtre (nouveau) |
+| 10 | `custom.shoe_type` | List of single line text | Multiple | Oui (Shoes) | Filtre |
+| 11 | `custom.bag_model` | Single line text | Simple | Oui (Luggages) | Filtre |
+| 12 | `custom.ball_usage` | Single line text | Simple | Oui (Balls) | Filtre |
+| 13 | `custom.ball_material` | Single line text | Simple | Oui (Balls) | Filtre |
+| 14 | `custom.usage` | Single line text | Simple | Non | Filtre (nouveau) |
+| 15 | `custom.accessory_type` | Single line text | Simple | Non | Filtre (nouveau) |
+| 16 | `custom.environment` | Single line text | Simple | Non | Filtre (nouveau) |
+| 17 | `custom.cover_included` | Boolean | Simple | Non | Affichage fiche |
+| 18 | `custom.dimension` | Single line text | Simple | Non | Affichage fiche |
+| 19 | `custom.video_url` | URL | Simple | Non | Affichage fiche |
+
+> **Filtres natifs Shopify** (pas des metafields) : Vendor (= Manufacturer), Price, Color,
+> Size, Quantity — ces attributs sont filtrables nativement via Search & Discovery.
 
 ---
 
