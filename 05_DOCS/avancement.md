@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **22 juin 2026**
+Dernière mise à jour : **24 juin 2026**
 
 ---
 
@@ -17,24 +17,31 @@ dandoy/
 │   │   ├── generate_collections.py              ← script smart collections
 │   │   └── regenerate_all.sh                    ← tout régénérer en une commande
 │   ├── SCREENSHOTS_CATALOGUE/                   (8 captures Magento)
-│   ├── matrice_data_mapping_products.md
-│   ├── metafields_shopify.md                    (19 metafields)
+│   ├── matrice_data_mapping_products.md          (mapping complet Magento → Shopify)
+│   ├── metafields_shopify.md                    (19 metafields — référence complète)
 │   ├── custom_options_shopify.md                (Gluing, Lacquering, livraison)
 │   ├── gestion_langues_shopify.md               (FR/NL workflow)
 │   ├── multi_sites_shopify.md                   (Option A vs B)
+│   ├── bundles_shopify.md                       (stratégie bundles)
 │   ├── regles_import_matrixify.md               (règles d'import)
 │   └── avancement_migration.md                  (ce fichier)
 ├── 03_SEO_AND_REDIRECTS/
-│   ├── shopify_redirects.csv                    (2 368 redirections)
+│   ├── shopify_redirects.csv                    (2 368 redirections, gitignored)
 │   └── redirections_301.md
-└── 04_SHOPIFY_IMPORTS/
-    ├── shopify_products.csv                     (25 514 lignes, gitignored)
-    ├── shopify_translations.csv                 (6 723 lignes)
-    ├── shopify_collections.csv                  (58 lignes, 37 collections)
-    ├── shopify_products_sample.csv              (10 produits)
-    ├── shopify_products_PURGE.csv               (purge produits pour tests)
-    ├── shopify_collections_PURGE.csv            (purge collections)
-    └── shopify_redirects_PURGE.csv              (purge redirections)
+├── 04_SHOPIFY_IMPORTS/                          (CSV gitignorés, regénérables)
+│   ├── shopify_products.csv                     (25 514 lignes)
+│   ├── shopify_translations.csv                 (6 723 lignes)
+│   ├── shopify_collections.csv                  (58 lignes, 37 collections)
+│   ├── shopify_products_sample.csv              (10 produits — versionné)
+│   └── *_PURGE.csv (×3)                         (purge pour tests)
+├── 05_DOCS/                                     (source MkDocs)
+│   ├── index.md, quick-start.md, contraintes-techniques.md, avancement.md
+│   ├── mapping/                                 (matrice, metafields ×3, custom-options, bundles)
+│   ├── architecture/                            (multi-sites, langues)
+│   ├── import/                                  (matrixify, redirections)
+│   └── stock/                                   (guide prestataire)
+├── CLAUDE.md, README.md, GUIDE_PRESTATAIRE.md
+└── mkdocs.yml + .github/workflows/docs.yml      (site doc GitHub Pages)
 ```
 
 ---
@@ -52,10 +59,12 @@ dandoy/
 
 ### Ordre d'import recommandé
 
-1. `shopify_products.csv` — produits + variantes + metafields + tags
-2. `shopify_collections.csv` — collections (se remplissent automatiquement via les tags/types)
-3. `shopify_translations.csv` — traductions FR/NL (après activation des langues)
-4. `shopify_redirects.csv` — redirections 301 (après vérification que les URLs cibles existent)
+1. `shopify_products_sample.csv` — test avec 10 produits, vérifier, supprimer manuellement
+2. `shopify_products.csv` — produits + variantes + metafields + tags
+3. `shopify_collections.csv` — collections (auto-remplies via tags/types)
+4. Activer les langues FR et NL dans Settings → Languages
+5. `shopify_translations.csv` — traductions FR/NL
+6. `shopify_redirects.csv` — redirections 301
 
 ### Régénération
 
@@ -64,8 +73,6 @@ Après mise à jour de l'export Magento :
 ```bash
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
-
-Régénère tout : produits, traductions, collections, redirections et fichiers de purge.
 
 ### Purge (pour repartir à zéro entre tests)
 
@@ -96,40 +103,54 @@ Importer via Matrixify dans l'ordre inverse :
   - Clothing → Size
   - Shoes → Size (sans préfixe EU)
   - Bags → Color
-  - Balls → Quantity + Color
+  - Balls → Quantity + Color (omis si vide)
   - Cleaners → Quantity
+  - Tables and Nets → Color (depuis suffixe du nom)
   - Autres → fallback sur suffixe du nom
 - 19 metafields custom (blade_category, pimples, hardness, technology, gender…)
 - Export des traductions FR/NL depuis eu_fr, bt_be_fr, eu_nl
+- Fix : options vides omises (erreur Matrixify Xushaofa Balls corrigée)
+- Fix : promotion_type et shoe_type passés en list (multi-valeurs avec pipe)
 
 ### Collections Shopify (22 juin 2026)
 
-- 22 tags de sous-catégories ajoutés aux produits (polos, suits, tables, bags…)
-- 37 smart collections générées :
-  - **16 top-level** : Blades, Rubbers, Clothing, Shoes, Balls, Tables & Nets, Rackets, Robots, Accessories, Cleaners & Glue, Clubs, Luggages, Padel, Pickleball, Promo Special, Liquidations Football
-  - **21 sous-catégories** : Polos, Shorts, T-Shirts, Jackets, Socks, Suits, Sweater, Bags, Bat Covers, Tables, Nets, Cleaners, Glue, Coloured Rubbers, Robots Machines, Robot Accessories, Racket Accessories, Textile Accessories, Football Jerseys/Shorts/Socks
+- 22 tags de sous-catégories ajoutés aux produits
+- 37 smart collections générées (16 top-level + 21 sous-catégories)
 - Règles basées sur Product Type + Product Tag (remplissage automatique)
 
 ### Redirections 301 (22 juin 2026)
 
-- Génération des redirections produits + catégories
-- Vérification HTTP sur le site Magento live : seuls les produits actifs et visibles ont une URL
-- Résultat : 2 368 redirections utiles (au lieu de 28 765 théoriques)
-- Enfants simples et produits désactivés exclus (déjà en 404 sur Magento)
+- Vérification HTTP sur le site Magento live : seuls les produits actifs et visibles redirigés
+- Résultat : 2 368 redirections (au lieu de 28 765 théoriques)
 
-### Documentation
+### Metafields — Analyse approfondie (24 juin 2026)
+
+- Vérification des filtres Magento live sur dandoy-sports.com (6 catégories crawlées)
+- Mapping : 12 filtres reproduisent l'existant Magento, 5 nouveaux possibles
+- `custom.technology` : 77 valeurs — affichage fiche produit uniquement (pas de filtre)
+- Choix prédéfinis documentés pour 15 metafields (validation Shopify Admin)
+- Page metafields scindée en 3 dans la doc MkDocs :
+  - Définitions (types, sources, récapitulatif)
+  - Choix prédéfinis (valeurs à copier-coller)
+  - Filtrage & Affichage (comparaison Magento, config Search & Discovery)
+
+### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
 |---|---|
-| `matrice_data_mapping_products.md` | Mapping colonnes Magento → Shopify |
-| `metafields_shopify.md` | 19 metafields : types, valeurs, usage filtrage/affichage |
-| `custom_options_shopify.md` | Gluing, Lacquering, Edge tape → line item properties |
+| `matrice_data_mapping_products.md` | Mapping complet : champs, variantes, metafields, tags, champs ignorés |
+| `metafields_shopify.md` | 19 metafields : définitions, choix prédéfinis, filtrage & affichage |
+| `custom_options_shopify.md` | Gluing, Lacquering, Edge tape → line item properties + code Liquid |
 | `gestion_langues_shopify.md` | Stratégie FR/NL, workflow Matrixify Translations |
-| `multi_sites_shopify.md` | Option A (instance unique) vs B (deux boutiques) |
+| `multi_sites_shopify.md` | Option A (instance unique) vs B (deux boutiques) + chiffres par domaine |
+| `bundles_shopify.md` | 105 bundles : 17 promos 3=4 → remises auto, 4 divers → app Bundles |
 | `regles_import_matrixify.md` | Règles CSV, commandes, variantes, images, metafields |
 | `redirections_301.md` | Stratégie SEO, types de redirections, workflow |
-| `bundles_shopify.md` | 105 bundles analysés : 17 promos 3=4 → remises auto, 4 divers → app Bundles, 84 ignorés |
-| `GUIDE_PRESTATAIRE.md` (racine) | Guide prestataire stock sync : flux SFTP, config Stock Sync, contraintes SKU, checklist |
+| `GUIDE_PRESTATAIRE.md` | Guide prestataire stock sync : flux SFTP, config Stock Sync, checklist |
+| `README.md` | Vue d'ensemble projet + commandes |
+| Site MkDocs (05_DOCS/) | 13 pages, déployé via GitHub Pages |
+| `contraintes-techniques.md` | 10 contraintes techniques avec tableau des risques |
+| `quick-start.md` | Mode d'emploi en 8 étapes (test sample → import → purge) |
 
 ---
 
@@ -139,7 +160,7 @@ Importer via Matrixify dans l'ordre inverse :
 |---|---|---|---|
 | **Multi-sites** | A : instance unique + Markets / B : deux boutiques | **Option A** (stock unifié, pas de survente) | Conditionne tout le reste |
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
-| **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix dynamique) | Coût mensuel |
+| **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 
 ---
 
@@ -148,8 +169,11 @@ Importer via Matrixify dans l'ordre inverse :
 | Sujet | Priorité | Statut |
 |---|---|---|
 | Décision multi-sites (A ou B) | **Haute** | En attente validation client |
-| Bundle products (105) | ~~Moyenne~~ | **Documenté** — pas de migration data, remises auto Shopify |
-| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (`GUIDE_PRESTATAIRE.md`) |
+| Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify |
+| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt |
+| Import test complet Matrixify | **Haute** | Sample testé OK, import complet à lancer |
+| Configuration metafields (choix prédéfinis) | Moyenne | Documenté — post-import |
+| Configuration Search & Discovery (filtres) | Moyenne | Documenté — post-import |
 | Migration clients / commandes | À évaluer | Fresh start ou historique ? |
 | Pages CMS Magento | Basse | Non commencé |
 | Thème Shopify + branding Butterfly | Hors périmètre data | — |
@@ -160,14 +184,28 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Date | Commit | Description |
 |---|---|---|
-| 22 juin | `a12d458` | Guide prestataire stock sync (SFTP + Stock Sync) |
-| 22 juin | `96861ce` | Mise à jour avancement (bundles) |
+| 24 juin | `2bc9b75` | Restructuration page metafields en 3 pages MkDocs |
+| 24 juin | `6ebe17d` | Ajout filtres Magento live + usage Shopify au tableau metafields |
+| 24 juin | `8b96dd2` | Colonne Simple/Multiple dans récapitulatif metafields |
+| 24 juin | `a9252e8` | custom.technology → affichage uniquement (pas de choix prédéfinis) |
+| 24 juin | `93de0db` | Choix prédéfinis technology (77 valeurs) + gender |
+| 24 juin | `2e5ec37` | Choix prédéfinis pour 14 metafields |
+| 24 juin | `fed696b` | Matrice de mapping complète |
+| 24 juin | `d0bc981` | Fix types metafields : promotion et shoe_type → list |
+| 24 juin | `bd768ba` | Tables and Nets → Option1 = Color |
+| 24 juin | `77aa9b4` | Page contraintes techniques (10 contraintes + risques) |
+| 24 juin | `f14f8f7` | Fix options vides (erreur Matrixify Xushaofa Balls) |
+| 23 juin | `3274cb8` | Fix incohérences doc (audit global) |
+| 23 juin | `da3216c` | Quick Start (8 étapes) |
+| 23 juin | `0da7df7` | Étape test sample dans Quick Start |
+| 23 juin | `cea6c3d` | Fix liens doc MkDocs |
+| 23 juin | `59caffd` | Site MkDocs Material + GitHub Pages |
+| 22 juin | `cd476f5` | Nettoyage .gitignore (CSV générés exclus) |
+| 22 juin | `97a736b` | regenerate_all.sh + fichiers PURGE |
+| 22 juin | `a12d458` | Guide prestataire stock sync |
 | 22 juin | `4259c2a` | Documentation stratégie bundles |
-| 22 juin | `4954217` | Mise à jour avancement (collections) |
 | 22 juin | `6ecc8d0` | 37 smart collections + 22 tags sous-catégories |
-| 22 juin | `fd25dc8` | Document d'avancement migration |
 | 22 juin | `4b56906` | Traductions, redirections 301, documentation multi-sites/langues/Matrixify |
 | 19 juin | `cf6c1d7` | Structure projet, custom options, matrice de mapping |
 | 17 juin | `e3269b2` | 19 metafields + documentation metafields |
-| 17 juin | `ae22acd` | .gitkeep pour dossiers vides |
 | 17 juin | `f859b1a` | Commit initial : script de conversion, screenshots, CLAUDE.md |
