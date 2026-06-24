@@ -41,7 +41,9 @@ nav:
   - Avancement: avancement.md
   - Données & Mapping:
     - Matrice de mapping: mapping/matrice.md
-    - Metafields Shopify: mapping/metafields.md
+    - Metafields — Définitions: mapping/metafields-definitions.md
+    - Metafields — Choix prédéfinis: mapping/metafields-choix-predefinis.md
+    - Metafields — Filtrage & Affichage: mapping/metafields-filtrage.md
     - Custom options: mapping/custom-options.md
     - Bundles: mapping/bundles.md
   - Multi-sites & Langues:
