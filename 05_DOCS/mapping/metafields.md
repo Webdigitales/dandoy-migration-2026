@@ -310,14 +310,57 @@ Arbitration Kits, Caps, Edge Tape, Fun Balls, Glue, Headbands, Keychains, Overgr
 Indoor, Outdoor
 ```
 
+### `custom.technology` — Technologie (77 valeurs)
+
+Champ list multi-valeurs. Les valeurs sont regroupées par marque :
+
+**Butterfly :**
+```
+Arylate-carbon, High Tension, Inner Fiber, Micro Layer, Spring Sponge, Super ZLC, Tamca 5000, ZL Carbon, ZL Fiber
+```
+
+**Stiga :**
+```
+Stiga-Acs-technology, Stiga-APS-technology, Stiga-Builtin, Stiga-CR-system, Stiga-CrystalTechnology, Stiga-DiamondTouch, Stiga-Long-Trajectory, Stiga-Mega-Tension, Stiga-NCT-technology, Stiga-OCS, Stiga-TransTension, Stiga-Tube, Stiga-VPS, Stiga-WRB-system
+```
+
+**Donic :**
+```
+Donic-3rd generation, Donic-Carbon, Donic-Carbon glass, Donic-Dotec CBF technology, Donic-Epox fineline, Donic-Faktis technology, Donic-Kiso-hinoki TEXALIUM, Donic-Max catapult-Max Arc, Donic-SP tech, Donic-SUPER LIGHT, Donic-Spin speed, Donic-Swedish 5Ply wood, Donic-Swedish feeling, Donic-The formula donic, Donic-Thermic burned tech, Donic-Traction technology, Donic-Turbo catapult-Max arc, Donic-V1, Donic-V2, Donic-V3, Donic-Waldner black devil, Donic-Youngstar, Donic-senso
+```
+
+**Tibhar :**
+```
+Tibhar-Balsa, Tibhar-ClearTech, Tibhar-DTech, Tibhar-OPTRA, Tibhar-ProTension, Tibhar-RPS, Tibhar-SAM, Tibhar-SGS, Tibhar-SmallHand, Tibhar-SPI-Advanced, Tibhar-Spi
+```
+
+**Joola :**
+```
+Joola-Carbon, Joola-Geo-Force - Technologie, Joola-Geo-Grip - Technologie, Joola-Geo-Sponge - Technologie, Joola-GREEN POWER-Technologie, Joola-RAG, Joola-TENSOR, Joola-Texalium, Joola-WSI
+```
+
+**Yasaka :**
+```
+YASAKA-3D Inside Technology, YASAKA-Hybrid Energy, YASAKA-Stockage Energy
+```
+
+**Textiles (Clothing) :**
+```
+Anti-Odor, Breathable, Comfortable Stretch, Skin Friendly, UV Protection, Water Repellent, Wicking and Quickdry, Windproof
+```
+
+### `custom.gender` — Genre (4 valeurs)
+
+```
+Child, Man, Unisex, Woman
+```
+
 ### Metafields sans choix prédéfinis
 
 Les champs suivants sont trop variables ou libres pour des choix prédéfinis :
 
 | Metafield | Raison |
 |---|---|
-| `custom.technology` | Combinaisons multiples de technologies par marque |
-| `custom.gender` | Combinaisons Man, Woman, Child, Unisex |
 | `custom.dimension` | Dimensions libres (49 valeurs différentes) |
 | `custom.video_url` | URLs YouTube |
 | `custom.cover_included` | Boolean (true/false, pas de choix à configurer) |
