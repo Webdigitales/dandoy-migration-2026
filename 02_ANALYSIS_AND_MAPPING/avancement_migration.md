@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **24 juin 2026**
+Dernière mise à jour : **25 juin 2026**
 
 ---
 
@@ -15,7 +15,8 @@ dandoy/
 │   │   ├── magento_to_shopify.py                ← script principal (produits + traductions)
 │   │   ├── generate_redirects.py                ← script redirections 301
 │   │   ├── generate_collections.py              ← script smart collections
-│   │   └── regenerate_all.sh                    ← tout régénérer en une commande
+│   │   ├── magento_to_shopify_customers.py      ← script conversion clients
+│   │   └── regenerate_all.sh                    ← tout régénérer en une commande (6 étapes)
 │   ├── SCREENSHOTS_CATALOGUE/                   (8 captures Magento)
 │   ├── matrice_data_mapping_products.md          (mapping complet Magento → Shopify)
 │   ├── metafields_shopify.md                    (19 metafields — référence complète)
@@ -32,6 +33,7 @@ dandoy/
 │   ├── shopify_products.csv                     (25 514 lignes)
 │   ├── shopify_translations.csv                 (6 723 lignes)
 │   ├── shopify_collections.csv                  (58 lignes, 37 collections)
+│   ├── shopify_customers.csv                    (41 020 clients)
 │   ├── shopify_products_sample.csv              (10 produits — versionné)
 │   └── *_PURGE.csv (×3)                         (purge pour tests)
 ├── 05_DOCS/                                     (source MkDocs)
@@ -54,6 +56,7 @@ dandoy/
 | `shopify_translations.csv` | 6 723 | Traductions FR (93% couvert) + NL (71% couvert) |
 | `shopify_collections.csv` | 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects.csv` | 2 368 | Redirections 301 (produits actifs + catégories) |
+| `shopify_customers.csv` | 41 020 | Clients dédupliqués + adresse par défaut + tags source |
 | `*_PURGE.csv` (×3) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
 | `shopify_products_sample.csv` | 53 | Échantillon 10 produits (tous types) |
 
@@ -62,9 +65,10 @@ dandoy/
 1. `shopify_products_sample.csv` — test avec 10 produits, vérifier, supprimer manuellement
 2. `shopify_products.csv` — produits + variantes + metafields + tags
 3. `shopify_collections.csv` — collections (auto-remplies via tags/types)
-4. Activer les langues FR et NL dans Settings → Languages
-5. `shopify_translations.csv` — traductions FR/NL
-6. `shopify_redirects.csv` — redirections 301
+4. `shopify_customers.csv` — clients + adresses
+5. Activer les langues FR et NL dans Settings → Languages
+6. `shopify_translations.csv` — traductions FR/NL
+7. `shopify_redirects.csv` — redirections 301
 
 ### Régénération
 
@@ -174,7 +178,8 @@ Importer via Matrixify dans l'ordre inverse :
 | Import test complet Matrixify | **Haute** | Sample testé OK, import complet à lancer |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — post-import |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — post-import |
-| Migration clients / commandes | À évaluer | Fresh start ou historique ? |
+| Migration clients | ~~À évaluer~~ | **Fait** — 41 020 clients dédupliqués (`shopify_customers.csv`) |
+| Migration commandes | À évaluer | Fresh start ou historique ? |
 | Pages CMS Magento | Basse | Non commencé |
 | Thème Shopify + branding Butterfly | Hors périmètre data | — |
 
@@ -184,6 +189,11 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Date | Commit | Description |
 |---|---|---|
+| 25 juin | `9f41f6f` | Ajout customers dans regenerate_all.sh |
+| 25 juin | `d5a91f8` | Script conversion clients (41 020 dédupliqués) |
+| 25 juin | `120bd5f` | Documentation Trustpilot widget Liquid |
+| 25 juin | `eeb2efc` | Retrait Variant Image (éviter doublon galerie) |
+| 25 juin | `fd70d2c` | Fix sample + ajout sample dans regenerate_all.sh |
 | 24 juin | `2bc9b75` | Restructuration page metafields en 3 pages MkDocs |
 | 24 juin | `6ebe17d` | Ajout filtres Magento live + usage Shopify au tableau metafields |
 | 24 juin | `8b96dd2` | Colonne Simple/Multiple dans récapitulatif metafields |
