@@ -10,19 +10,58 @@ echo "=== Régénération complète ==="
 echo "Source: $DIR/01_DATA_RAW/export_magento_products_all.csv"
 echo ""
 
-echo "[1/4] Produits + traductions..."
+echo "[1/5] Produits + traductions..."
 python3 "$SCRIPTS/magento_to_shopify.py"
 echo ""
 
-echo "[2/4] Collections..."
+echo "[2/5] Collections..."
 python3 "$SCRIPTS/generate_collections.py"
 echo ""
 
-echo "[3/4] Redirections..."
+echo "[3/5] Redirections..."
 python3 "$SCRIPTS/generate_redirects.py"
 echo ""
 
-echo "[4/4] Fichiers de purge..."
+echo "[4/5] Sample..."
+python3 - << 'SAMPLEEOF'
+import csv, os
+
+base = os.environ.get('DIR', '.')
+imports = os.path.join(base, '04_SHOPIFY_IMPORTS')
+
+with open(os.path.join(imports, 'shopify_products.csv'), encoding='utf-8') as f:
+    reader = csv.DictReader(f)
+    all_rows = list(reader)
+    fieldnames = reader.fieldnames
+
+targets = [
+    ('Blades', 'Handle', None), ('Rubbers', 'Color', 'Thickness'),
+    ('Clothing', 'Size', None), ('Shoes', 'Size', None),
+    ('Bags', 'Color', None), ('Balls', 'Quantity', None),
+    ('Cleaners', 'Quantity', None), ('Tables and Nets', 'Color', None),
+    ('Accessories', 'Title', None), ('Blades', 'Title', None),
+]
+handles, seen = [], set()
+for want_type, want_o1, want_o2 in targets:
+    for r in all_rows:
+        if not r.get('Title') or r['Handle'] in seen:
+            continue
+        if r.get('Type') == want_type and r.get('Option1 Name') == want_o1:
+            if want_o2 is None or r.get('Option2 Name') == want_o2:
+                seen.add(r['Handle'])
+                handles.append(r['Handle'])
+                break
+
+sample = [r for r in all_rows if r['Handle'] in handles]
+with open(os.path.join(imports, 'shopify_products_sample.csv'), 'w', newline='', encoding='utf-8') as f:
+    w = csv.DictWriter(f, fieldnames=fieldnames)
+    w.writeheader()
+    w.writerows(sample)
+print(f"  Sample: {len(handles)} produits, {len(sample)} lignes")
+SAMPLEEOF
+echo ""
+
+echo "[5/5] Fichiers de purge..."
 python3 - << 'PYEOF'
 import csv, os
 
