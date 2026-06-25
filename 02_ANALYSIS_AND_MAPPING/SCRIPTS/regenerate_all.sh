@@ -10,19 +10,23 @@ echo "=== Régénération complète ==="
 echo "Source: $DIR/01_DATA_RAW/export_magento_products_all.csv"
 echo ""
 
-echo "[1/5] Produits + traductions..."
+echo "[1/6] Produits + traductions..."
 python3 "$SCRIPTS/magento_to_shopify.py"
 echo ""
 
-echo "[2/5] Collections..."
+echo "[2/6] Collections..."
 python3 "$SCRIPTS/generate_collections.py"
 echo ""
 
-echo "[3/5] Redirections..."
+echo "[3/6] Redirections..."
 python3 "$SCRIPTS/generate_redirects.py"
 echo ""
 
-echo "[4/5] Sample..."
+echo "[4/6] Customers..."
+python3 "$SCRIPTS/magento_to_shopify_customers.py"
+echo ""
+
+echo "[5/6] Sample..."
 python3 - << 'SAMPLEEOF'
 import csv, os
 
@@ -61,7 +65,7 @@ print(f"  Sample: {len(handles)} produits, {len(sample)} lignes")
 SAMPLEEOF
 echo ""
 
-echo "[5/5] Fichiers de purge..."
+echo "[6/6] Fichiers de purge..."
 python3 - << 'PYEOF'
 import csv, os
 
