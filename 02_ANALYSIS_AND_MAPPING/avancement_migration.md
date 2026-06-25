@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **25 juin 2026**
+Dernière mise à jour : **25 juin 2026 (après-midi)**
 
 ---
 
@@ -152,9 +152,10 @@ Importer via Matrixify dans l'ordre inverse :
 | `redirections_301.md` | Stratégie SEO, types de redirections, workflow |
 | `GUIDE_PRESTATAIRE.md` | Guide prestataire stock sync : flux SFTP, config Stock Sync, checklist |
 | `README.md` | Vue d'ensemble projet + commandes |
-| Site MkDocs (05_DOCS/) | 13 pages, déployé via GitHub Pages |
-| `contraintes-techniques.md` | 10 contraintes techniques avec tableau des risques |
+| Site MkDocs (05_DOCS/) | 15 pages, déployé via GitHub Pages |
+| `contraintes-techniques.md` | 12 contraintes techniques (Trustpilot, Variant Image, plan Matrixify) |
 | `quick-start.md` | Mode d'emploi en 8 étapes (test sample → import → purge) |
+| `import/customers.md` | Migration clients : déduplication, mapping, mots de passe, post-migration |
 
 ---
 
@@ -179,7 +180,8 @@ Importer via Matrixify dans l'ordre inverse :
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — post-import |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — post-import |
 | Migration clients | ~~À évaluer~~ | **Fait** — 41 020 clients dédupliqués (`shopify_customers.csv`) |
-| Migration commandes | À évaluer | Fresh start ou historique ? |
+| Migration commandes | À évaluer | Export disponible (125 436) — format résumé, sans line items |
+| Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** recommandé pour 1 mois |
 | Pages CMS Magento | Basse | Non commencé |
 | Thème Shopify + branding Butterfly | Hors périmètre data | — |
 
@@ -189,6 +191,8 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Date | Commit | Description |
 |---|---|---|
+| 25 juin | `aa38600` | Section plan Matrixify dans contraintes techniques |
+| 25 juin | `d4dd849` | Page documentation migration clients |
 | 25 juin | `9f41f6f` | Ajout customers dans regenerate_all.sh |
 | 25 juin | `d5a91f8` | Script conversion clients (41 020 dédupliqués) |
 | 25 juin | `120bd5f` | Documentation Trustpilot widget Liquid |
