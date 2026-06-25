@@ -53,5 +53,6 @@ nav:
     - Règles Matrixify: import/matrixify.md
     - Redirections 301: import/redirections.md
     - Migration clients: import/customers.md
+    - Historique commandes: import/orders.md
   - Stock Sync:
     - Guide prestataire: stock/guide-prestataire.md
