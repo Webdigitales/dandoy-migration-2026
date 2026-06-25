@@ -146,6 +146,27 @@ https://www.dandoy-sports.com/pub/media/catalog/product/...
 - Formats supportés : JPEG, PNG, GIF, WebP
 - Les images sont sur le produit parent (grouped) — les variantes héritent de l'image produit
 
+### Images de variantes
+
+Sur Magento, chaque produit simple enfant possède sa propre image (22 993 images distinctes).
+Shopify permet d'associer une image par variante via la colonne `Variant Image`.
+
+**Décision actuelle : non activé.** Les Variant Images ne sont pas exportées pour éviter
+de doubler la galerie produit (chaque Variant Image est automatiquement ajoutée à la galerie
+si elle n'y est pas déjà). Pour un produit Blade avec 5 variantes, ça ajouterait 5 images
+en plus des 3 images parent.
+
+**Pour activer ultérieurement :** dans `magento_to_shopify.py`, ajouter avant le bloc
+`if option_defs:` dans la section grouped :
+
+```python
+child_img = image_url(child.get('base_image', ''))
+if child_img:
+    out['Variant Image'] = child_img
+```
+
+La colonne `Variant Image` est déjà dans les en-têtes CSV — il suffit de décommenter la logique.
+
 ---
 
 ## 7. SEO — Redirections 301
