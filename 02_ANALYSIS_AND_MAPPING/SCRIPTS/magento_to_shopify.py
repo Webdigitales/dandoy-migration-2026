@@ -438,10 +438,6 @@ def main():
                     out['Handle']      = handle
                     out['Variant SKU'] = child['sku']
 
-                    child_img = image_url(child.get('base_image', ''))
-                    if child_img:
-                        out['Variant Image'] = child_img
-
                     if option_defs:
                         opts = resolve_options(row, child, option_defs)
                         out.update(opts)
