@@ -282,6 +282,47 @@ Voir [Metafields — Définitions](./mapping/metafields-definitions.md) pour la 
 
 ---
 
+## 12. Plan Matrixify
+
+Matrixify est l'outil d'import CSV utilisé pour la migration. Le choix du plan
+conditionne le nombre d'enregistrements importables par job.
+
+### Volumes à importer
+
+| Entité | Notre volume |
+|---|---|
+| Produits | 4 834 |
+| Collections | 37 |
+| Traductions | 6 723 |
+| Redirections | 2 368 |
+| **Clients** | **41 020** |
+| **Commandes** | **125 436** |
+
+### Comparaison des plans
+
+| Plan | Prix | Produits | Clients | Commandes | Redirections | Traductions |
+|---|---|---|---|---|---|---|
+| Demo | Gratuit | 10 | 10 | 10 | 10 | 10 |
+| Basic | $20/mois | 5 000 | 2 000 | 1 000 | 10 000 | 10 000 |
+| Big | $50/mois | 50 000 | 20 000 | 10 000 | 100 000 | 100 000 |
+| Enterprise | $200/mois | Unlimited | Unlimited | Unlimited | Unlimited | Unlimited |
+
+### Recommandation
+
+**Enterprise ($200) pour 1 mois**, puis downgrader.
+
+Le plan Basic couvre les produits, collections et redirections — mais est trop limité
+pour les clients (2 000 vs 41 020) et les commandes (1 000 vs 125 436).
+Le plan Big ne couvre pas non plus les commandes (10 000 vs 125 436).
+
+Prendre Enterprise pour la durée de la migration (1 mois), importer tout en une fois,
+puis passer sur Basic ($20) ou désinstaller.
+
+> **Note :** Matrixify permet de fractionner les imports en plusieurs jobs sur les plans
+> inférieurs, mais cela complexifie le processus (21 jobs pour 41 020 clients sur Basic).
+
+---
+
 ## Récapitulatif des risques
 
 | Risque | Probabilité | Impact | Mitigation |
