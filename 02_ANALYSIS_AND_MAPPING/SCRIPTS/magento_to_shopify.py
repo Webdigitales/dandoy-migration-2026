@@ -119,6 +119,7 @@ SHOPIFY_COLS = [
     'Variant Requires Shipping', 'Variant Taxable',
     'Variant Barcode',
     'Image Src', 'Image Position', 'Image Alt Text',
+    'Variant Image',
     'Gift Card', 'SEO Title', 'SEO Description', 'Status',
 ] + METAFIELD_COLS
 
@@ -436,6 +437,10 @@ def main():
                     out.update(variant_fields(child))
                     out['Handle']      = handle
                     out['Variant SKU'] = child['sku']
+
+                    child_img = image_url(child.get('base_image', ''))
+                    if child_img:
+                        out['Variant Image'] = child_img
 
                     if option_defs:
                         opts = resolve_options(row, child, option_defs)
