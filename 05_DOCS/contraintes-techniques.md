@@ -1,4 +1,4 @@
-# Contraintes Techniques — Migration Shopify
+les # Contraintes Techniques — Migration Shopify
 
 Contraintes techniques identifiées lors de l'analyse du catalogue Magento,
 hors gestion des stocks (voir [Guide prestataire stock](./stock/guide-prestataire.md)).
@@ -231,12 +231,54 @@ Ils sont importés pour conservation du catalogue mais ne sont pas visibles côt
 
 ---
 
-## 10. Metafields
+## 10. Avis Trustpilot
+
+Sur Magento, un widget Trustpilot est intégré sur les fiches produit avec l'attribut
+`data-sku` contenant les SKU du produit grouped + ses enfants.
+
+**Constat :** les avis sont liés aux **SKU enfants** (variantes), pas au SKU parent grouped.
+Le SKU parent (`G1033`) n'est pas nécessaire — testé et vérifié.
+
+### Solution Shopify — Widget Liquid dynamique
+
+Pas besoin de metafield. Le widget Trustpilot peut construire la liste des SKU
+directement depuis les variantes Shopify :
+
+```liquid
+{% assign skus = "" %}
+{% for variant in product.variants %}
+  {% if skus != "" %}{% assign skus = skus | append: "," %}{% endif %}
+  {% assign skus = skus | append: variant.sku %}
+{% endfor %}
+
+<!-- TrustBox widget - Product Mini -->
+<div class="trustpilot-widget"
+     data-locale="fr-BE"
+     data-template-id="54d39695764ea907c0f34825"
+     data-businessunit-id="6203fe582319ce926973858b"
+     data-style-height="24px"
+     data-style-width="100%"
+     data-theme="light"
+     data-sku="{{ skus }}"
+     data-no-reviews="show"
+     data-scroll-to-list="true"
+     data-style-alignment="left">
+  <a href="https://uk.trustpilot.com/review/dandoy-sports.eu" target="_blank" rel="noopener">Trustpilot</a>
+</div>
+<!-- End TrustBox widget -->
+```
+
+**Pas de migration data nécessaire** — les avis sont hébergés par Trustpilot et liés par SKU.
+Les SKU des variantes sont déjà dans Shopify après l'import produits.
+
+---
+
+## 11. Metafields
 
 19 metafields custom créés automatiquement par Matrixify à l'import.
 À valider dans **Settings → Custom data → Products** après l'import.
 
-Voir [Metafields](./mapping/metafields.md) pour la liste complète.
+Voir [Metafields — Définitions](./mapping/metafields-definitions.md) pour la liste complète.
 
 ---
 
