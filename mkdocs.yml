@@ -52,5 +52,6 @@ nav:
   - Import Shopify:
     - Règles Matrixify: import/matrixify.md
     - Redirections 301: import/redirections.md
+    - Migration clients: import/customers.md
   - Stock Sync:
     - Guide prestataire: stock/guide-prestataire.md
