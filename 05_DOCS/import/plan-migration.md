@@ -17,18 +17,16 @@ Les données de Phase 1 sont intentionnellement "périmées" — elles servent u
 
 **Objectif :** boutique Shopify opérationnelle avec catalogue complet.
 
-| Tâche | Responsable |
-|---|---|
-| Créer boutique Shopify (plan choisi) | Client |
-| Installer Matrixify Enterprise ($200 — 1 mois) | Client |
-| Installer apps : Stock Sync, Bold Product Options, Bundles | Client |
-| Import `shopify_products_sample.csv` → vérifier → supprimer | Agence |
-| Import `shopify_products.csv` (4 834 produits, metafields, tags) | Agence |
-| Import `shopify_collections.csv` (37 collections) | Agence |
-| Configurer metafields — choix prédéfinis | Agence |
-| Configurer Search & Discovery (filtres par collection) | Agence |
-| Activer langues FR + NL dans Settings → Languages | Client |
-| Import `shopify_translations.csv` | Agence |
+- Créer boutique Shopify (plan choisi)
+- Installer Matrixify Enterprise ($200 — 1 mois)
+- Installer apps : Stock Sync, Bold Product Options, Bundles
+- Import `shopify_products_sample.csv` → vérifier → supprimer
+- Import `shopify_products.csv` (4 834 produits, metafields, tags)
+- Import `shopify_collections.csv` (37 collections)
+- Configurer metafields — choix prédéfinis
+- Configurer Search & Discovery (filtres par collection)
+- Activer langues FR + NL dans Settings → Languages
+- Import `shopify_translations.csv`
 
 !!! success "Fin de Phase 1"
     Le catalogue complet est visible dans Shopify Admin.
@@ -40,17 +38,15 @@ Les données de Phase 1 sont intentionnellement "périmées" — elles servent u
 
 **Objectif :** thème finalisé, apps configurées, parcours client fonctionnel.
 
-| Tâche | Responsable |
-|---|---|
-| Développement thème Dandoy | Thémiste |
-| Adaptation branding Butterfly | Thémiste |
-| Code Liquid — custom options (Gluing, Lacquering, Edge tape) | Thémiste |
-| Intégration widget Trustpilot (widget Liquid dynamique) | Thémiste |
-| Configuration Stock Sync + SFTP | Prestataire stock |
-| Configuration livraison tables — Bold Product Options (33 produits) | Agence |
-| Migration pages CMS (création manuelle dans Shopify) | Agence |
-| Configuration Shopify Markets (domaines FR/NL/BE/EN) | Agence |
-| Paramétrage taxes, devises, transporteurs | Client |
+- Développement thème Dandoy
+- Adaptation branding Butterfly
+- Code Liquid — custom options (Gluing, Lacquering, Edge tape)
+- Intégration widget Trustpilot (widget Liquid dynamique)
+- Configuration Stock Sync + SFTP
+- Configuration livraison tables — Bold Product Options (33 produits)
+- Migration pages CMS (création manuelle dans Shopify)
+- Configuration Shopify Markets (domaines FR/NL/BE/EN)
+- Paramétrage taxes, devises, transporteurs
 
 !!! note "Magento continue de tourner"
     La boutique Shopify fonctionne en parallèle. Aucun impact sur les clients.
