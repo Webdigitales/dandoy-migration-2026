@@ -13,7 +13,7 @@ Les données de Phase 1 sont intentionnellement "périmées" — elles servent u
 
 ---
 
-## Phase 1 — Foundation (Semaine 1–2)
+## Phase 1 — Foundation
 
 **Objectif :** boutique Shopify opérationnelle avec catalogue complet.
 
@@ -34,7 +34,7 @@ Les données de Phase 1 sont intentionnellement "périmées" — elles servent u
 
 ---
 
-## Phase 2 — Theming & Configuration (Semaine 2–6)
+## Phase 2 — Theming & Configuration
 
 **Objectif :** thème finalisé, apps configurées, parcours client fonctionnel.
 
@@ -54,7 +54,7 @@ Les données de Phase 1 sont intentionnellement "périmées" — elles servent u
 
 ---
 
-## Phase 3 — Recette (Semaine 6–7)
+## Phase 3 — Recette
 
 **Objectif :** valider l'intégralité du parcours client avant go-live.
 
