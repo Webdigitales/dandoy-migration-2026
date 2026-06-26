@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **25 juin 2026 (après-midi)**
+Dernière mise à jour : **26 juin 2026**
 
 ---
 
