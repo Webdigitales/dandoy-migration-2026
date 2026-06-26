@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **25 juin 2026 (après-midi)**
+Dernière mise à jour : **26 juin 2026**
 
 ---
 
@@ -16,7 +16,8 @@ dandoy/
 │   │   ├── generate_redirects.py                ← script redirections 301
 │   │   ├── generate_collections.py              ← script smart collections
 │   │   ├── magento_to_shopify_customers.py      ← script conversion clients
-│   │   └── regenerate_all.sh                    ← tout régénérer en une commande (6 étapes)
+│   │   ├── magento_to_shopify_orders.py         ← script conversion commandes 2025-2026
+│   │   └── regenerate_all.sh                    ← tout régénérer en une commande (7 étapes)
 │   ├── SCREENSHOTS_CATALOGUE/                   (8 captures Magento)
 │   ├── matrice_data_mapping_products.md          (mapping complet Magento → Shopify)
 │   ├── metafields_shopify.md                    (19 metafields — référence complète)
@@ -34,6 +35,7 @@ dandoy/
 │   ├── shopify_translations.csv                 (6 723 lignes)
 │   ├── shopify_collections.csv                  (58 lignes, 37 collections)
 │   ├── shopify_customers.csv                    (41 020 clients)
+│   ├── shopify_orders.csv                       (99 821 lignes — 37 430 commandes)
 │   ├── shopify_products_sample.csv              (10 produits — versionné)
 │   └── *_PURGE.csv (×3)                         (purge pour tests)
 ├── 05_DOCS/                                     (source MkDocs)
@@ -57,6 +59,7 @@ dandoy/
 | `shopify_collections.csv` | 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects.csv` | 2 368 | Redirections 301 (produits actifs + catégories) |
 | `shopify_customers.csv` | 41 020 | Clients dédupliqués + adresse par défaut + tags source |
+| `shopify_orders.csv` | 99 821 | 37 430 commandes 2025-2026 avec line items (SKU, prix, qté) |
 | `*_PURGE.csv` (×3) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
 | `shopify_products_sample.csv` | 53 | Échantillon 10 produits (tous types) |
 
@@ -72,11 +75,13 @@ dandoy/
 
 ### Régénération
 
-Après mise à jour de l'export Magento :
+Après mise à jour des exports Magento :
 
 ```bash
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
+
+7 étapes : produits + traductions → collections → redirections → customers → commandes → sample → purge.
 
 ### Purge (pour repartir à zéro entre tests)
 
@@ -156,6 +161,7 @@ Importer via Matrixify dans l'ordre inverse :
 | `contraintes-techniques.md` | 12 contraintes techniques (Trustpilot, Variant Image, plan Matrixify) |
 | `quick-start.md` | Mode d'emploi en 8 étapes (test sample → import → purge) |
 | `import/customers.md` | Migration clients : déduplication, mapping, mots de passe, post-migration |
+| `import/orders.md` | Historique commandes : 2 fichiers source, script conversion, liaisons clients, 4 options |
 
 ---
 
@@ -180,7 +186,7 @@ Importer via Matrixify dans l'ordre inverse :
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — post-import |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — post-import |
 | Migration clients | ~~À évaluer~~ | **Fait** — 41 020 clients dédupliqués (`shopify_customers.csv`) |
-| Migration commandes | À évaluer | Export disponible (125 436) — format résumé, sans line items |
+| Migration commandes | À décider | 2 exports disponibles — `shopify_orders.csv` prêt (37 430 commandes avec line items) |
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** recommandé pour 1 mois |
 | Pages CMS Magento | Basse | Non commencé |
 | Thème Shopify + branding Butterfly | Hors périmètre data | — |
@@ -191,6 +197,8 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Date | Commit | Description |
 |---|---|---|
+| 26 juin | — | Script conversion commandes + doc orders mise à jour |
+| 25 juin | `ee2860a` | Page documentation historique commandes |
 | 25 juin | `aa38600` | Section plan Matrixify dans contraintes techniques |
 | 25 juin | `d4dd849` | Page documentation migration clients |
 | 25 juin | `9f41f6f` | Ajout customers dans regenerate_all.sh |

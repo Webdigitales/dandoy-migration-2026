@@ -26,7 +26,11 @@ echo "[4/6] Customers..."
 python3 "$SCRIPTS/magento_to_shopify_customers.py"
 echo ""
 
-echo "[5/6] Sample..."
+echo "[5/6] Commandes 2025-2026..."
+python3 "$SCRIPTS/magento_to_shopify_orders.py"
+echo ""
+
+echo "[6/7] Sample..."
 python3 - << 'SAMPLEEOF'
 import csv, os
 
@@ -65,7 +69,7 @@ print(f"  Sample: {len(handles)} produits, {len(sample)} lignes")
 SAMPLEEOF
 echo ""
 
-echo "[6/6] Fichiers de purge..."
+echo "[7/7] Fichiers de purge..."
 python3 - << 'PYEOF'
 import csv, os
 
