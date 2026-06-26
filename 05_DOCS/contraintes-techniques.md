@@ -296,7 +296,7 @@ conditionne le nombre d'enregistrements importables par job.
 | Traductions | 6 723 |
 | Redirections | 2 368 |
 | **Clients** | **41 020** |
-| **Commandes** | **125 436** |
+| **Commandes** | **37 430** |
 
 ### Comparaison des plans
 
@@ -312,8 +312,8 @@ conditionne le nombre d'enregistrements importables par job.
 **Enterprise ($200) pour 1 mois**, puis downgrader.
 
 Le plan Basic couvre les produits, collections et redirections — mais est trop limité
-pour les clients (2 000 vs 41 020) et les commandes (1 000 vs 125 436).
-Le plan Big ne couvre pas non plus les commandes (10 000 vs 125 436).
+pour les clients (2 000 vs 41 020) et les commandes (1 000 vs 37 430).
+Le plan Big ne couvre pas non plus les commandes (10 000 vs 37 430) ni les clients (20 000 vs 41 020).
 
 Prendre Enterprise pour la durée de la migration (1 mois), importer tout en une fois,
 puis passer sur Basic ($20) ou désinstaller.

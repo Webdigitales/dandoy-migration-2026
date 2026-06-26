@@ -186,7 +186,7 @@ Importer via Matrixify dans l'ordre inverse :
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — post-import |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — post-import |
 | Migration clients | ~~À évaluer~~ | **Fait** — 41 020 clients dédupliqués (`shopify_customers.csv`) |
-| Migration commandes | À décider | 2 exports disponibles — `shopify_orders.csv` prêt (37 430 commandes avec line items) |
+| Migration commandes | ~~À décider~~ | **Fait** — `shopify_orders.csv` prêt (37 430 commandes 2025-2026 avec line items) |
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** recommandé pour 1 mois |
 | Pages CMS Magento | Basse | Non commencé |
 | Thème Shopify + branding Butterfly | Hors périmètre data | — |

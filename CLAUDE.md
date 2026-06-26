@@ -57,7 +57,6 @@ dandoy/
 │   ├── export_magento_products_all.csv
 │   ├── export_customer.csv
 │   ├── export_customer_address.csv
-│   ├── export-orders.csv
 │   └── export_order_all_2025_2026.csv
 │
 ├── 02_ANALYSIS_AND_MAPPING/
@@ -132,7 +131,7 @@ bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 | Sujet | Options | Recommandation |
 |---|---|---|
 | **Multi-sites** | A : instance unique / B : deux boutiques | **Option A** recommandée |
-| **Migration commandes** | Option 1 (fresh start) / 2 (résumé) / 3 (2025-2026 avec items) / 4 (combiné) | `shopify_orders.csv` prêt — décision en attente |
+| **Migration commandes** | Import 2025-2026 avec line items | `shopify_orders.csv` prêt — 37 430 commandes |
 | **Custom options** | Line item properties (natif) | Retenu — code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce | Retenu — prix variables 41–116 € |
 
