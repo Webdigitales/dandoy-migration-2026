@@ -8,42 +8,50 @@ Dernière mise à jour : **26 juin 2026**
 
 ```
 dandoy/
-├── 01_DATA_RAW/
-│   └── export_magento_products_all.csv          (91 Mo, gitignored)
+├── 01_DATA_RAW/                                 (gitignorés)
+│   ├── export_magento_products_all.csv          (91 Mo)
+│   ├── export_customer.csv
+│   ├── export_customer_address.csv
+│   └── export_order_all_2025_2026.csv
 ├── 02_ANALYSIS_AND_MAPPING/
 │   ├── SCRIPTS/
-│   │   ├── magento_to_shopify.py                ← script principal (produits + traductions)
-│   │   ├── generate_redirects.py                ← script redirections 301
-│   │   ├── generate_collections.py              ← script smart collections
-│   │   ├── magento_to_shopify_customers.py      ← script conversion clients
-│   │   └── regenerate_all.sh                    ← tout régénérer en une commande (6 étapes)
+│   │   ├── magento_to_shopify.py                ← produits + traductions
+│   │   ├── generate_collections.py              ← smart collections
+│   │   ├── generate_redirects.py                ← redirections 301
+│   │   ├── magento_to_shopify_customers.py      ← clients
+│   │   ├── magento_to_shopify_orders.py         ← commandes 2025-2026
+│   │   └── regenerate_all.sh                    ← tout régénérer (7 étapes)
 │   ├── SCREENSHOTS_CATALOGUE/                   (8 captures Magento)
-│   ├── matrice_data_mapping_products.md          (mapping complet Magento → Shopify)
-│   ├── metafields_shopify.md                    (19 metafields — référence complète)
-│   ├── custom_options_shopify.md                (Gluing, Lacquering, livraison)
-│   ├── gestion_langues_shopify.md               (FR/NL workflow)
-│   ├── multi_sites_shopify.md                   (Option A vs B)
-│   ├── bundles_shopify.md                       (stratégie bundles)
-│   ├── regles_import_matrixify.md               (règles d'import)
-│   └── avancement_migration.md                  (ce fichier)
+│   ├── plan-matrixify.png
+│   ├── matrice_data_mapping_products.md
+│   ├── metafields_shopify.md
+│   ├── custom_options_shopify.md
+│   ├── gestion_langues_shopify.md
+│   ├── multi_sites_shopify.md
+│   ├── bundles_shopify.md
+│   ├── regles_import_matrixify.md
+│   ├── trustpilot-widgets.md
+│   └── avancement_migration.md
 ├── 03_SEO_AND_REDIRECTS/
-│   ├── shopify_redirects.csv                    (2 368 redirections, gitignored)
+│   ├── shopify_redirects.csv                    (gitignorés)
 │   └── redirections_301.md
-├── 04_SHOPIFY_IMPORTS/                          (CSV gitignorés, regénérables)
+├── 04_SHOPIFY_IMPORTS/                          (CSV gitignorés sauf sample)
 │   ├── shopify_products.csv                     (25 514 lignes)
 │   ├── shopify_translations.csv                 (6 723 lignes)
-│   ├── shopify_collections.csv                  (58 lignes, 37 collections)
+│   ├── shopify_collections.csv                  (37 collections)
 │   ├── shopify_customers.csv                    (41 020 clients)
+│   ├── shopify_orders.csv                       (99 821 lignes — 37 430 commandes)
 │   ├── shopify_products_sample.csv              (10 produits — versionné)
-│   └── *_PURGE.csv (×3)                         (purge pour tests)
-├── 05_DOCS/                                     (source MkDocs)
+│   ├── *_PURGE.csv (×3)
+│   └── ERRORS/                                  (rapports d'import Matrixify)
+├── 05_DOCS/                                     (source MkDocs — GitHub Pages)
 │   ├── index.md, quick-start.md, contraintes-techniques.md, avancement.md
-│   ├── mapping/                                 (matrice, metafields ×3, custom-options, bundles)
-│   ├── architecture/                            (multi-sites, langues)
-│   ├── import/                                  (matrixify, redirections)
-│   └── stock/                                   (guide prestataire)
+│   ├── mapping/        (matrice, metafields ×3, custom-options, bundles)
+│   ├── architecture/   (multi-sites, langues)
+│   ├── import/         (plan-migration, matrixify, redirections, customers, orders)
+│   └── stock/          (guide-prestataire)
 ├── CLAUDE.md, README.md, GUIDE_PRESTATAIRE.md
-└── mkdocs.yml + .github/workflows/docs.yml      (site doc GitHub Pages)
+└── mkdocs.yml + .github/workflows/docs.yml
 ```
 
 ---
