@@ -161,7 +161,8 @@ Importer via Matrixify dans l'ordre inverse :
 | `contraintes-techniques.md` | 12 contraintes techniques (Trustpilot, Variant Image, plan Matrixify) |
 | `quick-start.md` | Mode d'emploi en 8 étapes (test sample → import → purge) |
 | `import/customers.md` | Migration clients : déduplication, mapping, mots de passe, post-migration |
-| `import/orders.md` | Historique commandes : 2 fichiers source, script conversion, liaisons clients, 4 options |
+| `import/orders.md` | Historique commandes : script conversion, liaisons clients, import Matrixify |
+| `import/plan-migration.md` | Plan 5 phases : foundation → theming → recette → pré-go-live → go-live |
 
 ---
 
@@ -179,17 +180,18 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Sujet | Priorité | Statut |
 |---|---|---|
+| Plan de migration | ~~À faire~~ | **Fait** — 5 phases documentées (`import/plan-migration.md`) |
 | Décision multi-sites (A ou B) | **Haute** | En attente validation client |
-| Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify |
-| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt |
-| Import test complet Matrixify | **Haute** | Sample testé OK, import complet à lancer |
-| Configuration metafields (choix prédéfinis) | Moyenne | Documenté — post-import |
-| Configuration Search & Discovery (filtres) | Moyenne | Documenté — post-import |
-| Migration clients | ~~À évaluer~~ | **Fait** — 41 020 clients dédupliqués (`shopify_customers.csv`) |
-| Migration commandes | ~~À décider~~ | **Fait** — `shopify_orders.csv` prêt (37 430 commandes 2025-2026 avec line items) |
-| Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** recommandé pour 1 mois |
-| Pages CMS Magento | Basse | Non commencé |
-| Thème Shopify + branding Butterfly | Hors périmètre data | — |
+| Import test complet Matrixify | **Haute** | Sample testé OK, import complet à lancer (Phase 1) |
+| Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
+| Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
+| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers.csv` prêt (41 020 clients) |
+| Migration commandes | ~~À décider~~ | **Fait** — `shopify_orders.csv` prêt (37 430 commandes avec line items) |
+| Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
+| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2) |
+| Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
+| Pages CMS Magento | Basse | Non commencé (Phase 2) |
+| Thème Shopify + branding Butterfly | Hors périmètre data | Phase 2 |
 
 ---
 
@@ -197,7 +199,10 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Date | Commit | Description |
 |---|---|---|
-| 26 juin | — | Script conversion commandes + doc orders mise à jour |
+| 26 juin | `b857ed5` | Plan de migration 5 phases (doc MkDocs) |
+| 26 juin | `cc4b4ae` | Command: MERGE dans tous les scripts (réimport sécurisé) |
+| 26 juin | `7dfed4d` | Suppression références export-orders.csv (pivot vers 2025-2026) |
+| 26 juin | `bba429c` | Script conversion commandes + doc orders mise à jour |
 | 25 juin | `ee2860a` | Page documentation historique commandes |
 | 25 juin | `aa38600` | Section plan Matrixify dans contraintes techniques |
 | 25 juin | `d4dd849` | Page documentation migration clients |

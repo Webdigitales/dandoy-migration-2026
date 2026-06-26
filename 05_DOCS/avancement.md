@@ -173,17 +173,18 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Sujet | Priorité | Statut |
 |---|---|---|
+| Plan de migration | ~~À faire~~ | **Fait** — 5 phases documentées ([Plan de migration](./import/plan-migration.md)) |
 | Décision multi-sites (A ou B) | **Haute** | En attente validation client |
-| Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify |
-| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt |
-| Import test complet Matrixify | **Haute** | Sample testé OK, import complet à lancer |
-| Configuration metafields (choix prédéfinis) | Moyenne | Documenté — post-import |
-| Configuration Search & Discovery (filtres) | Moyenne | Documenté — post-import |
-| Migration clients | ~~À évaluer~~ | **Fait** — 41 020 clients dédupliqués (`shopify_customers.csv`) |
-| Migration commandes | ~~À évaluer~~ | **Fait** — `shopify_orders.csv` prêt (37 430 commandes 2025-2026 avec line items) |
-| Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** recommandé pour 1 mois |
-| Pages CMS Magento | Basse | Non commencé |
-| Thème Shopify + branding Butterfly | Hors périmètre data | — |
+| Import test complet Matrixify | **Haute** | Sample testé OK, import complet à lancer (Phase 1) |
+| Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
+| Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
+| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers.csv` prêt (41 020 clients) |
+| Migration commandes | ~~À évaluer~~ | **Fait** — `shopify_orders.csv` prêt (37 430 commandes avec line items) |
+| Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
+| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2) |
+| Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
+| Pages CMS Magento | Basse | Non commencé (Phase 2) |
+| Thème Shopify + branding Butterfly | Hors périmètre data | Phase 2 |
 
 ---
 
