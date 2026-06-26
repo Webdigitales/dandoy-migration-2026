@@ -46,6 +46,7 @@ STORE_TAGS = {
 
 SHOPIFY_COLS = [
     'Name',
+    'Command',
     'Email',
     'Financial Status',
     'Fulfillment Status',
@@ -207,6 +208,7 @@ def build_rows(order):
         # Order header fields (first row only)
         if idx == 0:
             r['Name']               = order_name
+            r['Command']            = 'MERGE'
             r['Email']              = order.get('Customer Email', '').strip().lower()
             r['Financial Status']   = fin_status
             r['Fulfillment Status'] = ful_status

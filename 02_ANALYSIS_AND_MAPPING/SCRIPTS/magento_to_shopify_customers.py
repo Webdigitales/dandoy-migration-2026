@@ -17,6 +17,7 @@ INPUT_ADDRESSES  = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_custo
 OUTPUT           = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_customers.csv'
 
 SHOPIFY_COLS = [
+    'Command',
     'First Name', 'Last Name', 'Email', 'Phone',
     'Accepts Email Marketing', 'Tags',
     'Tax Exempt', 'Tax Exemptions',
@@ -113,6 +114,7 @@ def main():
                 best_addr = addresses[0]
 
             out = {col: '' for col in SHOPIFY_COLS}
+            out['Command'] = 'MERGE'
             out['First Name'] = cust.get('firstname', '').strip()
             out['Last Name'] = cust.get('lastname', '').strip()
             out['Email'] = email

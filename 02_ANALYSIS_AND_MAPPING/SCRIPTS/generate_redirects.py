@@ -24,7 +24,7 @@ import csv
 INPUT  = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_magento_products_all.csv'
 OUTPUT = '/home/gregory/Documents/Labo/dandoy/03_SEO_AND_REDIRECTS/shopify_redirects.csv'
 
-REDIRECT_COLS = ['Redirect From', 'Redirect To']
+REDIRECT_COLS = ['Redirect From', 'Redirect To', 'Command']
 
 
 def parse_attrs(s):
@@ -112,7 +112,7 @@ def main():
         writer = csv.DictWriter(f, fieldnames=REDIRECT_COLS)
         writer.writeheader()
         for old, new in redirects:
-            writer.writerow({'Redirect From': old, 'Redirect To': new})
+            writer.writerow({'Redirect From': old, 'Redirect To': new, 'Command': 'MERGE'})
 
     print(f"\nDone.")
     print(f"  Product redirects  : {product_count}")

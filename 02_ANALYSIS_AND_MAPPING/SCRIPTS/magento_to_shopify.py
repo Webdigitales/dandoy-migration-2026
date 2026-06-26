@@ -107,7 +107,7 @@ def _build_metafield_columns():
 METAFIELD_COLS = _build_metafield_columns()
 
 SHOPIFY_COLS = [
-    'Handle', 'Title', 'Body (HTML)', 'Vendor', 'Product Category', 'Type',
+    'Handle', 'Command', 'Title', 'Body (HTML)', 'Vendor', 'Product Category', 'Type',
     'Tags', 'Published',
     'Option1 Name', 'Option1 Value',
     'Option2 Name', 'Option2 Value',
@@ -346,6 +346,7 @@ def product_fields(row, handle):
     ptype  = (row.get('attribute_set_code', '') or '').replace('Migration_', '')
     return {
         'Handle':          handle,
+        'Command':         'MERGE',
         'Title':           row.get('name', ''),
         'Body (HTML)':     desc,
         'Vendor':          vendor,
