@@ -50,6 +50,7 @@ nav:
     - Gestion multi-sites: architecture/multi-sites.md
     - Gestion des langues: architecture/langues.md
   - Import Shopify:
+    - Plan de migration: import/plan-migration.md
     - Règles Matrixify: import/matrixify.md
     - Redirections 301: import/redirections.md
     - Migration clients: import/customers.md
