@@ -9,8 +9,8 @@ Ce fichier centralise le contexte, les contraintes techniques et les directives 
 - **Client :** Dandoy-Sports / Butterfly TT
 - **Objectif :** Migration complète de Magento 2 vers Shopify (instance unique + Shopify Markets — Option A retenue).
 - **Périmètre Multi-sites (6 Domaines/Sous-domaines) :**
-  - `dandoy-sports.com` (Principal)
-  - `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu`
+  - `dandoy-sports.com` (Dandoy — hors Union Européenne / international)
+  - `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` (Dandoy EU)
   - `be.butterfly.tt`, `nl.butterfly.tt` (Identité de marque stricte)
 - **Outil d'import :** Matrixify (plan Enterprise requis — 41k clients + 125k commandes)
 - **Documentation :** Site MkDocs déployé via GitHub Pages (`05_DOCS/`)

@@ -47,10 +47,10 @@
 
 ### Périmètre cible Shopify (6 domaines)
 
-1. `dandoy-sports.com` (principal)
-2. `fr.dandoy-sports.eu` (FR)
-3. `en.dandoy-sports.eu` (EN)
-4. `nl.dandoy-sports.eu` (NL)
+1. `dandoy-sports.com` (Dandoy — hors UE / international)
+2. `fr.dandoy-sports.eu` (Dandoy EU — FR)
+3. `en.dandoy-sports.eu` (Dandoy EU — EN)
+4. `nl.dandoy-sports.eu` (Dandoy EU — NL)
 5. `be.butterfly.tt` (Butterfly BE)
 6. `nl.butterfly.tt` (Butterfly NL)
 
@@ -79,8 +79,12 @@ Ajouter un tag `brand:xxx` dans le CSV d'import selon `product_websites` :
 
 | Marché | Domaines | Langues | Catalogue |
 |---|---|---|---|
-| **Dandoy EU** | `dandoy-sports.com`, `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` | FR, EN, NL | Produits avec tag `brand:dandoy` |
-| **Butterfly** | `be.butterfly.tt`, `nl.butterfly.tt` | FR, EN, NL | Produits avec tag `brand:butterfly` |
+| **Dandoy Hors UE** | `dandoy-sports.com` | EN | Produits avec tag `brand:dandoy` |
+| **Dandoy EU** | `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` | FR, EN, NL | Produits avec tag `brand:dandoy` |
+| **Butterfly** | `be.butterfly.tt`, `nl.butterfly.tt` | FR, NL | Produits avec tag `brand:butterfly` |
+
+> **Note :** `dandoy-sports.com` couvre l'offre **hors Union Européenne** (international / `ds_ww` Magento).
+> Les sous-domaines `.eu` couvrent les marchés européens.
 
 #### 3. Collections automatiques
 
