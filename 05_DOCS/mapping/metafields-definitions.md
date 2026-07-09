@@ -24,7 +24,7 @@ Référence technique : types, sources Magento, et options de variantes associé
 | 13 | `custom.ball_material` | Single line text | Simple | Oui (Balls) | Filtre |
 | 14 | `custom.usage` | Single line text | Simple | Non | Filtre (nouveau) |
 | 15 | `custom.accessory_type` | Single line text | Simple | Non | Filtre (nouveau) |
-| 16 | `custom.environment` | Single line text | Simple | Non | Filtre (nouveau) |
+| 16 | `custom.environment` | List of single line text | Multiple | Non | Filtre (nouveau) |
 | 17 | `custom.cover_included` | Boolean | Simple | Non | Affichage fiche |
 | 18 | `custom.dimension` | Single line text | Simple | Non | Affichage fiche |
 | 19 | `custom.video_url` | URL | Simple | Non | Affichage fiche |
@@ -105,14 +105,14 @@ Référence technique : types, sources Magento, et options de variantes associé
 |---|---|---|---|---|
 | `custom.usage` | Usage | Single line text | Leisure, Pro | `usage` |
 | `custom.rubber_category` | Catégorie revêtement | Single line text | *(partagé avec Rubbers)* | `rubbers_type` |
-| `custom.environment` | Environnement | Single line text | Indoor, Outdoor | `tables_type` |
+| `custom.environment` | Environnement | List of single line text | Indoor, Outdoor | `tables_type` |
 | `custom.technology` | Technologie | List of single line text | *(partagé)* | `technology_stiga` |
 
 ### Tables and Nets
 
 | Namespace.Key | Nom affiché | Type Shopify | Valeurs possibles | Source Magento |
 |---|---|---|---|---|
-| `custom.environment` | Environnement | Single line text | Indoor, Outdoor | `tables_type` |
+| `custom.environment` | Environnement | List of single line text | Indoor, Outdoor | `tables_type` |
 | `custom.usage` | Usage | Single line text | Leisure, Pro | `usage` |
 | `custom.cover_included` | Housse incluse | Boolean | true / false | `cover` (Yes/No) |
 | `custom.dimension` | Dimensions | Single line text | ex: 1600 x 810 x 1580 mm | `dimension` |

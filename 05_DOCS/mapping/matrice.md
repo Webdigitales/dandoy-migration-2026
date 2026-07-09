@@ -69,7 +69,7 @@ Correspondance complète entre les champs de l'export Magento et les colonnes du
 | `balls_material` | `Metafield: custom.ball_material [single_line_text_field]` | Text |
 | `usage` | `Metafield: custom.usage [single_line_text_field]` | Text |
 | `accessories` | `Metafield: custom.accessory_type [single_line_text_field]` | Text |
-| `tables_type` | `Metafield: custom.environment [single_line_text_field]` | Text |
+| `tables_type` | `Metafield: custom.environment [list.single_line_text_field]` | Text (liste) |
 | `cover` | `Metafield: custom.cover_included [boolean]` | Boolean (`Yes` → `true`) |
 | `dimension` | `Metafield: custom.dimension [single_line_text_field]` | Text |
 | `videos` | `Metafield: custom.video_url [url]` | URL |
