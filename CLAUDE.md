@@ -66,7 +66,8 @@ dandoy/
 │   │   ├── generate_collections.py         ← smart collections
 │   │   ├── magento_to_shopify_customers.py ← conversion clients
 │   │   ├── magento_to_shopify_orders.py    ← conversion commandes 2025-2026
-│   │   └── regenerate_all.sh               ← tout régénérer (7 étapes)
+│   │   ├── validate_shopify_csv.py         ← validation post-régénération (SKU, options, handles)
+│   │   └── regenerate_all.sh               ← tout régénérer (8 étapes)
 │   ├── matrice_data_mapping_products.md
 │   └── avancement_migration.md
 │
@@ -99,7 +100,9 @@ dandoy/
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-7 étapes : [1/7] produits + traductions → [2/7] collections → [3/7] redirections → [4/7] customers → [5/7] commandes → [6/7] sample → [7/7] purge.
+8 étapes : [1/8] produits + traductions → [2/8] collections → [3/8] redirections → [4/8] customers → [5/8] commandes → [6/8] sample → [7/8] purge → [8/8] validation.
+
+La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font échouer un import Matrixify : SKU dupliqués entre produits (risque pour Stock Sync — voir section 2.A), combinaisons de variantes dupliquées ou options incohérentes au sein d'un produit, plafond des 100 variantes, prix manquant/négatif, et handles orphelins dans les traductions/redirections. Le script sort en erreur (code 1) si des problèmes bloquants sont trouvés, sans empêcher la génération des autres fichiers. Les avertissements (ex. Vendor vide) n'affectent pas le code de sortie.
 
 ### Ordre d'import Matrixify recommandé
 

@@ -10,27 +10,27 @@ echo "=== Régénération complète ==="
 echo "Source: $DIR/01_DATA_RAW/export_magento_products_all.csv"
 echo ""
 
-echo "[1/6] Produits + traductions..."
+echo "[1/8] Produits + traductions..."
 python3 "$SCRIPTS/magento_to_shopify.py"
 echo ""
 
-echo "[2/6] Collections..."
+echo "[2/8] Collections..."
 python3 "$SCRIPTS/generate_collections.py"
 echo ""
 
-echo "[3/6] Redirections..."
+echo "[3/8] Redirections..."
 python3 "$SCRIPTS/generate_redirects.py"
 echo ""
 
-echo "[4/6] Customers..."
+echo "[4/8] Customers..."
 python3 "$SCRIPTS/magento_to_shopify_customers.py"
 echo ""
 
-echo "[5/6] Commandes 2025-2026..."
+echo "[5/8] Commandes 2025-2026..."
 python3 "$SCRIPTS/magento_to_shopify_orders.py"
 echo ""
 
-echo "[6/7] Sample..."
+echo "[6/8] Sample..."
 python3 - << 'SAMPLEEOF'
 import csv, os
 
@@ -69,7 +69,7 @@ print(f"  Sample: {len(handles)} produits, {len(sample)} lignes")
 SAMPLEEOF
 echo ""
 
-echo "[7/7] Fichiers de purge..."
+echo "[7/8] Fichiers de purge..."
 python3 - << 'PYEOF'
 import csv, os
 
@@ -120,5 +120,17 @@ print(f"  Purge: {len(handles)} produits, {len(handles_c)} collections, {len(row
 PYEOF
 
 echo ""
+echo "[8/8] Validation..."
+set +e
+python3 "$SCRIPTS/validate_shopify_csv.py"
+VALIDATION_EXIT=$?
+set -e
+
+echo ""
 echo "=== Terminé ==="
 echo "Fichiers dans 04_SHOPIFY_IMPORTS/ et 03_SEO_AND_REDIRECTS/"
+if [ "$VALIDATION_EXIT" -ne 0 ]; then
+    echo ""
+    echo "⚠ La validation a détecté des erreurs bloquantes — voir le détail ci-dessus avant tout import Matrixify."
+fi
+exit "$VALIDATION_EXIT"

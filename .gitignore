@@ -5,3 +5,4 @@
 03_SEO_AND_REDIRECTS/*.csv
 .idea
 site/
+__pycache__/
