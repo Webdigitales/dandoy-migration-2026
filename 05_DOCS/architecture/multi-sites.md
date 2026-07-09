@@ -200,3 +200,49 @@ Le même fichier CSV de stock alimente les deux (les SKU sont identiques).
 L'Option B reste pertinente si le branding Butterfly exige une **séparation totale**
 (thème, expérience, équipe de gestion distincte) et que le risque de survente sur les
 produits partagés est accepté.
+
+---
+
+## Gestion de la TVA par marché
+
+### Constat
+
+Le prix affiché diffère entre `.eu` et `.com` pour un même produit — ex. Donic Coppa X1 Gold :
+**36,90 €** sur `fr.dandoy-sports.eu` vs **30,50 €** sur `dandoy-sports.com`.
+
+L'export Magento ne contient **qu'un seul prix par SKU** (`price` / `special_price` — pas de
+colonne prix par site). L'écart s'explique par la **TVA** :
+
+```
+36,90 € / 1.21 (TVA belge 21%) ≈ 30,50 €
+```
+
+`tax_rates.csv` confirme la règle **VAT21 (21%)** appliquée aux store views `eu_fr` / `eu_nl`
+(marché EU), absente du store view `ww_en` (`dandoy-sports.com`, hors Union Européenne — voir
+`CLAUDE.md` section 1). Magento stocke un prix catalogue **TTC** et recalcule dynamiquement
+l'affichage **HT** pour le marché hors UE. Ce n'est donc **pas** un vrai prix distinct à migrer,
+mais un même prix avec un traitement de taxe différent selon le marché.
+
+### Solution Shopify — pas de changement de données
+
+Shopify gère nativement ce cas via **Settings → Taxes and duties**, avec le réglage par pays/marché
+*"Include or exclude tax based on your customer's country"* (Shopify Markets). Principe :
+
+- **Un seul `Variant Price` par variante** dans le CSV — la valeur actuelle exportée
+  (36,90 €, prix TTC EU) ne change pas
+- **Marché Dandoy EU** : TVA 21% incluse dans le prix affiché (configuration existante à répliquer)
+- **Marché Dandoy Hors UE** (`.com`) : TVA non applicable → Shopify recalcule automatiquement
+  l'affichage HT (≈30,50 €) à la volée, sans second prix en base
+
+→ Aucun impact sur `magento_to_shopify.py` ni sur `shopify_products.csv`. C'est une
+**configuration Shopify Markets/Taxes** à faire côté admin (Phase 1), pas un sujet de migration
+de données.
+
+### À vérifier avant configuration
+
+- Confirmer le taux de TVA à appliquer par marché EU (FR/NL/BE peuvent différer du taux belge
+  21% selon le pays de livraison — Shopify Tax calcule normalement automatiquement par pays
+  une fois le marché configuré, mais à valider sur quelques produits après import test)
+- Vérifier qu'aucun produit n'a un `special_price` réellement différencié par marché au-delà
+  de la TVA (promotions locales, etc.) — non détecté dans l'échantillon audité, à confirmer
+  sur le catalogue complet si des écarts additionnels apparaissent après import
