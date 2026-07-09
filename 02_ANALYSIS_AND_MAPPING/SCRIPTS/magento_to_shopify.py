@@ -90,7 +90,7 @@ METAFIELD_MAP = {
     'balls_material':       ('custom.ball_material',     'single_line_text_field', False),
     'usage':                ('custom.usage',             'single_line_text_field', False),
     'accessories':          ('custom.accessory_type',    'single_line_text_field', False),
-    'tables_type':          ('custom.environment',       'single_line_text_field', False),
+    'tables_type':          ('custom.environment',       'list.single_line_text_field', True),
     'cover':                ('custom.cover_included',    'boolean',                False),
     'dimension':            ('custom.dimension',         'single_line_text_field', False),
     'videos':               ('custom.video_url',         'url',                    False),
