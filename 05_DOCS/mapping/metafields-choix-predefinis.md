@@ -97,6 +97,12 @@ Indoor, Outdoor
 Child, Man, Unisex, Woman
 ```
 
+## `custom.available_options` — Options disponibles
+
+```
+EdgeTape, Gluing, Lacquering
+```
+
 ---
 
 ## Metafields sans choix prédéfinis

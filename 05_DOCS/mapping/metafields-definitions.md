@@ -1,6 +1,6 @@
 # Metafields — Définitions
 
-Les 19 custom metafields créés automatiquement par Matrixify à l'import.
+Les 20 custom metafields créés automatiquement par Matrixify à l'import.
 Référence technique : types, sources Magento, et options de variantes associées.
 
 ---
@@ -28,6 +28,7 @@ Référence technique : types, sources Magento, et options de variantes associé
 | 17 | `custom.cover_included` | Boolean | Simple | Non | Affichage fiche |
 | 18 | `custom.dimension` | Single line text | Simple | Non | Affichage fiche |
 | 19 | `custom.video_url` | URL | Simple | Non | Affichage fiche |
+| 20 | `custom.available_options` | List of single line text | Multiple | Non | Logique thème (line item properties) |
 
 > **Filtres natifs Shopify** (pas des metafields) : Vendor (= Manufacturer), Price, Color,
 > Size, Quantity — ces attributs sont filtrables nativement via Search & Discovery.
@@ -128,6 +129,21 @@ Référence technique : types, sources Magento, et options de variantes associé
 | Namespace.Key | Nom affiché | Type Shopify | Valeurs possibles | Source Magento |
 |---|---|---|---|---|
 | `custom.video_url` | Vidéo produit | URL | URLs YouTube | `videos` |
+
+### Rubbers / Blades / Rackets — Options gratuites
+
+| Namespace.Key | Nom affiché | Type Shopify | Valeurs possibles | Source Magento |
+|---|---|---|---|---|
+| `custom.available_options` | Options disponibles | List of single line text | Gluing, EdgeTape, Lacquering | `custom_options` (parsé et normalisé) |
+
+> **Usage particulier :** ce metafield n'est ni un filtre Search & Discovery ni un bloc
+> d'affichage fiche produit — il pilote quels sélecteurs de **line item properties**
+> (Gluing/Edge tape/Lacquering) le thème affiche sur la fiche produit, produit par produit.
+> Voir [Custom options](./custom-options.md) pour le détail (le `product.type` seul ne
+> suffit pas — 15 à 28% des produits par type dérogent au cas général).
+>
+> Pour les produits *grouped*, la valeur est l'union des `custom_options` des SKUs enfants
+> (la donnée source vit sur les enfants, pas sur le parent).
 
 ---
 

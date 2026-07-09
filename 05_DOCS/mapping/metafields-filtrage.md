@@ -82,3 +82,13 @@ Ajouter via le **Theme Editor** (Customize → Product page → Add block → so
 > **`custom.technology`** est un champ texte libre (77 valeurs par marque). Il n'est **pas**
 > utilisé comme filtre — uniquement pour l'affichage sur la fiche produit, comme sur
 > le site Magento actuel.
+
+---
+
+## Cas particulier : `custom.available_options`
+
+Ce metafield n'est **ni un filtre de collection ni un bloc d'affichage** — à ne pas ajouter
+dans Search & Discovery ni dans le Theme Editor comme les autres. Il pilote une logique
+conditionnelle dans le code du formulaire produit (`sections/main-product.liquid`) : selon
+les valeurs présentes (`Gluing`, `EdgeTape`, `Lacquering`), le thème affiche les sélecteurs
+de line item properties correspondants. Voir [Custom options](./custom-options.md).
