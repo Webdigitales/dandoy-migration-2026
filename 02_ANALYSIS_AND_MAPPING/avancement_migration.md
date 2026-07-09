@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **26 juin 2026**
+Dernière mise à jour : **9 juillet 2026**
 
 ---
 
@@ -60,7 +60,7 @@ dandoy/
 
 | Fichier | Lignes | Contenu |
 |---|---|---|
-| `shopify_products.csv` | 25 514 | 4 834 produits EN + 19 metafields + 22 tags sous-catégories |
+| `shopify_products.csv` | 25 514 | 4 834 produits EN + 20 metafields + 22 tags sous-catégories |
 | `shopify_translations.csv` | 6 723 | Traductions FR (93% couvert) + NL (71% couvert) |
 | `shopify_collections.csv` | 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects.csv` | 2 368 | Redirections 301 (produits actifs + catégories) |
@@ -149,6 +149,18 @@ Importer via Matrixify dans l'ordre inverse :
   - Choix prédéfinis (valeurs à copier-coller)
   - Filtrage & Affichage (comparaison Magento, config Search & Discovery)
 
+### Custom options — metafield par produit (9 juillet 2026)
+
+- Constat : une logique thème basée uniquement sur `product.type` suraffiche les sélecteurs
+  Gluing/Edge tape/Lacquering — 15,6% des Rubbers et 27,7% des Blades n'ont en réalité aucune
+  de ces options (analyse produit par produit sur `export_magento_products_all.csv`)
+- `magento_to_shopify.py` extrait désormais la colonne source `custom_options` vers un nouveau
+  metafield `custom.available_options` (list, 20ᵉ metafield), avec union depuis les SKUs enfants
+  pour les produits *grouped*
+- Le thème peut ainsi n'afficher que les sélecteurs pertinents par produit au lieu d'une
+  condition générique par type — voir `05_DOCS/mapping/custom-options.md`
+- Correction au passage : Rackets avec option Gluing = 39 produits (doc indiquait 20)
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -205,6 +217,7 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Date | Commit | Description |
 |---|---|---|
+| 9 juillet | `e5aa404` | Metafield `custom.available_options` piloté à l'import (Gluing/EdgeTape/Lacquering) |
 | 26 juin | `b857ed5` | Plan de migration 5 phases (doc MkDocs) |
 | 26 juin | `cc4b4ae` | Command: MERGE dans tous les scripts (réimport sécurisé) |
 | 26 juin | `7dfed4d` | Suppression références export-orders.csv (pivot vers 2025-2026) |
