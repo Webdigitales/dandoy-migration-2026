@@ -41,9 +41,9 @@ Les variant images ne sont PAS exportées pour éviter le doublon dans la galeri
 Pour réactiver : voir section 6 de `05_DOCS/contraintes-techniques.md`.
 
 ### E. Metafields
-- 19 metafields custom créés par Matrixify à l'import.
-- Types : `single_line_text_field` (simple) ou `list.single_line_text_field` (multi-valeurs avec pipe `|`).
-- `promotion_type` et `shoe_type` sont en `list` (multi-valeurs).
+- 20 metafields custom créés par Matrixify à l'import.
+- Types : `single_line_text_field` (simple) ou `list.single_line_text_field` (multi-valeurs, séparateur `;` dans le CSV généré).
+- `promotion_type`, `shoe_type` et `available_options` (Gluing/EdgeTape/Lacquering — voir section 7 et `05_DOCS/mapping/custom-options.md`) sont en `list` (multi-valeurs).
 - Choix prédéfinis configurés pour 15 metafields dans Shopify Admin.
 - `custom.technology` : texte libre (77 valeurs, pas de dropdown).
 

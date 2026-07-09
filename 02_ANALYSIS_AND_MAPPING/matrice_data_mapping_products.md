@@ -109,5 +109,5 @@ Correspondance complète entre les champs de l'export Magento et les colonnes du
 | `product_websites` | Géré via tags `brand:dandoy` / `brand:butterfly` (si option A) |
 | `configurable_variations` | Non utilisé (produits grouped, pas configurable) |
 | `bundle_values` | Bundles gérés via remises Shopify, pas de migration data |
-| `custom_options` | Géré via line item properties dans le thème |
+| `custom_options` | Extrait vers le metafield `custom.available_options` (piloté par produit) → sélecteurs line item properties dans le thème — voir `05_DOCS/mapping/custom-options.md` |
 | `related_skus` / `crosssell_skus` / `upsell_skus` | À reconfigurer manuellement dans Shopify |

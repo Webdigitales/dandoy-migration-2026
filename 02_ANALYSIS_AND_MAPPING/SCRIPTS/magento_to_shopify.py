@@ -104,7 +104,34 @@ def _build_metafield_columns():
             seen[mkey] = mtype
     return [f"Metafield: {k} [{v}]" for k, v in seen.items()]
 
-METAFIELD_COLS = _build_metafield_columns()
+# Free custom options (Gluing / Edge tape / Lacquering) come from the
+# `custom_options` column, not `additional_attributes` — parsed separately
+# below and merged in as their own list metafield. Drives which line item
+# property selectors the theme shows per product, since the option set
+# varies within a product Type (e.g. 15.6% of Rubbers have none at all).
+CUSTOM_OPTIONS_METAFIELD_COL = 'Metafield: custom.available_options [list.single_line_text_field]'
+
+_CUSTOM_OPTION_PATTERNS = [
+    (re.compile(r'lacquer|vernis', re.I), 'Lacquering'),
+    (re.compile(r'gluing|collage|lijmen|coller', re.I), 'Gluing'),
+    (re.compile(r'edge|tape|bord|contour|afplak', re.I), 'EdgeTape'),
+]
+
+def extract_custom_options(row):
+    raw = (row.get('custom_options', '') or '').strip()
+    if not raw:
+        return []
+    names = re.findall(r'name=([^,]*),type=', raw)
+    result = []
+    for n in names:
+        for pattern, canon in _CUSTOM_OPTION_PATTERNS:
+            if pattern.search(n) and canon not in result:
+                result.append(canon)
+                break
+    return result
+
+
+METAFIELD_COLS = _build_metafield_columns() + [CUSTOM_OPTIONS_METAFIELD_COL]
 
 SHOPIFY_COLS = [
     'Handle', 'Command', 'Title', 'Body (HTML)', 'Vendor', 'Product Category', 'Type',
@@ -344,6 +371,10 @@ def resolve_metafields(row):
                 seen.append(item)
         result[col_name] = ';'.join(seen)
 
+    custom_opts = extract_custom_options(row)
+    if custom_opts:
+        result[CUSTOM_OPTIONS_METAFIELD_COL] = ';'.join(custom_opts)
+
     return result
 
 
@@ -503,6 +534,17 @@ def main():
                 images  = collect_images(row)
                 pfields = product_fields(row, handle)
                 mfields = resolve_metafields(row)
+                # custom_options (Gluing/EdgeTape/Lacquering) live on the
+                # child simple SKUs, not the grouped parent — union them so
+                # the product-level metafield reflects any child that needs
+                # the selector on the product page.
+                child_custom_opts = []
+                for child in children:
+                    for opt in extract_custom_options(child):
+                        if opt not in child_custom_opts:
+                            child_custom_opts.append(opt)
+                if child_custom_opts:
+                    mfields[CUSTOM_OPTIONS_METAFIELD_COL] = ';'.join(child_custom_opts)
                 img_pos = 1
                 first   = True
 

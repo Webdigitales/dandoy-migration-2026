@@ -29,7 +29,7 @@ les migrer.
 
 | Option | Type | Requis | Valeurs | Prix | Occurrences |
 |---|---|---|---|---|---|
-| **Gluing** | Radio | Non | Yes, No | Gratuit | 20 produits |
+| **Gluing** | Radio | Non | Yes, No | Gratuit | 39 produits |
 
 ### Tables and Nets (Tables et Filets)
 
@@ -54,12 +54,38 @@ Le client sélectionne une valeur sur la fiche produit. La valeur est attachée 
 de commande (visible dans l'admin Shopify, les emails de confirmation et les packing slips)
 sans créer de variante ni impacter le stock.
 
-#### Implémentation dans le thème Liquid
+#### Le `product.type` seul ne suffit pas
 
-Ajouter dans le formulaire produit (`sections/main-product.liquid` ou snippet de formulaire) :
+Une logique conditionnelle basée uniquement sur `product.type` (`Rubbers`, `Blades`, `Rackets`)
+suraffiche largement les sélecteurs : l'analyse produit par produit (hors doublons multi-langues,
+sur `export_magento_products_all.csv`) montre un écart important au cas général au sein d'un
+même type :
+
+| Type | Combinaison dominante | Écart au cas général |
+|---|---|---|
+| Rubbers (4 790 produits) | Gluing seul (78,9 %) | **749 produits (15,6 %)** sans aucune option, 251 (5,2 %) avec Edge tape en plus |
+| Blades (2 791 produits) | Lacquering (72,3 %) | **774 produits (27,7 %)** sans aucune option |
+| Rackets (170 produits) | Aucune option (77,1 %) | 39 produits (22,9 %) avec Gluing |
+
+Avec un simple `{% if product.type == 'Rubbers' %}`, environ 750 produits Rubbers et 775 Blades
+afficheraient un sélecteur qui ne s'applique pas à eux (un client pourrait choisir "Gluing:
+Forehand" sur un produit où cette préférence n'a aucun sens côté atelier).
+
+#### Solution retenue : metafield par produit, alimenté à l'import
+
+`magento_to_shopify.py` extrait désormais la colonne source `custom_options` (déjà présente dans
+l'export Magento) et la normalise dans le metafield **`custom.available_options`**
+(`list.single_line_text_field`, séparateur `;`), avec les valeurs possibles `Gluing`, `EdgeTape`,
+`Lacquering`. Pour les produits *grouped* (voir section 2.B du guide projet), les `custom_options`
+sont portées par les **SKUs enfants simples**, pas par le parent — le script fait l'union des
+options de tous les enfants pour peupler le metafield du produit Shopify.
+
+Le thème lit ce metafield au lieu de coder en dur une condition par `product.type` :
 
 ```liquid
-{% if product.type == 'Rubbers' %}
+{% assign opts = product.metafields.custom.available_options.value %}
+
+{% if opts contains 'Gluing' %}
   <div class="product-option">
     <label for="gluing">Gluing</label>
     <select name="properties[Gluing]" id="gluing">
@@ -70,7 +96,7 @@ Ajouter dans le formulaire produit (`sections/main-product.liquid` ou snippet de
   </div>
 {% endif %}
 
-{% if product.type == 'Rubbers' %}
+{% if opts contains 'EdgeTape' %}
   <div class="product-option">
     <label for="edge-tape">Edge tape</label>
     <select name="properties[Edge tape]" id="edge-tape">
@@ -82,7 +108,7 @@ Ajouter dans le formulaire produit (`sections/main-product.liquid` ou snippet de
   </div>
 {% endif %}
 
-{% if product.type == 'Blades' or product.type == 'Rubbers' %}
+{% if opts contains 'Lacquering' %}
   <div class="product-option">
     <label>
       <input type="checkbox" name="properties[Lacquering]" value="Yes">
@@ -91,6 +117,10 @@ Ajouter dans le formulaire produit (`sections/main-product.liquid` ou snippet de
   </div>
 {% endif %}
 ```
+
+Les valeurs possibles par option (Forehand/Backhand, Dandoy/Donic/Stiga…) restent codées dans le
+thème — elles sont stables et communes à tous les produits concernés, un metafield dédié par
+valeur n'apporterait rien de plus.
 
 #### Résultat dans la commande
 
@@ -144,10 +174,24 @@ Shopify** (Option2 = Livraison) reste envisageable vu le faible volume.
 
 ## Récapitulatif
 
+Occurrences côté source Magento (SKU simples, avant regroupement en produits Shopify) :
+
 | Option | Produits | Prix | Solution Shopify |
 |---|---|---|---|
-| Gluing (Forehand/Backhand) | Rubbers (4 009) | Gratuit | Line item property |
+| Gluing (Forehand/Backhand) | Rubbers (4 009), Rackets (39) | Gratuit | Line item property |
 | Edge tape (Dandoy/Donic/Stiga) | Rubbers (342) | Gratuit | Line item property |
 | Lacquering (Yes) | Blades (976), Rubbers (6) | Gratuit | Line item property |
-| Gluing (Yes/No) | Rackets (20) | Gratuit | Line item property |
 | Option de livraison | Tables (33) | 41–116 € | App tierce |
+
+Résultat après regroupement en produits Shopify (`shopify_products.csv`, metafield
+`custom.available_options`) :
+
+| Option | Produits Shopify concernés |
+|---|---|
+| Gluing | 723 |
+| Lacquering | 735 |
+| EdgeTape | 57 |
+
+> Le nombre de produits Shopify est très inférieur au nombre de SKUs Magento car plusieurs SKUs
+> (couleurs, épaisseurs) sont regroupés en un seul produit Shopify avec variantes — voir section
+> 2.B du guide projet.
