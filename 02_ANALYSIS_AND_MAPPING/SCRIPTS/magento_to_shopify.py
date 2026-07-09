@@ -233,24 +233,73 @@ def name_suffix(parent_name, child_name):
     return c
 
 
-def extract_numeric(s):
-    m = re.search(r'(\d+\.?\d*)', s or '')
-    return m.group(1) if m else ''
+# Rubbers: color is sometimes missing from additional_attributes (~8% of
+# variants) but always present in the product name — in English or Dutch
+# (Butterfly base names are in NL). Used as a fallback so every variant of
+# a product gets a Color value; otherwise some variants end up with an
+# empty Option1 while siblings have one, which Matrixify rejects.
+COLOR_NAME_MAP = {
+    'Red': ['Red', 'Rood'],
+    'Black': ['Black', 'Zwart'],
+    'Blue': ['Blue', 'Blauw'],
+    'Green': ['Green', 'Groen'],
+    'Pink': ['Pink', 'Roze'],
+    'Purple': ['Purple', 'Paars'],
+}
 
 
-def resolve_options(parent_row, child_row, option_defs):
+def extract_color_from_name(suffix):
+    for canon, variants in COLOR_NAME_MAP.items():
+        for variant in variants:
+            if re.search(r'\b' + variant + r'\b', suffix, re.IGNORECASE):
+                return canon
+    return ''
+
+
+# Rubbers: thickness is the last word of the name suffix — usually numeric
+# (1.0, 1.5, 2.1…) but also non-numeric grades used in table tennis rubbers
+# (OX = no sponge, Max/Max+ = maximum allowed, Thin/Middle/Thick/Super Thick).
+# A trailing parenthetical note (e.g. "(Sponge Dampening)") is stripped first.
+def extract_thickness(suffix):
+    s = (suffix or '').strip()
+    s = re.sub(r'\s*\([^)]*\)\s*$', '', s)
+    m = re.search(r'(\d+\.?\d*)$', s)
+    if m:
+        return m.group(1)
+    m = re.search(r'(super thick|max\+|thin|middle|thick|max|ox)$', s, re.IGNORECASE)
+    return m.group(1).title() if m else ''
+
+
+def resolve_options(parent_row, child_row, option_defs, prefer_suffix=False):
     attrs = parse_additional_attrs(child_row.get('additional_attributes', ''))
     suffix = name_suffix(parent_row.get('name', ''), child_row.get('name', child_row['sku']))
     result = {}
 
-    slot = 1
-    for opt_name, source, transform in option_defs[:3]:
+    # Fixed slot per option_defs position (not per how many values were
+    # found) — otherwise a variant missing e.g. Color shifts Thickness into
+    # Option1 while sibling variants keep it in Option2, which Matrixify
+    # rejects as an inconsistent option schema for the same product.
+    for slot, (opt_name, source, transform) in enumerate(option_defs[:3], start=1):
+        suffix_val = re.sub(r'^size\s+', '', suffix, flags=re.IGNORECASE)
+
         if source == '_name_suffix':
             raw = suffix
         elif source == '_name_suffix_numeric':
-            raw = extract_numeric(suffix)
+            raw = extract_thickness(suffix)
+        elif source == 'color':
+            name_color = extract_color_from_name(suffix)
+            # prefer_suffix: a sibling variant collided using the attribute
+            # value, so trust the name over a possibly wrong/reused
+            # attribute value (e.g. same Magento size/color enum value
+            # reused across genuinely different variants).
+            raw = (name_color or attrs.get('color', '')) if prefer_suffix else (attrs.get('color', '') or name_color)
         else:
-            raw = attrs.get(source, '')
+            # Some product lines (socks, sweatshirts…) don't populate this
+            # attribute at all on part of the range, even though the value
+            # is visible in the child name (e.g. "Size I (35-38)", "RIO Red
+            # 6"). Falling back to the raw suffix keeps every variant of the
+            # product non-empty and distinct instead of silently colliding.
+            raw = (suffix_val or attrs.get(source, '')) if prefer_suffix else (attrs.get(source, '') or suffix_val)
 
         if transform and raw:
             raw = transform(raw)
@@ -260,7 +309,6 @@ def resolve_options(parent_row, child_row, option_defs):
 
         result[f'Option{slot} Name'] = opt_name
         result[f'Option{slot} Value'] = raw
-        slot += 1
 
     return result
 
@@ -403,6 +451,9 @@ def main():
     skipped_types = {}
     fallback_count = 0
     exported_handles = {}  # sku → handle (for translations)
+    used_handles = {}      # handle → sku that first claimed it
+    handle_collisions = [] # (original_handle, first_sku, colliding_sku, new_handle)
+    option_dup_warnings = []  # (handle, first_sku, colliding_sku, option_values) still duplicate after retry
 
     with open(OUTPUT, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=SHOPIFY_COLS)
@@ -411,6 +462,28 @@ def main():
         for sku, row in base_rows.items():
             pt = row['product_type']
             handle = (row.get('url_key', '') or sku).strip()
+            # A grouped product's own simple children legitimately share its
+            # url_key (they never become standalone Shopify products, they
+            # get folded into the parent's variant rows) — only products that
+            # are actually written under their own Handle can collide.
+            is_written_standalone = pt == 'grouped' or (pt == 'simple' and sku not in grouped_child_skus)
+
+            # Some distinct Magento products share the same url_key (source
+            # data bug, e.g. "Donic Burn Off" and "Donic Burn Off -" both use
+            # url_key=donic-burn-off). Writing both under one Shopify Handle
+            # merges their variants and fails Matrixify import ("variant
+            # already exists" / Title-Body HTML differ). Disambiguate the
+            # 2nd+ product instead — flagged below for manual SEO review.
+            if is_written_standalone:
+                if handle in used_handles:
+                    n = 2
+                    new_handle = f'{handle}-{n}'
+                    while new_handle in used_handles:
+                        n += 1
+                        new_handle = f'{handle}-{n}'
+                    handle_collisions.append((handle, used_handles[handle], sku, new_handle))
+                    handle = new_handle
+                used_handles[handle] = sku
 
             if pt == 'grouped':
                 child_skus = [s.split('=')[0].strip()
@@ -433,6 +506,29 @@ def main():
                 img_pos = 1
                 first   = True
 
+                # Resolve every child's options up front so duplicates across
+                # siblings can be caught and retried before writing — some
+                # Magento SKUs reuse the same attribute value (e.g. size=XXS
+                # for both "6 yo" and "8 yo" children) or have an attribute
+                # that plainly contradicts the product name. Retrying with
+                # the name-derived value resolves most of these; the rest are
+                # genuine source-data duplicates flagged for manual review.
+                child_opts = {}
+                if option_defs:
+                    seen_combos = {}
+                    for child in children:
+                        opts = resolve_options(row, child, option_defs)
+                        key = tuple(opts.get(f'Option{i} Value', '') for i in (1, 2, 3))
+                        if key in seen_combos:
+                            retry = resolve_options(row, child, option_defs, prefer_suffix=True)
+                            retry_key = tuple(retry.get(f'Option{i} Value', '') for i in (1, 2, 3))
+                            if retry_key not in seen_combos:
+                                opts, key = retry, retry_key
+                            else:
+                                option_dup_warnings.append((handle, seen_combos[key], child['sku'], key))
+                        seen_combos[key] = child['sku']
+                        child_opts[child['sku']] = opts
+
                 for child in children:
                     out = blank()
                     out.update(variant_fields(child))
@@ -440,8 +536,7 @@ def main():
                     out['Variant SKU'] = child['sku']
 
                     if option_defs:
-                        opts = resolve_options(row, child, option_defs)
-                        out.update(opts)
+                        out.update(child_opts[child['sku']])
                     else:
                         out['Option1 Name']  = 'Title'
                         out['Option1 Value'] = name_suffix(
@@ -515,6 +610,14 @@ def main():
             print(f"    └─ {t}: {n}")
     if fallback_count:
         print(f"  Fallback (name suffix) : {fallback_count} grouped products")
+    if handle_collisions:
+        print(f"  ⚠ Handle collisions renommés : {len(handle_collisions)} (à valider manuellement — impact SEO/redirections)")
+        for orig, first_sku, dup_sku, new_handle in handle_collisions:
+            print(f"    └─ '{orig}' : {first_sku} garde le handle, {dup_sku} → '{new_handle}'")
+    if option_dup_warnings:
+        print(f"  ⚠ Variantes dupliquées non résolues : {len(option_dup_warnings)} (donnée source à corriger manuellement)")
+        for handle_, first_sku, dup_sku, key in option_dup_warnings:
+            print(f"    └─ '{handle_}' : {first_sku} et {dup_sku} ont la même combinaison d'options {key}")
     print(f"  Output → {OUTPUT}")
 
     # ------------------------------------------------------------------
