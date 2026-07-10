@@ -12,8 +12,16 @@ OUTPUT = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_collect
 
 COLS = [
     'Handle', 'Command', 'Title', 'Body HTML', 'Published', 'Sort Order',
-    'Must Match', 'Rule: Column', 'Rule: Relation', 'Rule: Condition',
+    'Must Match', 'Rule: Product Column', 'Rule: Relation', 'Rule: Condition',
 ]
+
+# Matrixify's accepted "Rule: Product Column" values don't include "Product
+# type" / "Product tag" (only "Type" / "Tag") — translate at write time so
+# the rule tuples below can stay readable.
+RULE_COLUMN_MAP = {
+    'Product type': 'Type',
+    'Product tag': 'Tag',
+}
 
 # ---------------------------------------------------------------------------
 # Collection definitions
@@ -187,7 +195,7 @@ def main():
             for i, (col, rel, cond) in enumerate(rules):
                 row = {c: '' for c in COLS}
                 row['Handle'] = handle
-                row['Rule: Column'] = col
+                row['Rule: Product Column'] = RULE_COLUMN_MAP.get(col, col)
                 row['Rule: Relation'] = rel
                 row['Rule: Condition'] = cond
 
