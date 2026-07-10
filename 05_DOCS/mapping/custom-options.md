@@ -122,6 +122,51 @@ Les valeurs possibles par option (Forehand/Backhand, Dandoy/Donic/Stiga…) rest
 thème — elles sont stables et communes à tous les produits concernés, un metafield dédié par
 valeur n'apporterait rien de plus.
 
+#### Intégration dans le thème Horizon
+
+Horizon (thème par défaut Shopify 2025+) n'a pas de `sections/main-product.liquid` monolithique
+comme Dawn : la page produit (`sections/product-information.liquid`) délègue tout à des
+**theme blocks**. Le code ci-dessus doit donc être packagé en tant que nouveau block plutôt
+qu'injecté directement dans une section.
+
+1. **Créer le fichier de block**, par ex. `blocks/custom-options.liquid`, avec le Liquid
+   ci-dessus suivi d'un schema minimal (pas de réglage marchand nécessaire, tout vient du
+   metafield) :
+
+   ```liquid
+   {% schema %}
+   {
+     "name": "Custom options",
+     "settings": []
+   }
+   {% endschema %}
+   ```
+
+   ⚠️ `"target"` n'est **pas** une clé valide du schema d'un block (contrairement à ce que
+   suggèrent certains articles tiers) — seule la section qui accueille le block doit déclarer
+   `"blocks": [{ "type": "@theme" }, { "type": "@app" }]`, ce que `product-information.liquid`
+   fait déjà nativement.
+
+2. **Enregistrer le block dans `templates/product.json`**, à l'intérieur de
+   `sections.main.blocks["product-details"]` (pas au niveau racine de la section), et
+   l'insérer dans le `block_order` de ce même `product-details`, juste avant `buy_buttons_*`
+   pour qu'il reste dans le même formulaire produit que le bouton d'achat :
+
+   ```json
+   "custom_options_1": {
+     "type": "custom-options",
+     "settings": {},
+     "blocks": {}
+   }
+   ```
+
+   avec `custom_options_1` ajouté au `block_order` juste avant l'entrée `buy_buttons_*`.
+
+   Le plus sûr reste d'ajouter le block **via l'éditeur de thème** (Personnaliser → section
+   produit → bloc "Product details" → Ajouter un bloc) plutôt que d'éditer `product.json` à la
+   main : ce fichier est auto-généré et un futur enregistrement depuis l'éditeur peut écraser
+   une modification manuelle.
+
 #### Résultat dans la commande
 
 ```
