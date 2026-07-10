@@ -46,6 +46,7 @@ nav:
     - Metafields — Filtrage & Affichage: mapping/metafields-filtrage.md
     - Custom options: mapping/custom-options.md
     - Bundles: mapping/bundles.md
+    - Doublons de variantes à corriger: mapping/doublons-variantes.md
   - Multi-sites & Langues:
     - Gestion multi-sites: architecture/multi-sites.md
     - Gestion des langues: architecture/langues.md
