@@ -121,11 +121,27 @@ Pas de migration data nécessaire. Voir [Bundles](./mapping/bundles.md).
 
 | Langue | Couverture | Source Magento |
 |---|---|---|
-| Anglais | 100% (défaut) | Store view `(base)` |
+| Anglais | 100% en théorie (défaut) — **voir exception ci-dessous** | Store view `(base)` |
 | Français | 93% des produits | `eu_fr` (Dandoy) + `bt_be_fr` (Butterfly) |
 | Néerlandais | 71% des produits | `eu_nl` |
 
 Les produits sans traduction s'affichent en anglais (fallback).
+
+> ⚠️ **Exception : Title en néerlandais sur 282 produits Butterfly (base store view).**
+> Pour ces produits (vestes/jas, pantalons/broek, chaussettes/sokken, polos, shorts,
+> bande adhésive/afplakband...), la fiche `(base)` — censée être en anglais — a en
+> réalité été saisie en néerlandais dans Magento (ex. `Butterfly Jas Kuma Grijs`,
+> `Butterfly Polo Xero Rood`). Vérifié sur les 6 store views disponibles :
+> `bt_be_en` / `eu_en` / `ww_en` sont **vides** pour ces SKU (aucune traduction anglaise
+> n'existe nulle part dans l'export), `bt_be_fr` est rempli (la traduction FR est donc
+> correcte), et `bt_be_nl` / `bt_nl` sont vides aussi — le texte néerlandais n'est
+> dupliqué dans aucun store view NL dédié, il fuite tel quel comme Title principal
+> au lieu d'être capté comme traduction NL.
+>
+> Ce n'est pas un bug du script de conversion (`magento_to_shopify.py` prend le store
+> view `(base)` comme source EN, conformément à la convention Magento) : c'est un vrai
+> trou de contenu côté catalogue Butterfly. **Action requise avant le go-live** :
+> faire fournir les 282 titres anglais manquants par l'équipe Butterfly.
 
 Voir [Gestion des langues](./architecture/langues.md) et [Multi-sites](./architecture/multi-sites.md).
 
