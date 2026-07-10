@@ -84,11 +84,12 @@ Le thème lit ce metafield au lieu de coder en dur une condition par `product.ty
 
 ```liquid
 {% assign opts = product.metafields.custom.available_options.value %}
+{% assign product_form_id = 'BuyButtons-ProductForm-' | append: section.id %}
 
 {% if opts contains 'Gluing' %}
   <div class="product-option">
     <label for="gluing">Gluing</label>
-    <select name="properties[Gluing]" id="gluing">
+    <select name="properties[Gluing]" id="gluing" form="{{ product_form_id }}">
       <option value="">— None —</option>
       <option value="Forehand">Forehand</option>
       <option value="Backhand">Backhand</option>
@@ -99,7 +100,7 @@ Le thème lit ce metafield au lieu de coder en dur une condition par `product.ty
 {% if opts contains 'EdgeTape' %}
   <div class="product-option">
     <label for="edge-tape">Edge tape</label>
-    <select name="properties[Edge tape]" id="edge-tape">
+    <select name="properties[Edge tape]" id="edge-tape" form="{{ product_form_id }}">
       <option value="">— None —</option>
       <option value="Dandoy">Dandoy</option>
       <option value="Donic">Donic</option>
@@ -111,7 +112,7 @@ Le thème lit ce metafield au lieu de coder en dur une condition par `product.ty
 {% if opts contains 'Lacquering' %}
   <div class="product-option">
     <label>
-      <input type="checkbox" name="properties[Lacquering]" value="Yes">
+      <input type="checkbox" name="properties[Lacquering]" value="Yes" form="{{ product_form_id }}">
       Lacquering
     </label>
   </div>
@@ -121,6 +122,18 @@ Le thème lit ce metafield au lieu de coder en dur une condition par `product.ty
 Les valeurs possibles par option (Forehand/Backhand, Dandoy/Donic/Stiga…) restent codées dans le
 thème — elles sont stables et communes à tous les produits concernés, un metafield dédié par
 valeur n'apporterait rien de plus.
+
+> ⚠️ **L'attribut `form="{{ product_form_id }}"` est indispensable sur Horizon.** Dans
+> `blocks/buy-buttons.liquid`, le `{% form 'product' %}...{% endform %}` est ouvert et fermé
+> **à l'intérieur de ce seul block**, pas autour de toute la liste de blocks de
+> `product-details`. Le JS du thème (`assets/product-form.js`) construit le payload avec
+> `new FormData(this.querySelector('form'))`, qui ne regarde que les descendants du
+> `<product-form-component>` de `buy-buttons`. Un `<select>`/`<input>` rendu par un block
+> frère (notre `custom-options`, positionné *avant* `buy-buttons` dans `block_order`) est donc
+> **hors du DOM du formulaire** et ne serait jamais inclus dans la commande sans cet attribut
+> `form`, qui associe explicitement le champ au formulaire par son `id` (`section.id` est
+> accessible depuis n'importe quel block de la section, comme dans `blocks/product-inventory.liquid`).
+> Vérifié sur l'export réel du thème (`02_ANALYSIS_AND_MAPPING/THEME/theme_export__dandoy-sports-myshopify-com-horizon__10JUL2026-0604am`).
 
 #### Intégration dans le thème Horizon
 
