@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **9 juillet 2026**
+Dernière mise à jour : **10 juillet 2026**
 
 ---
 
@@ -20,8 +20,10 @@ dandoy/
 │   │   ├── generate_redirects.py                ← redirections 301
 │   │   ├── magento_to_shopify_customers.py      ← clients
 │   │   ├── magento_to_shopify_orders.py         ← commandes 2025-2026
-│   │   └── regenerate_all.sh                    ← tout régénérer (7 étapes)
+│   │   ├── validate_shopify_csv.py              ← validation post-régénération (SKU, options, handles)
+│   │   └── regenerate_all.sh                    ← tout régénérer (8 étapes)
 │   ├── SCREENSHOTS_CATALOGUE/                   (8 captures Magento)
+│   ├── THEME/                                   ← export thème Horizon (non versionné pour l'instant)
 │   ├── plan-matrixify.png
 │   ├── matrice_data_mapping_products.md
 │   ├── metafields_shopify.md
@@ -31,6 +33,7 @@ dandoy/
 │   ├── bundles_shopify.md
 │   ├── regles_import_matrixify.md
 │   ├── trustpilot-widgets.md
+│   ├── doublons_variantes_a_corriger.csv        ← 36 doublons résiduels à corriger dans Magento
 │   └── avancement_migration.md
 ├── 03_SEO_AND_REDIRECTS/
 │   ├── shopify_redirects.csv                    (gitignorés)
@@ -158,6 +161,17 @@ Importer via Matrixify dans l'ordre inverse :
   condition générique par type — voir [Custom options](./mapping/custom-options.md)
 - Correction au passage : Rackets avec option Gluing = 39 produits (doc indiquait 20)
 
+### Tests Matrixify & corrections du pipeline (9–10 juillet 2026)
+
+- **9 juillet** : validation locale ajoutée (`validate_shopify_csv.py`) et corrections dans
+  `magento_to_shopify.py` suite à un premier test Matrixify (407/1104 échecs) — Thickness/Color
+  Rubbers, collisions de Handle, doublons de variantes (495 → 36 résiduels), type du metafield
+  `custom.environment` aligné sur l'Admin Shopify.
+- **10 juillet** : test Matrixify sur le catalogue complet (272/25 514 échecs, tous déjà
+  connus), découverte de 282 Titles Butterfly en néerlandais (traduction EN manquante côté
+  Magento), fix de l'import des collections (mauvais en-tête de règle Matrixify), et
+  intégration + correctif du block Custom options sur le thème Horizon (champs hors formulaire).
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -195,7 +209,10 @@ Importer via Matrixify dans l'ordre inverse :
 |---|---|---|
 | Plan de migration | ~~À faire~~ | **Fait** — 5 phases documentées ([Plan de migration](./import/plan-migration.md)) |
 | Décision multi-sites (A ou B) | **Haute** | En attente validation client |
-| Import test complet Matrixify | **Haute** | Sample testé OK, import complet à lancer (Phase 1) |
+| Import test complet Matrixify | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessus) |
+| 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — [Doublons de variantes](./mapping/doublons-variantes.md) |
+| 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
+| `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
 | Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers.csv` prêt (41 020 clients) |
@@ -212,7 +229,21 @@ Importer via Matrixify dans l'ordre inverse :
 
 | Date | Commit | Description |
 |---|---|---|
+| 10 juillet | `01fd804` | Fix import collections Matrixify (en-tête et valeurs de règle) |
+| 10 juillet | `8a0c348` | Fix champs Custom options hors formulaire produit (thème Horizon) |
+| 10 juillet | `9145c31` | Doc intégration Custom options thème Horizon |
+| 10 juillet | `2bdc8e8` | Doc 282 Titles Butterfly en néerlandais (traduction EN manquante) |
+| 10 juillet | `67c162b` | Page MkDocs doublons de variantes résiduels |
+| 10 juillet | `b0865de` | Rapport CSV des 36 doublons de variantes résiduels |
+| 9 juillet | `19ee3a8` | Doc écart de prix TVA .com vs .eu |
+| 9 juillet | `8f891ef` | Doc metafield `custom.available_options` |
+| 9 juillet | `8e9b6d5` | Suivi avancement — travail `custom.available_options` |
 | 9 juillet | `e5aa404` | Metafield `custom.available_options` piloté à l'import (Gluing/EdgeTape/Lacquering) |
+| 9 juillet | `30ac905` | Sync doc type liste `custom.environment` |
+| 9 juillet | `22be564` | Fix type metafield `custom.environment` (Admin Shopify) |
+| 9 juillet | `2d4b9ad` | Ajout validation post-régénération (`validate_shopify_csv.py`) |
+| 9 juillet | `5197cee` | Fix incohérences d'options de variantes (échecs import Matrixify) |
+| 30 juin | `bdc11c0` | Clarification `.com` hors UE dans l'architecture Shopify Markets |
 | 25 juin | `aa38600` | Section plan Matrixify dans contraintes techniques |
 | 25 juin | `d4dd849` | Page documentation migration clients |
 | 25 juin | `9f41f6f` | Ajout customers dans regenerate_all.sh |
