@@ -5,7 +5,8 @@ Magento orders CSV (wide format)  →  Shopify orders CSV (Matrixify format)
 Source  : order-all-2025-2026.csv
           - 1 row per order, items in columns: item 1(Sku), item 2(Sku)…
           - Line items with SKU, name, price, qty, status, taxes, discounts
-          - No billing/shipping address details (only firstname/lastname)
+          - Billing/Shipping address: Firstname, Lastname, Street, City, Region,
+            Postcode, Country Id (ISO code), Telephone, Company
 
 Output  : shopify_orders_dandoy.csv / shopify_orders_butterfly.csv
           - 1 row per line item (Matrixify "long" format)
@@ -75,6 +76,7 @@ SHOPIFY_COLS = [
     'Billing Province',
     'Billing Zip',
     'Billing Country',
+    'Billing Country Code',
     'Billing Phone',
     'Shipping Name',
     'Shipping Address1',
@@ -83,6 +85,7 @@ SHOPIFY_COLS = [
     'Shipping Province',
     'Shipping Zip',
     'Shipping Country',
+    'Shipping Country Code',
     'Shipping Phone',
     'Shipping Line Title',
     'Shipping Line Price',
@@ -158,6 +161,35 @@ def shipping_name(row):
     return f"{first} {last}".strip() or billing_name(row)
 
 
+# Magento's multi-line street attribute is exported tab-separated, and a
+# significant share of rows duplicate the city on its own line (or as
+# "postcode city" glued together) — including it verbatim would show the
+# city twice in the Shopify address. Drop any line that is the city itself
+# or ends with it (postcode+city case) before recombining the rest.
+def clean_street(street, city):
+    city = (city or '').strip()
+    city_l = city.lower()
+    parts = [p.strip() for p in (street or '').split('\t') if p.strip()]
+    if city_l:
+        parts = [p for p in parts
+                  if p.lower() != city_l
+                  and not (len(p) > len(city_l) and p.lower().endswith(city_l))]
+    return ', '.join(parts)
+
+
+def address_fields(row, prefix):
+    """prefix: 'BillingAddress' or 'ShippingAddress'."""
+    city = row.get(f'{prefix}.City', '').strip()
+    return {
+        'Address1':     clean_street(row.get(f'{prefix}.Street', ''), city),
+        'City':         city,
+        'Province':     row.get(f'{prefix}.Region', '').strip(),
+        'Zip':          row.get(f'{prefix}.Postcode', '').strip(),
+        'CountryCode':  row.get(f'{prefix}.Country Id', '').strip(),
+        'Phone':        row.get(f'{prefix}.Telephone', '').strip(),
+    }
+
+
 def extract_items(row):
     items = []
     for i in range(1, MAX_ITEMS + 1):
@@ -190,6 +222,10 @@ def build_rows(order):
     ful_status    = fulfillment_status(item_statuses)
     b_name        = billing_name(order)
     s_name        = shipping_name(order)
+    b_addr        = address_fields(order, 'BillingAddress')
+    s_addr        = address_fields(order, 'ShippingAddress')
+    if not s_addr['Address1'] or not s_addr['City']:
+        s_addr = b_addr
     created       = parse_date(order.get('Created At', ''))
 
     # Compute taxes from items (approximate: price × qty × tax_rate)
@@ -223,7 +259,19 @@ def build_rows(order):
             r['Taxes']              = f"{taxes:.2f}"
             r['Total']              = order.get('Grand Total', '').strip()
             r['Billing Name']       = b_name
+            r['Billing Address1']   = b_addr['Address1']
+            r['Billing City']       = b_addr['City']
+            r['Billing Province']   = b_addr['Province']
+            r['Billing Zip']        = b_addr['Zip']
+            r['Billing Country Code'] = b_addr['CountryCode']
+            r['Billing Phone']      = b_addr['Phone']
             r['Shipping Name']      = s_name
+            r['Shipping Address1']  = s_addr['Address1']
+            r['Shipping City']      = s_addr['City']
+            r['Shipping Province']  = s_addr['Province']
+            r['Shipping Zip']       = s_addr['Zip']
+            r['Shipping Country Code'] = s_addr['CountryCode']
+            r['Shipping Phone']     = s_addr['Phone']
             r['Shipping Line Title']= order.get('Shipping Description', '').strip()
             r['Shipping Line Price']= order.get('Base Shipping Incl Tax', '').strip()
             r['Payment Method']     = payment
