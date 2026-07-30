@@ -1,7 +1,11 @@
-les # Contraintes Techniques — Migration Shopify
+# Contraintes Techniques — Migration Shopify
 
 Contraintes techniques identifiées lors de l'analyse du catalogue Magento,
 hors gestion des stocks (voir [Guide prestataire stock](./stock/guide-prestataire.md)).
+
+> **Deux boutiques Shopify (Option B, décidée le 29 juillet 2026)** : sauf mention contraire,
+> les contraintes ci-dessous s'appliquent identiquement aux deux boutiques (Dandoy-Sports et
+> Butterfly TT) — voir [Multi-sites](./architecture/multi-sites.md).
 
 ---
 
@@ -119,13 +123,15 @@ Pas de migration data nécessaire. Voir [Bundles](./mapping/bundles.md).
 
 ### Traductions
 
-| Langue | Couverture | Source Magento |
-|---|---|---|
-| Anglais | 100% en théorie (défaut) — **voir exception ci-dessous** | Store view `(base)` |
-| Français | 93% des produits | `eu_fr` (Dandoy) + `bt_be_fr` (Butterfly) |
-| Néerlandais | 71% des produits | `eu_nl` |
+| Langue | Dandoy-Sports | Butterfly TT | Source Magento |
+|---|---|---|---|
+| Anglais | 100% en théorie (défaut) — **voir exception ci-dessous** | Non activé (boutique FR/NL) | Store view `(base)` |
+| Français | 92% des produits (3 856 / 4 183) | 95% des produits (809 / 849) | `eu_fr` (Dandoy) + `bt_be_fr` (Butterfly) |
+| Néerlandais | 82% des produits (3 417 / 4 183) | 2% des produits (19 / 849) | `eu_nl` |
 
-Les produits sans traduction s'affichent en anglais (fallback).
+Les produits sans traduction s'affichent dans la langue par défaut de la boutique (fallback).
+Le NL de Butterfly est très faible car `bt_be_nl` / `bt_nl` sont quasi vides dans Magento —
+voir [Gestion des langues](./architecture/langues.md).
 
 > ⚠️ **Exception : Title en néerlandais sur 282 produits Butterfly (base store view).**
 > Pour ces produits (vestes/jas, pantalons/broek, chaussettes/sokken, polos, shorts,
@@ -196,11 +202,11 @@ La colonne `Variant Image` est déjà dans les en-têtes CSV — il suffit de d�
 
 ### Redirections générées
 
-| Type | Nombre |
-|---|---|
-| Produits actifs et visibles | 2 333 |
-| Catégories | 35 |
-| **Total** | **2 368** |
+| Type | Dandoy-Sports | Butterfly TT |
+|---|---|---|
+| Produits actifs et visibles | 2 014 | 355 |
+| Catégories | 31 | 25 |
+| **Total** | **2 045** | **380** |
 
 ### Ce qui n'est PAS redirigé
 
@@ -291,8 +297,8 @@ Les SKU des variantes sont déjà dans Shopify après l'import produits.
 
 ## 11. Metafields
 
-19 metafields custom créés automatiquement par Matrixify à l'import.
-À valider dans **Settings → Custom data → Products** après l'import.
+20 metafields custom créés automatiquement par Matrixify à l'import, **dans chaque boutique**.
+À valider dans **Settings → Custom data → Products** après l'import, sur les deux boutiques.
 
 Voir [Metafields — Définitions](./mapping/metafields-definitions.md) pour la liste complète.
 
@@ -301,18 +307,20 @@ Voir [Metafields — Définitions](./mapping/metafields-definitions.md) pour la 
 ## 12. Plan Matrixify
 
 Matrixify est l'outil d'import CSV utilisé pour la migration. Le choix du plan
-conditionne le nombre d'enregistrements importables par job.
+conditionne le nombre d'enregistrements importables par job. **Chaque boutique installe sa
+propre app Matrixify avec son propre plan** (l'app est liée à l'instance Shopify, pas partagée
+entre les deux boutiques).
 
-### Volumes à importer
+### Volumes à importer, par boutique
 
-| Entité | Notre volume |
-|---|---|
-| Produits | 4 834 |
-| Collections | 37 |
-| Traductions | 6 723 |
-| Redirections | 2 368 |
-| **Clients** | **41 020** |
-| **Commandes** | **37 430** |
+| Entité | Dandoy-Sports | Butterfly TT |
+|---|---|---|
+| Produits | 4 183 | 849 |
+| Collections | 37 | 37 |
+| Traductions | 5 768 lignes | 1 233 lignes |
+| Redirections | 2 045 | 380 |
+| **Clients** | **33 357** | **11 404** |
+| **Commandes** | **23 823** | **13 607** |
 
 ### Comparaison des plans
 
@@ -325,17 +333,20 @@ conditionne le nombre d'enregistrements importables par job.
 
 ### Recommandation
 
-**Enterprise ($200) pour 1 mois**, puis downgrader.
+**Enterprise ($200) pour 1 mois, sur les deux boutiques**, puis downgrader.
 
-Le plan Basic couvre les produits, collections et redirections — mais est trop limité
-pour les clients (2 000 vs 41 020) et les commandes (1 000 vs 37 430).
-Le plan Big ne couvre pas non plus les commandes (10 000 vs 37 430) ni les clients (20 000 vs 41 020).
+- **Dandoy-Sports** (33 357 clients, 23 823 commandes) : dépasse largement le plan Big
+  (20 000 clients, 10 000 commandes) — Enterprise nécessaire.
+- **Butterfly TT** (11 404 clients, 13 607 commandes) : les clients passeraient sur Big
+  (20 000), mais les commandes (13 607) dépassent la limite Big (10 000) — Enterprise
+  nécessaire aussi, même si les volumes sont plus petits.
 
-Prendre Enterprise pour la durée de la migration (1 mois), importer tout en une fois,
-puis passer sur Basic ($20) ou désinstaller.
+Prendre Enterprise sur les deux boutiques pour la durée de la migration (1 mois), importer
+tout en une fois dans chacune, puis repasser chaque boutique sur Basic ($20) ou désinstaller
+— **coût total ~$400 pour le premier mois** (2 × $200), puis $40/mois si les deux gardent Basic.
 
 > **Note :** Matrixify permet de fractionner les imports en plusieurs jobs sur les plans
-> inférieurs, mais cela complexifie le processus (21 jobs pour 41 020 clients sur Basic).
+> inférieurs, mais cela complexifie le processus (17 jobs pour 33 357 clients Dandoy sur Basic).
 
 ---
 
@@ -347,4 +358,5 @@ puis passer sur Basic ($20) ou désinstaller.
 | SKU modifié → stock désynchronisé | Faible | Stock incorrect | Ne jamais modifier les SKU |
 | Option vide déclarée → erreur Matrixify | Corrigé | Variante non créée | Script corrigé (options vides omises) |
 | Produit >100 variantes | Aucune | Bloquant | Audité : max 33, pas de risque |
-| Survente produits partagés (si 2 boutiques) | Moyenne | Commande sans stock | Recommandation : instance unique |
+| Survente produits partagés (199, Option B retenue) | Moyenne | Commande sans stock sur l'un des deux magasins | **Risque accepté par le client** — sync stock 1×/jour, à surveiller de près sur ces 199 produits après le go-live |
+| Plan Basic Butterfly insuffisant pour un besoin non anticipé | Faible-Moyenne | Fonctionnalité manquante en prod | Vérifier les limitations avant validation finale (voir [Multi-sites](./architecture/multi-sites.md)) |

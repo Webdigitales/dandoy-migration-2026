@@ -1,21 +1,28 @@
 # Redirections 301 — Migration Magento → Shopify
 
+> **Deux boutiques Shopify (Option B)** : chaque boutique n'a besoin de rediriger que les
+> produits/catégories effectivement présents dans son catalogue. `generate_redirects.py`
+> scope automatiquement chaque redirection à la bonne boutique via `product_websites`
+> (fonction `brand_scope()`, partagée avec `magento_to_shopify.py`) — voir
+> [Multi-sites](../architecture/multi-sites.md).
+
 ---
 
 ## Vue d'ensemble
 
-| Type de redirection | Nombre | Description |
+| Type de redirection | Dandoy-Sports | Butterfly TT |
 |---|---|---|
-| **Produits actifs** | 2 333 | Grouped parents + standalone simples (actifs et visibles) |
-| **Catégories** | 35 | Pages catégorie Magento → collections Shopify |
-| **Total** | **2 368** | |
+| **Produits actifs** | 2 014 | 355 |
+| **Catégories** | 31 | 25 |
+| **Total** | **2 045** | **380** |
 
-### Ce qui n'est PAS redirigé (vérifié par tests HTTP)
+### Ce qui n'est PAS redirigé (vérifié par tests HTTP + scope boutique)
 
-| Type | Nombre | Raison |
-|---|---|---|
-| Produits désactivés (`product_online=2`) | 14 985 | Déjà en 404 sur Magento |
-| Enfants invisibles (`Not Visible Individually`) | 10 564 | Jamais eu d'URL publique sur Magento |
+| Type | Raison |
+|---|---|
+| Produits désactivés (`product_online=2`) | Déjà en 404 sur Magento |
+| Enfants invisibles (`Not Visible Individually`) | Jamais eu d'URL publique sur Magento |
+| Produit actif mais hors scope de la boutique | Absent du catalogue de cette boutique — pas de page cible |
 
 ---
 
@@ -78,7 +85,8 @@ Magento ajoute parfois un suffixe numérique au `url_path` pour éviter les doub
 ## Fichier généré
 
 ```
-03_SEO_AND_REDIRECTS/shopify_redirects.csv
+03_SEO_AND_REDIRECTS/shopify_redirects_dandoy.csv
+03_SEO_AND_REDIRECTS/shopify_redirects_butterfly.csv
 ```
 
 Format Matrixify Redirects :
@@ -91,8 +99,10 @@ Format Matrixify Redirects :
 ### Import via Matrixify
 
 1. Le fichier doit contenir "Redirects" dans le nom
-2. Importer **après** l'import des produits (les URLs cibles doivent exister)
-3. Matrixify créera des redirections 301 dans **Settings → Navigation → URL Redirects**
+2. Importer **après** l'import des produits (les URLs cibles doivent exister), dans la
+   boutique correspondante (`_dandoy` → boutique Dandoy-Sports, `_butterfly` → boutique Butterfly TT)
+3. Matrixify créera des redirections 301 dans **Settings → Navigation → URL Redirects** de
+   chaque boutique
 
 ---
 
@@ -100,9 +110,9 @@ Format Matrixify Redirects :
 
 | Limite | Valeur | Notre situation |
 |---|---|---|
-| Redirections max (Basic/Shopify) | 100 000 | 2 368 — OK |
+| Redirections max (Basic/Shopify) | 100 000 | 2 045 (Dandoy) / 380 (Butterfly) — OK |
 | Redirections max (Plus) | 200 000 | OK |
-| Taille import Matrixify | 20 Go | ~170 Ko — OK |
+| Taille import Matrixify | 20 Go | ~150 Ko / ~30 Ko — OK |
 
 ---
 
@@ -113,18 +123,18 @@ Format Matrixify Redirects :
 | URLs traduites (`/fr/`, `/nl/`) | Seules 18 URL keys FR existent dans Magento, pas significatif | À gérer manuellement si nécessaire |
 | Pages CMS Magento | Pas dans l'export produits | Crawl séparé nécessaire |
 | URLs avec paramètres (`?color=red`) | Shopify ne redirige pas les query strings | Géré côté serveur ou `.htaccess` si proxy |
-| Sous-domaines (`fr.dandoy-sports.eu`) | Dépend du choix multi-site (Option A/B) | Configurer dans Shopify Markets |
+| Domaines par boutique (6 domaines / 2 boutiques) | Résolu — Option B retenue | Configurer les domaines dans chaque boutique Shopify (DNS), pas de Shopify Markets nécessaire côté Butterfly |
 | Bundle products (105) | Non exportés vers Shopify | URLs en 404 sauf si traitement manuel |
 
 ---
 
-## Workflow recommandé
+## Workflow recommandé (dans chaque boutique)
 
-1. **Importer les produits** (`shopify_products.csv`)
+1. **Importer les produits** (`shopify_products_dandoy.csv` ou `shopify_products_butterfly.csv`)
 2. **Créer les collections** avec les bons handles (blades, rubbers, clothing…)
-3. **Importer les redirections** (`shopify_redirects.csv`) via Matrixify
-4. **Tester** : vérifier un échantillon d'anciennes URLs Magento → 301 → page Shopify
-5. **Crawl post-migration** : utiliser Screaming Frog ou similaire pour détecter les 404 résiduels
+3. **Importer les redirections** (`shopify_redirects_dandoy.csv` ou `_butterfly.csv`) via Matrixify
+4. **Tester** : vérifier un échantillon d'anciennes URLs Magento → 301 → page Shopify, sur chaque domaine
+5. **Crawl post-migration** : utiliser Screaming Frog ou similaire pour détecter les 404 résiduels, sur les 6 domaines
 
 ---
 

@@ -1,6 +1,12 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **10 juillet 2026**
+Dernière mise à jour : **30 juillet 2026**
+
+> **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées
+> (Dandoy-Sports plan complet + Butterfly TT plan Basic), et non l'instance unique (Option A)
+> précédemment recommandée. Voir `multi_sites_shopify.md`. Tous les scripts de génération
+> produisent désormais une paire de fichiers `_dandoy` / `_butterfly` par entité (produits,
+> traductions, collections, redirections, clients, commandes).
 
 ---
 
@@ -35,17 +41,24 @@ dandoy/
 │   ├── trustpilot-widgets.md
 │   ├── doublons_variantes_a_corriger.csv        ← 36 doublons résiduels à corriger dans Magento
 │   └── avancement_migration.md                  (ce fichier)
-├── 03_SEO_AND_REDIRECTS/
-│   ├── shopify_redirects.csv                    (gitignorés)
+├── 03_SEO_AND_REDIRECTS/                        (gitignorés)
+│   ├── shopify_redirects_dandoy.csv             (2 045 redirections)
+│   ├── shopify_redirects_butterfly.csv          (380 redirections)
 │   └── redirections_301.md
-├── 04_SHOPIFY_IMPORTS/                          (CSV gitignorés sauf sample)
-│   ├── shopify_products.csv                     (25 514 lignes)
-│   ├── shopify_translations.csv                 (6 723 lignes)
-│   ├── shopify_collections.csv                  (37 collections)
-│   ├── shopify_customers.csv                    (41 020 clients)
-│   ├── shopify_orders.csv                       (99 821 lignes — 37 430 commandes)
-│   ├── shopify_products_sample.csv              (10 produits — versionné)
-│   ├── *_PURGE.csv (×3)
+├── 04_SHOPIFY_IMPORTS/                          (CSV gitignorés sauf sample — 1 jeu par boutique)
+│   ├── shopify_products_dandoy.csv              (22 223 lignes — 4 183 produits)
+│   ├── shopify_products_butterfly.csv           (4 905 lignes — 849 produits)
+│   ├── shopify_translations_dandoy.csv          (5 768 lignes)
+│   ├── shopify_translations_butterfly.csv       (1 233 lignes)
+│   ├── shopify_collections_dandoy.csv           (37 collections)
+│   ├── shopify_collections_butterfly.csv        (37 collections)
+│   ├── shopify_customers_dandoy.csv             (33 357 clients)
+│   ├── shopify_customers_butterfly.csv          (11 404 clients)
+│   ├── shopify_orders_dandoy.csv                (71 096 lignes — 23 823 commandes)
+│   ├── shopify_orders_butterfly.csv             (28 725 lignes — 13 607 commandes)
+│   ├── shopify_products_sample_dandoy.csv       (versionné)
+│   ├── shopify_products_sample_butterfly.csv    (versionné)
+│   ├── *_PURGE.csv (×6)
 │   └── ERRORS/                                  (rapports d'import Matrixify)
 ├── 05_DOCS/                                     (source MkDocs — GitHub Pages)
 │   ├── index.md, quick-start.md, contraintes-techniques.md, avancement.md
@@ -61,26 +74,30 @@ dandoy/
 
 ## Fichiers d'import Shopify prêts
 
-| Fichier | Lignes | Contenu |
+Un jeu de fichiers par boutique (Option B). Les 199 produits partagés (35 actifs) et les
+clients enregistrés sur les deux marques sont dupliqués dans les deux jeux ; chaque commande
+n'apparaît que dans un seul jeu (boutique d'origine).
+
+| Fichier (Dandoy / Butterfly) | Lignes | Contenu |
 |---|---|---|
-| `shopify_products.csv` | 25 514 | 4 834 produits EN + 20 metafields + 22 tags sous-catégories |
-| `shopify_translations.csv` | 6 723 | Traductions FR (93% couvert) + NL (71% couvert) |
-| `shopify_collections.csv` | 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
-| `shopify_redirects.csv` | 2 368 | Redirections 301 (produits actifs + catégories) |
-| `shopify_customers.csv` | 41 020 | Clients dédupliqués + adresse par défaut + tags source |
-| `shopify_orders.csv` | 99 821 | 37 430 commandes 2025-2026 avec line items (SKU, prix, qté) |
-| `*_PURGE.csv` (×3) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
-| `shopify_products_sample.csv` | 53 | Échantillon 10 produits (tous types) |
+| `shopify_products_dandoy.csv` / `_butterfly.csv` | 22 223 / 4 905 | 4 183 / 849 produits + 20 metafields + 22 tags sous-catégories + tag `dandoy`/`butterfly` |
+| `shopify_translations_dandoy.csv` / `_butterfly.csv` | 5 768 / 1 233 | Traductions FR/NL |
+| `shopify_collections_dandoy.csv` / `_butterfly.csv` | 58 / 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
+| `shopify_redirects_dandoy.csv` / `_butterfly.csv` | 2 045 / 380 | Redirections 301 (produits actifs + catégories, scopées par boutique) |
+| `shopify_customers_dandoy.csv` / `_butterfly.csv` | 33 357 / 11 404 | Clients dédupliqués + adresse par défaut + tags source |
+| `shopify_orders_dandoy.csv` / `_butterfly.csv` | 71 096 / 28 725 | 23 823 / 13 607 commandes avec line items |
+| `*_PURGE.csv` (×6) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
+| `shopify_products_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon (tous types) |
 
-### Ordre d'import recommandé
+### Ordre d'import recommandé (à répéter dans chaque boutique)
 
-1. `shopify_products_sample.csv` — test avec 10 produits, vérifier, supprimer manuellement
-2. `shopify_products.csv` — produits + variantes + metafields + tags
-3. `shopify_collections.csv` — collections (auto-remplies via tags/types)
-4. `shopify_customers.csv` — clients + adresses
-5. Activer les langues FR et NL dans Settings → Languages
-6. `shopify_translations.csv` — traductions FR/NL
-7. `shopify_redirects.csv` — redirections 301
+1. `shopify_products_sample_{dandoy|butterfly}.csv` — test, vérifier, supprimer manuellement
+2. `shopify_products_{dandoy|butterfly}.csv` — produits + variantes + metafields + tags
+3. `shopify_collections_{dandoy|butterfly}.csv` — collections (auto-remplies via tags/types)
+4. `shopify_customers_{dandoy|butterfly}.csv` — clients + adresses
+5. Activer les langues FR et NL (+ EN pour Dandoy) dans Settings → Languages
+6. `shopify_translations_{dandoy|butterfly}.csv` — traductions
+7. `shopify_redirects_{dandoy|butterfly}.csv` — redirections 301
 
 ### Régénération
 
@@ -90,20 +107,21 @@ Après mise à jour des exports Magento :
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-8 étapes : produits + traductions → collections → redirections → customers → commandes → sample → purge → validation.
+8 étapes : produits + traductions → collections → redirections → customers → commandes → sample → purge → validation, chacune générant les fichiers des deux boutiques.
 
 La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font échouer un import
 Matrixify : SKU dupliqués entre produits, combinaisons de variantes dupliquées, options
 incohérentes, plafond des 100 variantes, prix manquant/négatif, handles orphelins. Sort en
-erreur (code 1) sans empêcher la génération des autres fichiers.
+erreur (code 1) sans empêcher la génération des autres fichiers. Validée indépendamment pour
+chaque boutique.
 
 ### Purge (pour repartir à zéro entre tests)
 
-Importer via Matrixify dans l'ordre inverse :
+Importer via Matrixify dans l'ordre inverse, dans chaque boutique :
 
-1. `shopify_redirects_PURGE.csv`
-2. `shopify_collections_PURGE.csv`
-3. `shopify_products_PURGE.csv`
+1. `shopify_redirects_{dandoy|butterfly}_PURGE.csv`
+2. `shopify_collections_{dandoy|butterfly}_PURGE.csv`
+3. `shopify_products_{dandoy|butterfly}_PURGE.csv`
 
 ---
 
@@ -180,6 +198,25 @@ Importer via Matrixify dans l'ordre inverse :
   Magento), fix de l'import des collections (mauvais en-tête de règle Matrixify), et
   intégration + correctif du block Custom options sur le thème Horizon (champs hors formulaire).
 
+### Migration vers deux boutiques séparées — Option B (29–30 juillet 2026)
+
+- **29 juillet** : décision client — Option B retenue (deux boutiques Shopify séparées,
+  Butterfly TT en plan Basic) au lieu de l'instance unique + Markets (Option A).
+- **30 juillet** : tous les scripts adaptés pour générer une paire de fichiers `_dandoy` /
+  `_butterfly` par entité :
+  - `magento_to_shopify.py` : fonction `brand_scope()` (basée sur `product_websites`) route
+    chaque produit vers le(s) fichier(s) approprié(s) ; les 199 produits partagés (35 actifs)
+    sont dupliqués dans les deux catalogues, tagués `dandoy,butterfly` dans les deux
+  - `generate_collections.py` : mêmes 37 règles de smart collections écrites dans les deux
+    fichiers (évaluées localement par le catalogue de chaque boutique)
+  - `generate_redirects.py` : redirections scopées par boutique
+  - `magento_to_shopify_customers.py` : clients enregistrés sur les deux marques dupliqués
+    dans les deux fichiers
+  - `magento_to_shopify_orders.py` : chaque commande n'appartient qu'à une seule boutique
+  - `regenerate_all.sh` : sample et purge générés par boutique (6 fichiers de purge)
+  - `validate_shopify_csv.py` : validation indépendante par boutique
+- Fichiers obsolètes de l'ancienne architecture mono-boutique supprimés
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -205,11 +242,12 @@ Importer via Matrixify dans l'ordre inverse :
 
 ## Décisions en attente
 
-| Sujet | Options | Recommandation | Impact |
+| Sujet | Options | Décision | Impact |
 |---|---|---|---|
-| **Multi-sites** | A : instance unique + Markets / B : deux boutiques | **Option A** (stock unifié, pas de survente) | Conditionne tout le reste |
+| **Multi-sites** | A : instance unique + Markets / B : deux boutiques | **Option B retenue (29 juillet 2026)** — deux boutiques, Butterfly en plan Basic | Scripts adaptés — voir ci-dessus |
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
+| **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
 
 ---
 
@@ -218,20 +256,21 @@ Importer via Matrixify dans l'ordre inverse :
 | Sujet | Priorité | Statut |
 |---|---|---|
 | Plan de migration | ~~À faire~~ | **Fait** — 5 phases documentées (`import/plan-migration.md`) |
-| Décision multi-sites (A ou B) | **Haute** | En attente validation client |
-| Import test complet Matrixify | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessous) |
+| Décision multi-sites (A ou B) | ~~Haute~~ | **Fait** — Option B retenue, scripts adaptés (29-30 juillet 2026) |
+| Import test complet Matrixify | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessous, sur l'ancien catalogue unique — à retester par boutique) |
 | 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — `doublons_variantes_a_corriger.csv` |
 | 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
+| Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
-| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers.csv` prêt (41 020 clients) |
-| Migration commandes | ~~À décider~~ | **Fait** — `shopify_orders.csv` prêt (37 430 commandes avec line items) |
+| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (33 357 / 11 404 clients) |
+| Migration commandes | ~~À décider~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (23 823 / 13 607 commandes) |
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
-| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2) |
+| Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2), à dupliquer sur les 2 boutiques |
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
 | Pages CMS Magento | Basse | Non commencé (Phase 2) |
-| Thème Shopify + branding Butterfly | Hors périmètre data | Phase 2 |
+| Thème Shopify + branding Butterfly | Hors périmètre data | Phase 2 — 2 thèmes à prévoir (Option B) |
 
 ---
 

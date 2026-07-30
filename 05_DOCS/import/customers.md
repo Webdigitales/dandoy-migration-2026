@@ -13,30 +13,33 @@
 
 ## Résultat de la conversion
 
-| Donnée | Valeur |
-|---|---|
-| Clients exportés | **41 020** (dédupliqués par email) |
-| Avec adresse | 25 006 |
-| Sans adresse | 16 014 |
-| Accepts Marketing | 21 104 |
+**Deux boutiques Shopify (Option B)** : le script écrit un fichier client par boutique. Les
+clients présents sur les deux marques (tag `dandoy` **et** `butterfly`) sont dupliqués dans
+les deux fichiers — un compte est nécessaire dans chaque boutique.
 
-### Déduplication
+| Donnée | Dandoy-Sports | Butterfly TT |
+|---|---|---|
+| Clients exportés | **33 357** | **11 404** |
+| Avec adresse | 19 378 | 8 117 |
+| Sans adresse | 13 979 | 3 287 |
 
-46 423 comptes Magento → 41 020 clients Shopify. La différence (5 403) vient
-de clients inscrits sur **plusieurs websites** Magento (ex: base + bt_be) avec
-le même email. Le script garde le compte le plus récemment mis à jour et
-fusionne les tags de source.
+46 423 comptes Magento → **41 020 clients uniques** après déduplication par email (la
+différence de 5 403 vient de clients inscrits sur **plusieurs websites** Magento avec le même
+email — le script garde le compte le plus récemment mis à jour et fusionne les tags de
+source). Ces 41 020 clients uniques sont ensuite répartis dans les deux fichiers ci-dessus ;
+la somme (44 761) dépasse 41 020 car ~3 741 clients partagés apparaissent dans les deux.
 
 ### Tags source
 
 Chaque client reçoit un tag indiquant son website d'origine :
 
-| Tag | Clients | Source Magento |
+| Tag | Clients uniques | Source Magento |
 |---|---|---|
 | `dandoy` | 33 357 | `base` + `ds_ww` |
 | `butterfly` | 11 404 | `bt_be` + `bt_nl` |
 
-Les clients présents sur les deux marques ont les deux tags.
+Les clients présents sur les deux marques ont les deux tags et sont écrits dans les deux
+fichiers (`shopify_customers_dandoy.csv` et `shopify_customers_butterfly.csv`).
 
 ### Répartition par pays (top 5)
 
@@ -122,9 +125,10 @@ Une migration séparée serait nécessaire via l'export Magento des commandes.
 
 ### Via Matrixify
 
-1. Dans Matrixify, cliquer **Import**
-2. Uploader `shopify_customers.csv`
+1. Dans Matrixify (boutique Dandoy-Sports), cliquer **Import**
+2. Uploader `shopify_customers_dandoy.csv`
 3. Lancer l'import
+4. Répéter avec `shopify_customers_butterfly.csv` dans la boutique Butterfly TT
 
 **Vérification :** ouvrir quelques clients dans Shopify Admin → Customers et vérifier :
 - Nom, email, téléphone
@@ -170,5 +174,5 @@ Préparer un email de migration informant les clients :
 python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/magento_to_shopify_customers.py
 ```
 
-Inclus dans `regenerate_all.sh` (étape 4/6).
+Inclus dans `regenerate_all.sh` (étape 4/8). Génère les deux fichiers en une seule exécution.
 Source : `01_DATA_RAW/export_customer.csv` + `01_DATA_RAW/export_customer_address.csv`

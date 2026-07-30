@@ -2,11 +2,15 @@
 
 Guide pas-à-pas pour importer les données dans Shopify.
 
+> **Deux boutiques Shopify (Option B)** : Dandoy-Sports et Butterfly TT sont deux instances
+> séparées. Chaque étape ci-dessous s'exécute **deux fois**, une fois par boutique, avec le
+> fichier `_dandoy` ou `_butterfly` correspondant. Voir [Multi-sites](./architecture/multi-sites.md).
+
 ---
 
 ## Prérequis
 
-- Un compte Shopify avec l'app **Matrixify** installée
+- Un compte Shopify (× 2 : Dandoy-Sports + Butterfly TT) avec l'app **Matrixify** installée sur chacun
 - Python 3.12+ (pour régénérer les fichiers si nécessaire)
 - L'export Magento dans `01_DATA_RAW/export_magento_products_all.csv`
 
@@ -18,36 +22,44 @@ Guide pas-à-pas pour importer les données dans Shopify.
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-Cela crée dans `04_SHOPIFY_IMPORTS/` :
+Cela crée dans `04_SHOPIFY_IMPORTS/`, un jeu de fichiers par boutique :
 
 | Fichier | Contenu |
 |---|---|
-| `shopify_products.csv` | Produits + variantes + metafields + tags |
-| `shopify_translations.csv` | Traductions FR + NL |
-| `shopify_collections.csv` | 37 smart collections |
-| `shopify_products_PURGE.csv` | Suppression produits (pour tests) |
-| `shopify_collections_PURGE.csv` | Suppression collections (pour tests) |
-| `shopify_redirects_PURGE.csv` | Suppression redirections (pour tests) |
+| `shopify_products_dandoy.csv` / `shopify_products_butterfly.csv` | Produits + variantes + metafields + tags |
+| `shopify_translations_dandoy.csv` / `shopify_translations_butterfly.csv` | Traductions FR + NL |
+| `shopify_collections_dandoy.csv` / `shopify_collections_butterfly.csv` | 37 smart collections |
+| `shopify_customers_dandoy.csv` / `shopify_customers_butterfly.csv` | Clients dédupliqués |
+| `shopify_orders_dandoy.csv` / `shopify_orders_butterfly.csv` | Commandes 2025-2026 |
+| `shopify_products_{dandoy\|butterfly}_PURGE.csv` | Suppression produits (pour tests) |
+| `shopify_collections_{dandoy\|butterfly}_PURGE.csv` | Suppression collections (pour tests) |
+| `shopify_redirects_{dandoy\|butterfly}_PURGE.csv` | Suppression redirections (pour tests) |
 
 Et dans `03_SEO_AND_REDIRECTS/` :
 
 | Fichier | Contenu |
 |---|---|
-| `shopify_redirects.csv` | 2 368 redirections 301 |
+| `shopify_redirects_dandoy.csv` | 2 045 redirections 301 |
+| `shopify_redirects_butterfly.csv` | 380 redirections 301 |
+
+> Les **199 produits partagés** entre Dandoy et Butterfly (35 actifs) sont présents dans les
+> deux fichiers produits, tagués `dandoy,butterfly` — aucune étape manuelle supplémentaire,
+> importer normalement dans chaque boutique.
 
 ---
 
 ## Étape 2 — Tester avec le sample
 
-Avant d'importer les 4 834 produits, vérifier le format avec l'échantillon :
+Avant d'importer le catalogue complet, vérifier le format avec l'échantillon **dans chaque
+boutique** :
 
-1. Ouvrir Shopify Admin → **Apps → Matrixify**
+1. Ouvrir Shopify Admin (boutique Dandoy ou Butterfly) → **Apps → Matrixify**
 2. Cliquer **Import**
-3. Uploader `shopify_products_sample.csv` (10 produits, tous types représentés)
+3. Uploader `shopify_products_sample_dandoy.csv` (ou `_butterfly.csv` selon la boutique — tous types représentés)
 4. Lancer l'import
 5. Vérifier dans l'admin : variantes, metafields, tags, images
 
-Si tout est OK, purger le sample (`shopify_products_PURGE.csv` ou suppression manuelle)
+Si tout est OK, purger le sample (`shopify_products_{store}_PURGE.csv` ou suppression manuelle)
 puis passer à l'étape 3.
 
 ---
@@ -55,7 +67,7 @@ puis passer à l'étape 3.
 ## Étape 3 — Importer les produits
 
 1. Dans Matrixify, cliquer **Import**
-2. Uploader `shopify_products.csv`
+2. Uploader `shopify_products_dandoy.csv` (boutique Dandoy) ou `shopify_products_butterfly.csv` (boutique Butterfly)
 3. Vérifier le mapping des colonnes (Matrixify les reconnaît automatiquement)
 4. Lancer l'import
 
@@ -68,33 +80,35 @@ puis passer à l'étape 3.
 - Titre, description, images
 - Variantes (SKU, prix, options)
 - Metafields (dans la section "Metafields" de la fiche produit)
-- Tags
+- Tags (dont `dandoy` / `butterfly`, et les deux sur les produits partagés)
 
 ---
 
 ## Étape 4 — Importer les collections
 
 1. Dans Matrixify, cliquer **Import**
-2. Uploader `shopify_collections.csv`
+2. Uploader `shopify_collections_dandoy.csv` ou `shopify_collections_butterfly.csv`
 3. Lancer l'import
 
 **Vérification :** ouvrir quelques collections et vérifier qu'elles contiennent les bons produits
-(le remplissage est automatique via les règles Product Type + Product Tag).
+(le remplissage est automatique via les règles Product Type + Product Tag, évaluées sur le
+catalogue propre à chaque boutique).
 
 ---
 
 ## Étape 5 — Activer les langues
 
 1. Aller dans **Settings → Languages**
-2. Ajouter **Français (fr)** et **Néerlandais (nl)**
-3. Publier les deux langues
+2. Boutique Dandoy : ajouter **Français (fr)**, **Anglais (en)** et **Néerlandais (nl)**
+3. Boutique Butterfly : ajouter **Français (fr)** et **Néerlandais (nl)**
+4. Publier les langues
 
 ---
 
 ## Étape 6 — Importer les traductions
 
 1. Dans Matrixify, cliquer **Import**
-2. Uploader `shopify_translations.csv`
+2. Uploader `shopify_translations_dandoy.csv` ou `shopify_translations_butterfly.csv`
 3. Lancer l'import
 
 **Vérification :** passer la boutique en FR ou NL et vérifier les titres/descriptions traduits.
@@ -103,11 +117,11 @@ puis passer à l'étape 3.
 
 ## Étape 7 — Configurer les metafields
 
-Après l'import, Matrixify a créé les définitions automatiquement.
-Aller dans **Settings → Custom data → Products** pour :
+Après l'import, Matrixify a créé les définitions automatiquement (à faire dans **chaque**
+boutique). Aller dans **Settings → Custom data → Products** pour :
 
 - Renommer les champs (ex: `custom.blade_category` → "Catégorie bois")
-- Ajouter les choix prédéfinis (valeurs listées dans [Metafields](./mapping/metafields.md))
+- Ajouter les choix prédéfinis (valeurs listées dans [Metafields — Choix prédéfinis](./mapping/metafields-choix-predefinis.md))
 
 Puis configurer les **filtres** dans **Search & Discovery** :
 
@@ -121,30 +135,30 @@ Puis configurer les **filtres** dans **Search & Discovery** :
 ## Étape 8 — Importer les redirections
 
 1. Dans Matrixify, cliquer **Import**
-2. Uploader `shopify_redirects.csv` (depuis `03_SEO_AND_REDIRECTS/`)
+2. Uploader `shopify_redirects_dandoy.csv` ou `shopify_redirects_butterfly.csv` (depuis `03_SEO_AND_REDIRECTS/`)
 3. Lancer l'import
 
 **Vérification :** tester quelques anciennes URLs Magento (ex: `/stiga-allround-classic.html`)
-pour confirmer la redirection vers `/products/stiga-allround-classic`.
+pour confirmer la redirection vers `/products/stiga-allround-classic` sur la bonne boutique.
 
 ---
 
 ## Repartir à zéro (entre les tests)
 
-Pour supprimer toutes les données importées et recommencer :
+Pour supprimer toutes les données importées d'une boutique et recommencer :
 
 ```
-Importer dans cet ordre via Matrixify :
-1. shopify_redirects_PURGE.csv
-2. shopify_collections_PURGE.csv
-3. shopify_products_PURGE.csv
+Importer dans cet ordre via Matrixify (fichiers _dandoy ou _butterfly selon la boutique) :
+1. shopify_redirects_{store}_PURGE.csv
+2. shopify_collections_{store}_PURGE.csv
+3. shopify_products_{store}_PURGE.csv
 ```
 
-> **"Ordre important"**
+> **Ordre important**
     Supprimer les redirections et collections **avant** les produits,
     sinon les références seront cassées.
 
-Puis relancer les imports depuis l'étape 2.
+Puis relancer les imports depuis l'étape 2, dans la boutique concernée.
 
 ---
 
@@ -153,21 +167,17 @@ Puis relancer les imports depuis l'étape 2.
 ```
 ┌─────────────────────────────────────────────────┐
 │  regenerate_all.sh                              │
-│  (génère tous les CSV depuis l'export Magento)  │
+│  (génère les CSV des 2 boutiques depuis         │
+│   l'export Magento)                             │
 └──────────────────────┬──────────────────────────┘
                        │
-        ┌──────────────┼──────────────────┐
-        ▼              ▼                  ▼
-   Produits      Collections        Redirections
-   + Tags        (37 smart)         (2 368 × 301)
-   + Metafields
-        │              │                  │
-        ▼              ▼                  ▼
-   Traductions    (auto-remplies)    (après produits)
-   FR + NL
-        │
-        ▼
-   Metafields      Search &
-   (valider)       Discovery
-                   (filtres)
+        ┌──────────────┴──────────────┐
+        ▼                              ▼
+   Boutique Dandoy-Sports        Boutique Butterfly TT
+        │                              │
+        ├─ Produits + Tags + Metafields ┤
+        ├─ Collections (37 smart)       ┤
+        ├─ Langues (FR/EN/NL vs FR/NL)  ┤
+        ├─ Traductions                  ┤
+        └─ Redirections (2 045 / 380)   ┘
 ```

@@ -130,17 +130,15 @@ indépendamment.
 Exemple : "Stiga Allround Classic" a 5 variantes (5 SKU distincts : 1033, 1034, 1035, 200, 20).
 Chaque SKU a sa propre ligne dans le CSV de stock.
 
-### 6.2 Instance unique vs deux boutiques
+### 6.2 Deux boutiques séparées (Option B retenue le 29 juillet 2026)
 
-Si l'architecture Shopify retenue est l'**instance unique** (recommandé) :
-- Un seul flux Stock Sync suffit
-- Tous les produits (Dandoy + Butterfly) partagent le même inventaire
-
-Si **deux boutiques** séparées :
-- Deux connexions Stock Sync nécessaires (une par boutique)
-- Le même fichier CSV peut alimenter les deux (SKU identiques)
-- **Risque de survente** sur les 199 produits partagés (35 actifs) entre les deux boutiques
-  (le stock est décrémenté indépendamment, sync seulement 1×/jour)
+L'architecture retenue est **deux boutiques Shopify séparées** (Dandoy-Sports + Butterfly TT) :
+- **Deux connexions Stock Sync nécessaires** (une par boutique), à configurer chez le prestataire
+- Le même fichier CSV alimente les deux (SKU identiques, pas de fichier séparé à produire)
+- **Risque de survente accepté par le client** sur les 199 produits partagés (35 actifs) entre
+  les deux boutiques : le stock est décrémenté indépendamment sur chaque boutique, la sync
+  n'a lieu qu'1×/jour — si le dernier stock d'un produit partagé part sur Dandoy, Butterfly
+  ne le saura que le lendemain. À surveiller de près après le go-live sur ces 199 produits.
 
 ### 6.3 SKU absents du fichier stock
 

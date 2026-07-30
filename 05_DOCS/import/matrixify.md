@@ -2,6 +2,11 @@
 
 Référence des règles et contraintes Matrixify pour l'import produits dans Shopify.
 
+> **Deux boutiques (Option B)** : ces règles s'appliquent identiquement aux deux instances
+> Matrixify (Dandoy-Sports et Butterfly TT) — `shopify_products_dandoy.csv` et
+> `shopify_products_butterfly.csv` suivent le même format, importés séparément dans
+> chaque boutique.
+
 ---
 
 ## Identification des produits
@@ -36,7 +41,7 @@ Dans notre CSV, c'est le **Handle** qui relie les lignes d'un même produit.
 
 | Règle | Détail |
 |---|---|
-| **Nommage** | Le fichier doit contenir "Products" dans le nom (ex: `shopify_products.csv`) |
+| **Nommage** | Le fichier doit contenir "Products" dans le nom (ex: `shopify_products_dandoy.csv`) |
 | **Encodage** | UTF-8 (auto-détecté par Matrixify) |
 | **Délimiteur** | Virgule `,` — valeurs texte entre guillemets `"` |
 | **Ordre des colonnes** | Libre — Matrixify reconnaît les en-têtes. Les colonnes non reconnues sont ignorées. |
@@ -143,7 +148,7 @@ Stiga-WRB-system;Stiga-CR-system
 
 | Règle | Statut |
 |---|---|
-| Nom contient "Products" | `shopify_products.csv` |
+| Nom contient "Products" | `shopify_products_dandoy.csv` / `shopify_products_butterfly.csv` |
 | UTF-8 | Oui |
 | Handle comme identifiant | Oui (`url_key` Magento) |
 | Lignes consécutives par produit | Oui (grouped + children, puis images) |

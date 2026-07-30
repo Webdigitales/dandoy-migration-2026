@@ -7,11 +7,11 @@ Ce fichier centralise le contexte, les contraintes techniques et les directives 
 ## 1. Contexte & Périmètre du Projet
 
 - **Client :** Dandoy-Sports / Butterfly TT
-- **Objectif :** Migration complète de Magento 2 vers Shopify (instance unique + Shopify Markets — Option A retenue).
-- **Périmètre Multi-sites (6 Domaines/Sous-domaines) :**
-  - `dandoy-sports.com` (Dandoy — hors Union Européenne / international)
-  - `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` (Dandoy EU)
-  - `be.butterfly.tt`, `nl.butterfly.tt` (Identité de marque stricte)
+- **Objectif :** Migration complète de Magento 2 vers Shopify — **deux boutiques Shopify séparées (Option B, décidée le 29 juillet 2026)** : une instance complète pour Dandoy-Sports, une instance en plan **Basic** pour Butterfly TT.
+- **Périmètre Multi-sites (6 Domaines/Sous-domaines, répartis sur 2 boutiques) :**
+  - **Boutique Dandoy-Sports** : `dandoy-sports.com` (hors Union Européenne / international), `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` (Dandoy EU) — Shopify Markets gère en interne la distinction hors-UE / UE (TVA différente)
+  - **Boutique Butterfly TT** (plan Basic) : `be.butterfly.tt`, `nl.butterfly.tt` (Identité de marque stricte)
+  - **199 produits partagés entre les deux marques (35 actifs)** : dupliqués manuellement dans les deux catalogues, tagués `dandoy` + `butterfly` dans les deux — double maintenance acceptée par le client, ainsi que le risque de survente sur ces produits (stock sync 1×/jour, deux boutiques distinctes)
 - **Outil d'import :** Matrixify (plan Enterprise requis — 41k clients + 125k commandes)
 - **Documentation :** Site MkDocs déployé via GitHub Pages (`05_DOCS/`)
 
@@ -30,7 +30,7 @@ Ce fichier centralise le contexte, les contraintes techniques et les directives 
   - `url_key` du parent → **Handle** Shopify
   - Produits simples enfants → **Variantes** Shopify
   - `additional_attributes` (ex: `baldes_handles=handle-ANATOMIC`) → options natives Shopify
-- **Résultat :** 25 514 lignes CSV (4 834 produits, 6 723 traductions)
+- **Résultat :** 4 834 produits uniques (dont 199 partagés Dandoy/Butterfly), répartis en deux CSV par boutique (Option B — voir section 5) — 27 128 lignes produits et 7 001 lignes traductions au total
 
 ### C. Limites Natives de Shopify
 - **Plafond des 100 variantes :** Audité — maximum constaté = 33 variantes (textiles Joola). Pas de scission nécessaire.
@@ -72,15 +72,23 @@ dandoy/
 │   └── avancement_migration.md
 │
 ├── 03_SEO_AND_REDIRECTS/
-│   └── shopify_redirects.csv               (2 368 redirections, gitignorés)
+│   ├── shopify_redirects_dandoy.csv        (2 045 redirections, gitignoré)
+│   └── shopify_redirects_butterfly.csv     (380 redirections, gitignoré)
 │
-├── 04_SHOPIFY_IMPORTS/                     # CSV prêts à l'import (gitignorés sauf sample)
-│   ├── shopify_products.csv                (25 514 lignes — 4 834 produits)
-│   ├── shopify_translations.csv            (6 723 lignes)
-│   ├── shopify_collections.csv             (37 collections)
-│   ├── shopify_customers.csv               (41 020 clients dédupliqués)
-│   ├── shopify_products_sample.csv         (10 produits — versionné)
-│   └── *_PURGE.csv (×3)
+├── 04_SHOPIFY_IMPORTS/                     # CSV prêts à l'import (gitignorés sauf sample), 1 jeu par boutique
+│   ├── shopify_products_dandoy.csv         (22 223 lignes — 4 183 produits)
+│   ├── shopify_products_butterfly.csv      (4 905 lignes — 849 produits)
+│   ├── shopify_translations_dandoy.csv     (5 768 lignes)
+│   ├── shopify_translations_butterfly.csv  (1 233 lignes)
+│   ├── shopify_collections_dandoy.csv      (37 collections, 58 lignes)
+│   ├── shopify_collections_butterfly.csv   (37 collections, 58 lignes)
+│   ├── shopify_customers_dandoy.csv        (33 357 clients)
+│   ├── shopify_customers_butterfly.csv     (11 404 clients)
+│   ├── shopify_orders_dandoy.csv           (71 096 lignes — 23 823 commandes)
+│   ├── shopify_orders_butterfly.csv        (28 725 lignes — 13 607 commandes)
+│   ├── shopify_products_sample_dandoy.csv     (versionné)
+│   ├── shopify_products_sample_butterfly.csv  (versionné)
+│   └── *_PURGE.csv (×6 — produits/collections/redirections × 2 boutiques)
 │
 └── 05_DOCS/                                # Source MkDocs (GitHub Pages)
     ├── index.md, quick-start.md, contraintes-techniques.md, avancement.md
@@ -104,39 +112,46 @@ bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 
 La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font échouer un import Matrixify : SKU dupliqués entre produits (risque pour Stock Sync — voir section 2.A), combinaisons de variantes dupliquées ou options incohérentes au sein d'un produit, plafond des 100 variantes, prix manquant/négatif, et handles orphelins dans les traductions/redirections. Le script sort en erreur (code 1) si des problèmes bloquants sont trouvés, sans empêcher la génération des autres fichiers. Les avertissements (ex. Vendor vide) n'affectent pas le code de sortie.
 
-### Ordre d'import Matrixify recommandé
+### Ordre d'import Matrixify recommandé (à répéter dans chacune des deux boutiques)
 
-1. `shopify_products_sample.csv` (test — 10 produits)
-2. `shopify_products.csv`
-3. `shopify_collections.csv`
-4. `shopify_customers.csv`
-5. Activer FR + NL dans Settings → Languages
-6. `shopify_translations.csv`
-7. `shopify_redirects.csv`
+1. `shopify_products_sample_{dandoy|butterfly}.csv` (test — quelques produits)
+2. `shopify_products_{dandoy|butterfly}.csv`
+3. `shopify_collections_{dandoy|butterfly}.csv`
+4. `shopify_customers_{dandoy|butterfly}.csv`
+5. Activer FR + NL (+ EN pour Dandoy) dans Settings → Languages
+6. `shopify_translations_{dandoy|butterfly}.csv`
+7. `shopify_redirects_{dandoy|butterfly}.csv`
+
+> Les 199 produits partagés (35 actifs) sont présents dans les deux fichiers `shopify_products_*.csv`, tagués `dandoy,butterfly` — à importer normalement dans chaque boutique, aucune étape manuelle supplémentaire.
 
 ---
 
 ## 5. Données Migrées
 
-| Entité | Fichier source | Résultat |
-|---|---|---|
-| Produits | `export_magento_products_all.csv` | 4 834 produits, 25 514 lignes CSV |
-| Traductions | Idem (store views fr/nl) | 6 723 lignes (93% FR, 71% NL) |
-| Collections | Généré depuis tags | 37 smart collections |
-| Redirections | Crawl HTTP live | 2 368 redirections 301 |
-| Clients | `export_customer.csv` + adresses | 41 020 (dédupliqués depuis 46 423) |
-| Commandes | `export_order_all_2025_2026.csv` | 37 430 commandes 2025-2026 avec line items → `shopify_orders.csv` (99 821 lignes) |
+Chaque entité est scindée en deux fichiers, un par boutique (produits partagés dupliqués dans les deux).
+
+| Entité | Fichier source | Dandoy-Sports | Butterfly TT |
+|---|---|---|---|
+| Produits | `export_magento_products_all.csv` | 4 183 produits, 22 223 lignes CSV | 849 produits, 4 905 lignes CSV |
+| Traductions | Idem (store views fr/nl) | 5 768 lignes (FR 3 856, NL 3 417) | 1 233 lignes (FR 809, NL 19) |
+| Collections | Généré depuis tags | 37 smart collections | 37 smart collections |
+| Redirections | Crawl HTTP live | 2 045 redirections 301 | 380 redirections 301 |
+| Clients | `export_customer.csv` + adresses | 33 357 (dédupliqués, dont partagés) | 11 404 (dédupliqués, dont partagés) |
+| Commandes | `export_order_all_2025_2026.csv` | 23 823 commandes → `shopify_orders_dandoy.csv` (71 096 lignes) | 13 607 commandes → `shopify_orders_butterfly.csv` (28 725 lignes) |
+
+> 4 834 produits uniques au total (dont 199 partagés, 35 actifs) et 41 020 clients uniques au total (dont les partagés dupliqués entre les deux fichiers ci-dessus).
 
 ---
 
 ## 6. Décisions en Attente
 
-| Sujet | Options | Recommandation |
+| Sujet | Options | Décision |
 |---|---|---|
-| **Multi-sites** | A : instance unique / B : deux boutiques | **Option A** recommandée |
-| **Migration commandes** | Import 2025-2026 avec line items | `shopify_orders.csv` prêt — 37 430 commandes |
+| **Multi-sites** | A : instance unique / B : deux boutiques | **Option B retenue (29 juillet 2026)** : deux boutiques séparées, Butterfly en plan Basic |
+| **Migration commandes** | Import 2025-2026 avec line items | Prêt, scindé par boutique — voir section 5 |
 | **Custom options** | Line item properties (natif) | Retenu — code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce | Retenu — prix variables 41–116 € |
+| **Plan Basic Butterfly** | Limitations à valider (rapports, shipping tiers calculé, comptes staff) | À vérifier avant validation finale |
 
 ---
 
@@ -145,6 +160,7 @@ La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font �
 - Ne jamais modifier la structure des SKUs
 - Les options Shopify vides sont omises (ne pas déclarer `Option Name` sans `Option Value`)
 - Metafields multi-valeurs : séparer par `|` (pipe), type `list.single_line_text_field`
-- Les CSV générés sont gitignorés (sauf `shopify_products_sample.csv`)
+- Les CSV générés sont gitignorés (sauf `shopify_products_sample_dandoy.csv` et `shopify_products_sample_butterfly.csv`)
 - Toute nouvelle documentation va dans `05_DOCS/` et est référencée dans `mkdocs.yml`
 - Le site MkDocs se déploie automatiquement via GitHub Actions sur push `master`
+- **Deux boutiques Shopify (Option B)** : tout script de génération doit produire une paire de fichiers `_dandoy` / `_butterfly` (voir `brand_scope()` dans `magento_to_shopify.py`, basé sur `product_websites`). Les produits partagés (tag `dandoy,butterfly`) sont dupliqués volontairement dans les deux fichiers produits — ne pas les dédupliquer.

@@ -1,5 +1,9 @@
 # Gestion des langues et traductions — Dandoy-Sports / Butterfly TT
 
+> **Deux boutiques Shopify (Option B, décidée le 29 juillet 2026)** : Dandoy-Sports et
+> Butterfly TT gèrent leurs traductions indépendamment, chacune avec son propre fichier
+> `shopify_translations_{dandoy|butterfly}.csv`. Voir [Multi-sites](./multi-sites.md).
+
 ---
 
 ## Situation actuelle sur Magento
@@ -93,74 +97,70 @@ Field = metafield.custom.blade_category
 
 ---
 
-## Workflow d'export recommandé
+## Workflow d'export recommandé (par boutique)
 
 ### Étape 1 — Import produits (fichier principal)
 
-Le fichier `shopify_products.csv` existant importe les produits en **anglais** (langue par défaut).
+`shopify_products_dandoy.csv` / `shopify_products_butterfly.csv` importent les produits en
+**anglais** (langue par défaut) dans leur boutique respective. Butterfly n'a pas de traduction
+EN propre (voir ci-dessous) — l'anglais n'est de toute façon pas activé dans cette boutique.
 
-### Étape 2 — Export traductions (fichier séparé)
+### Étape 2 — Export traductions (fichier séparé, par boutique)
 
-Le script `magento_to_shopify.py` génère automatiquement `shopify_translations.csv`
+Le script `magento_to_shopify.py` génère automatiquement
+`shopify_translations_dandoy.csv` et `shopify_translations_butterfly.csv`
 au format Matrixify Translations.
 
-**Logique de sourcing :**
+**Logique de sourcing (identique dans les deux fichiers) :**
 - **FR** : `bt_be_fr` en priorité (traduction Butterfly propre), fallback `eu_fr` (Dandoy)
 - **NL** : `eu_nl` (source principale unique)
 
 **Résultat du dernier export :**
 
-| Champ | Lignes | Avec FR | Avec NL |
+| Boutique | Lignes traduction | Produits avec FR | Produits avec NL |
 |---|---|---|---|
-| `title` | 2 717 | 2 683 | 1 697 |
-| `body_html` | 4 006 | 3 997 | 3 103 |
-| **Total** | **6 723** | **4 492 produits** | **3 417 produits** |
+| Dandoy-Sports (4 183 produits) | 5 768 | 3 856 (92%) | 3 417 (82%) |
+| Butterfly TT (849 produits) | 1 233 | 809 (95%) | 19 (2%) |
 
-### Étape 3 — Import dans Shopify
+> Le NL de Butterfly est très faible car `bt_be_nl` / `bt_nl` sont quasi vides dans Magento —
+> la source NL commune (`eu_nl`) ne couvre que les 199 produits partagés avec Dandoy.
 
-1. Importer `shopify_products.csv` (produits en anglais + metafields)
-2. Activer les langues FR et NL dans **Settings → Languages**
-3. Importer `shopify_translations.csv` (traductions FR + NL)
+### Étape 3 — Import dans Shopify (dans chaque boutique)
+
+1. Importer `shopify_products_{store}.csv` (produits en anglais + metafields)
+2. Activer les langues FR et NL (+ EN pour Dandoy) dans **Settings → Languages**
+3. Importer `shopify_translations_{store}.csv` (traductions FR + NL)
 
 ---
 
 ## Cas particulier : Butterfly FR
 
-Les produits Butterfly ont leur propre traduction FR dans `bt_be_fr` (5 191 produits).
+Les produits Butterfly ont leur propre traduction FR dans `bt_be_fr` (5 191 produits). Avec
+l'**Option B retenue** (deux boutiques séparées), chaque boutique a ses propres traductions,
+sans conflit sur les 199 produits partagés (chacun a sa version dans son propre fichier) :
 
-### Option A — Instance unique
-
-Si Dandoy et Butterfly partagent une seule boutique Shopify :
-- Shopify ne supporte qu'**une seule traduction FR** par produit
-- Pour les 199 produits partagés (35 actifs) : prioriser `bt_be_fr` ou `eu_fr` (les différences sont mineures)
-- **Recommandation** : utiliser `eu_fr` comme source FR principale, les 6 différences de noms sont négligeables
-
-### Option B — Deux boutiques
-
-Chaque boutique a ses propres traductions :
-- **Dandoy** : FR = `eu_fr`, NL = `eu_nl`
-- **Butterfly** : FR = `bt_be_fr` (avec fallback `eu_fr` pour les produits non traduits), NL = `eu_nl`
+- **Dandoy** : FR = `eu_fr` en priorité, NL = `eu_nl`
+- **Butterfly** : FR = `bt_be_fr` en priorité (fallback `eu_fr` pour les produits non traduits), NL = `eu_nl`
 
 ---
 
 ## Couverture des traductions
 
-### Ce qui sera traduit (sur 4 834 produits exportés)
+### Ce qui sera traduit
 
-| Contenu | FR | NL |
-|---|---|---|
-| Noms de produits (title) | 2 683 (55%) | 1 697 (35%) |
-| Descriptions (body_html) | 3 997 (83%) | 3 103 (64%) |
-| **Produits avec au moins 1 champ traduit** | **4 492 (93%)** | **3 417 (71%)** |
+| Boutique | Titres traduits | Descriptions traduites | Au moins 1 champ traduit |
+|---|---|---|---|
+| Dandoy-Sports | — | — | 3 856 / 4 183 (92%) FR, 3 417 / 4 183 (82%) NL |
+| Butterfly TT | — | — | 809 / 849 (95%) FR, 19 / 849 (2%) NL |
 
-### Ce qui restera en anglais (fallback)
+### Ce qui restera en anglais / non traduit (fallback)
 
-- ~342 produits sans aucune traduction FR → affichés en anglais
-- ~1 417 produits sans aucune traduction NL → affichés en anglais
+- Dandoy : ~327 produits sans traduction FR, ~766 sans traduction NL → affichés dans la langue par défaut
+- Butterfly : ~40 produits sans traduction FR, ~830 sans traduction NL (attendu, voir note ci-dessus) — Butterfly n'active pas l'anglais, ces produits nécessitent une traduction manuelle prioritaire
 - Métadonnées SEO (meta_title, meta_description) → quasi vides dans toutes les langues, non exportées
 
-> **Action post-migration :** prioriser la traduction des produits actifs (product_online = 1)
-> sans traduction. Les produits draft (désactivés) peuvent rester en anglais.
+> **Action post-migration :** prioriser la traduction NL des produits actifs Butterfly
+> (product_online = 1), c'est le point de couverture le plus faible des deux boutiques.
 
 ---
 

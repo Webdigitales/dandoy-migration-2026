@@ -4,6 +4,12 @@ Les **custom options** Magento sont des options par produit (checkbox, radio) qu
 pas le SKU ni le stock. Shopify n'a pas d'équivalent natif — ce document décrit comment
 les migrer.
 
+> **Deux boutiques Shopify (Option B)** : le metafield `custom.available_options` est présent
+> à l'identique dans les deux fichiers produits (`shopify_products_dandoy.csv` /
+> `shopify_products_butterfly.csv`) — un produit partagé porte la même valeur des deux côtés.
+> Le code Liquid ci-dessous doit être ajouté **dans les deux thèmes** (Dandoy et Butterfly),
+> chacun ayant sa propre installation Horizon.
+
 ---
 
 ## Inventaire des custom options Magento
@@ -241,8 +247,9 @@ Occurrences côté source Magento (SKU simples, avant regroupement en produits S
 | Lacquering (Yes) | Blades (976), Rubbers (6) | Gratuit | Line item property |
 | Option de livraison | Tables (33) | 41–116 € | App tierce |
 
-Résultat après regroupement en produits Shopify (`shopify_products.csv`, metafield
-`custom.available_options`) :
+Résultat après regroupement en produits Shopify (`shopify_products_dandoy.csv` /
+`shopify_products_butterfly.csv`, metafield `custom.available_options` — mêmes valeurs pour
+les produits partagés) :
 
 | Option | Produits Shopify concernés |
 |---|---|

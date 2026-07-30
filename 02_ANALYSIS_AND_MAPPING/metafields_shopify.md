@@ -1,7 +1,14 @@
 # Metafields Shopify — Dandoy-Sports / Butterfly TT
 
 Définitions des custom metafields à créer dans Shopify Admin
-(**Settings → Custom data → Products → Add definition**) pour l'import Matrixify.
+(**Settings → Custom data → Products → Add definition**) pour l'import Matrixify,
+**dans chaque boutique** (Dandoy-Sports et Butterfly TT — deux boutiques séparées, Option B).
+
+> Ce fichier est le mapping source ; la version de référence tenue à jour pour l'équipe est
+> désormais scindée en 3 pages MkDocs : [Définitions](../05_DOCS/mapping/metafields-definitions.md),
+> [Choix prédéfinis](../05_DOCS/mapping/metafields-choix-predefinis.md),
+> [Filtrage & Affichage](../05_DOCS/mapping/metafields-filtrage.md) — elles incluent le 20ᵉ
+> metafield `custom.available_options` absent de ce fichier.
 
 ---
 
@@ -150,7 +157,7 @@ Définitions des custom metafields à créer dans Shopify Admin
 
 ---
 
-## Récapitulatif : 19 metafields uniques
+## Récapitulatif : 20 metafields uniques
 
 | # | Namespace.Key | Type | Valeur | Filtre Magento | Usage Shopify |
 |---|---|---|---|---|---|
@@ -173,6 +180,7 @@ Définitions des custom metafields à créer dans Shopify Admin
 | 17 | `custom.cover_included` | Boolean | Simple | Non | Affichage fiche |
 | 18 | `custom.dimension` | Single line text | Simple | Non | Affichage fiche |
 | 19 | `custom.video_url` | URL | Simple | Non | Affichage fiche |
+| 20 | `custom.available_options` | List of single line text | Multiple | Non (nouveau) | Pilote l'affichage des sélecteurs Gluing/EdgeTape/Lacquering — voir [Custom options](../05_DOCS/mapping/custom-options.md) |
 
 > **Filtres natifs Shopify** (pas des metafields) : Vendor (= Manufacturer), Price, Color,
 > Size, Quantity — ces attributs sont filtrables nativement via Search & Discovery.

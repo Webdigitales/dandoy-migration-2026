@@ -118,8 +118,10 @@ manuellement dans Shopify quand le besoin se présente.
 | Bundles désactivés | 84 | **Ignorer** | Rien |
 
 **Aucune migration data nécessaire.** Les produits composant les bundles sont déjà
-dans `shopify_products.csv`. La configuration des remises et bundles se fait
-directement dans l'admin Shopify après l'import.
+dans `shopify_products_dandoy.csv` / `shopify_products_butterfly.csv` (boutique
+correspondant à leur `product_websites` — voir [Multi-sites](../architecture/multi-sites.md)).
+La configuration des remises et bundles se fait directement dans l'admin Shopify
+de chaque boutique après l'import.
 
 ---
 

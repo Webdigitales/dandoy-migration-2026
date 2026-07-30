@@ -1,5 +1,10 @@
 # Historique des commandes — Magento → Shopify
 
+> **Deux boutiques Shopify (Option B)** : contrairement aux produits et clients, une commande
+> n'appartient qu'à **un seul** store Magento d'origine — elle est donc écrite dans un seul des
+> deux fichiers de sortie, jamais dupliquée. `magento_to_shopify_orders.py` route chaque
+> commande via `Store Name` (voir mapping ci-dessous).
+
 ---
 
 ## Données source
@@ -16,17 +21,19 @@
 
 1 janvier 2025 → 25 juin 2026 — **18 mois**.
 
-### Répartition par store
+### Répartition par store Magento → boutique Shopify cible
 
-| Store | Commandes |
-|---|---|
-| Dandoy EU Français | 11 634 |
-| Butterfly BE Français | 9 573 |
-| Dandoy WW English | 5 230 |
-| Dandoy EU Nederlands | 4 851 |
-| Butterfly NL | 3 131 |
-| Dandoy EU English | 2 108 |
-| Butterfly BE Nederlands | 903 |
+| Store Magento | Commandes | Boutique Shopify |
+|---|---|---|
+| Dandoy EU Français | 11 634 | Dandoy-Sports |
+| Butterfly BE Français | 9 573 | Butterfly TT |
+| Dandoy WW English | 5 230 | Dandoy-Sports |
+| Dandoy EU Nederlands | 4 851 | Dandoy-Sports |
+| Butterfly NL | 3 131 | Butterfly TT |
+| Dandoy EU English | 2 108 | Dandoy-Sports |
+| Butterfly BE Nederlands | 903 | Butterfly TT |
+
+**Total : 23 823 commandes → `shopify_orders_dandoy.csv` / 13 607 commandes → `shopify_orders_butterfly.csv`.**
 
 ### Statistiques
 
@@ -75,11 +82,13 @@ Pic en **novembre-décembre** (Black Friday + Noël) : 3 963 + 3 198 commandes. 
 
 ## Liaison commandes ↔ clients
 
-Matrixify lie les commandes aux comptes clients via l'email.
+Matrixify lie les commandes aux comptes clients via l'email, **dans la boutique
+correspondante** (une commande `shopify_orders_dandoy.csv` se lie à un client présent dans
+`shopify_customers_dandoy.csv`, et de même pour Butterfly).
 
 | Situation | Commandes | Comportement Shopify |
 |---|---|---|
-| Email présent dans `shopify_customers.csv` | ~23 500 (52,5%) | Lié au compte client |
+| Email présent dans le fichier clients de la même boutique | ~23 500 (52,5%) | Lié au compte client |
 | Guest checkout (pas de compte Magento) | ~13 900 (47,5%) | Commande guest — normal |
 
 Les 47,5% sans compte correspondent aux commandes passées sans inscription (`NOT LOGGED IN`).
@@ -93,9 +102,13 @@ Seulement 7 commandes proviennent de clients enregistrés absents du fichier cus
 python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/magento_to_shopify_orders.py
 ```
 
-Inclus dans `regenerate_all.sh` (étape 5/7).
+Inclus dans `regenerate_all.sh` (étape 5/8). Génère les deux fichiers de sortie en une seule exécution.
 
-Sortie : `04_SHOPIFY_IMPORTS/shopify_orders.csv` — **99 821 lignes** (format long Matrixify, 1 ligne par item).
+Sortie :
+- `04_SHOPIFY_IMPORTS/shopify_orders_dandoy.csv` — **71 096 lignes** (23 823 commandes)
+- `04_SHOPIFY_IMPORTS/shopify_orders_butterfly.csv` — **28 725 lignes** (13 607 commandes)
+
+Format long Matrixify, 1 ligne par item.
 
 ### Mapping des champs
 
@@ -104,7 +117,7 @@ Sortie : `04_SHOPIFY_IMPORTS/shopify_orders.csv` — **99 821 lignes** (format l
 | `Increment Id` | `Name` | Tel quel (`WEB2-0125-4250`) |
 | `Created At` | `Created at` | → ISO 8601 `2025-01-01 02:12:20 +0100` |
 | `Payment Method` | `Payment Method` | `mollie_methods_bancontact` → `Bancontact` |
-| `Store Name` | `Tags` | `Dandoy*` → `dandoy` / `Butterfly*` → `butterfly` |
+| `Store Name` | `Tags` **+ fichier de sortie** | `Dandoy*` → tag `dandoy`, écrit dans `shopify_orders_dandoy.csv` / `Butterfly*` → tag `butterfly`, écrit dans `shopify_orders_butterfly.csv` |
 | `Total Due = 0` | `Financial Status` | → `paid` / `> 0` → `pending` |
 | `item N(Status) = Shipped` | `Lineitem fulfillment status` | → `fulfilled` |
 | `item N(Tax Percent)` | `Lineitem taxable` | `TRUE` si taux > 0 |
@@ -118,7 +131,9 @@ Les lignes suivantes ne contiennent que `Name` + les champs de l'item.
 
 ## Import dans Shopify
 
-Via Matrixify : **Import → feuille Orders** → uploader `shopify_orders.csv`.
+Via Matrixify, dans chaque boutique : **Import → feuille Orders** → uploader
+`shopify_orders_dandoy.csv` (boutique Dandoy-Sports) ou `shopify_orders_butterfly.csv`
+(boutique Butterfly TT).
 
 **Vérification après import :**
 - Ouvrir une commande dans Shopify Admin → Orders

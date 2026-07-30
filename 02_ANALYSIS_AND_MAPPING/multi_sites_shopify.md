@@ -1,5 +1,11 @@
 # Gestion multi-sites Magento → Shopify — Dandoy-Sports / Butterfly TT
 
+> **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées.
+> Cette page documente d'abord la situation Magento (toujours valide), puis les deux options
+> envisagées ; l'Option B ci-dessous est celle mise en œuvre dans les scripts d'import
+> (`magento_to_shopify.py` et dérivés génèrent systématiquement une paire de fichiers
+> `_dandoy` / `_butterfly`).
+
 ---
 
 ## Situation actuelle sur Magento
@@ -47,16 +53,19 @@
 
 ### Périmètre cible Shopify (6 domaines)
 
-1. `dandoy-sports.com` (principal)
-2. `fr.dandoy-sports.eu` (FR)
-3. `en.dandoy-sports.eu` (EN)
-4. `nl.dandoy-sports.eu` (NL)
+1. `dandoy-sports.com` (Dandoy — hors UE / international)
+2. `fr.dandoy-sports.eu` (Dandoy EU — FR)
+3. `en.dandoy-sports.eu` (Dandoy EU — EN)
+4. `nl.dandoy-sports.eu` (Dandoy EU — NL)
 5. `be.butterfly.tt` (Butterfly BE)
 6. `nl.butterfly.tt` (Butterfly NL)
 
 ---
 
-## Option A — Instance unique + Shopify Markets (recommandée)
+## Option A — Instance unique + Shopify Markets (écartée)
+
+> Non retenue par le client (voir décision du 29 juillet 2026 ci-dessus). Conservée ici à
+> titre de comparatif — le catalogue et les scripts de migration ne l'implémentent plus.
 
 ### Principe
 
@@ -79,8 +88,12 @@ Ajouter un tag `brand:xxx` dans le CSV d'import selon `product_websites` :
 
 | Marché | Domaines | Langues | Catalogue |
 |---|---|---|---|
-| **Dandoy EU** | `dandoy-sports.com`, `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` | FR, EN, NL | Produits avec tag `brand:dandoy` |
-| **Butterfly** | `be.butterfly.tt`, `nl.butterfly.tt` | FR, EN, NL | Produits avec tag `brand:butterfly` |
+| **Dandoy Hors UE** | `dandoy-sports.com` | EN | Produits avec tag `brand:dandoy` |
+| **Dandoy EU** | `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` | FR, EN, NL | Produits avec tag `brand:dandoy` |
+| **Butterfly** | `be.butterfly.tt`, `nl.butterfly.tt` | FR, NL | Produits avec tag `brand:butterfly` |
+
+> **Note :** `dandoy-sports.com` couvre l'offre **hors Union Européenne** (international / `ds_ww` Magento).
+> Les sous-domaines `.eu` couvrent les marchés européens.
 
 #### 3. Collections automatiques
 
@@ -116,27 +129,38 @@ Un seul flux Stock Sync → **un seul inventaire** pour tous les marchés. Pas d
 
 ---
 
-## Option B — Deux boutiques Shopify séparées
+## Option B — Deux boutiques Shopify séparées (retenue)
 
 ### Principe
 
-Deux instances Shopify indépendantes, chacune avec son propre catalogue.
+Deux instances Shopify indépendantes, chacune avec son propre catalogue. Dandoy-Sports
+sur un plan complet, **Butterfly TT sur un plan Basic**.
 
-| Boutique | Domaines | Produits |
+| Boutique | Domaines | Produits (base Magento) |
 |---|---|---|
 | **Dandoy-Sports** | `dandoy-sports.com`, `fr/en/nl.dandoy-sports.eu` | 4 258 (dont 2 033 actifs) |
-| **Butterfly TT** | `be.butterfly.tt`, `nl.butterfly.tt` | 882 (dont 351 actifs) |
+| **Butterfly TT** (plan Basic) | `be.butterfly.tt`, `nl.butterfly.tt` | 882 (dont 351 actifs) |
 
 Les **199 produits partagés (dont 35 actifs)** sont dupliqués dans les deux boutiques.
 
-### Mise en oeuvre
+### Mise en oeuvre (implémentée dans les scripts)
 
-#### 1. Fichiers d'import
+#### 1. Fichiers d'import — un jeu par boutique
 
-Le script de conversion génère deux fichiers :
+`magento_to_shopify.py` (fonction `brand_scope()`, basée sur `product_websites`) génère :
 
-- `shopify_products_dandoy.csv` — produits dont `product_websites` contient `base` ou `ds_ww`
-- `shopify_products_butterfly.csv` — produits dont `product_websites` contient `bt_be` ou `bt_nl`
+- `shopify_products_dandoy.csv` (4 183 produits, 22 223 lignes) / `shopify_products_butterfly.csv` (849 produits, 4 905 lignes)
+- `shopify_translations_dandoy.csv` (5 768 lignes) / `shopify_translations_butterfly.csv` (1 233 lignes)
+
+Les produits partagés portent le tag `dandoy,butterfly` dans les deux fichiers (repérage facile
+dans l'admin de chaque boutique). Même logique de scission dans `generate_redirects.py`
+(2 045 / 380 redirections), `magento_to_shopify_customers.py` (33 357 / 11 404 clients — les
+clients enregistrés sur les deux marques sont dupliqués dans les deux fichiers) et
+`magento_to_shopify_orders.py` (23 823 / 13 607 commandes — chaque commande n'appartient qu'à
+une boutique, pas de duplication). `generate_collections.py` génère les mêmes 37 règles de
+smart collections dans les deux fichiers (évaluées localement par le catalogue de chaque
+boutique). `regenerate_all.sh` régénère l'ensemble et `validate_shopify_csv.py` valide chaque
+boutique séparément.
 
 #### 2. Traductions
 
@@ -158,24 +182,26 @@ Le même fichier CSV de stock alimente les deux (les SKU sont identiques).
 - **Thème indépendant** par boutique : branding Butterfly strict respecté
 - Gestion indépendante des prix, promotions, pages CMS
 
-### Inconvénients
+### Inconvénients (risques acceptés par le client)
 
 - **199 produits dupliqués** (dont 35 actifs) → double maintenance (prix, descriptions, images)
 - **Risque de survente** sur les produits partagés : la sync stock est 1×/jour,
   si le dernier stock est vendu sur Dandoy, Butterfly ne le sait pas avant le lendemain
-- **Deux abonnements** Shopify (coût doublé)
+- **Deux abonnements** Shopify
 - **Deux configs** Stock Sync, deux thèmes à maintenir
 - Modification d'un produit partagé → à faire dans les deux boutiques
+- **Plan Basic Butterfly** : limitations à vérifier avant validation finale (rapports pro,
+  shipping tiers calculé, nombre de comptes staff)
 
 ---
 
 ## Comparatif
 
-| Critère | Option A (instance unique) | Option B (deux boutiques) |
+| Critère | Option A (instance unique) | Option B (deux boutiques — retenue) |
 |---|---|---|
 | Stock | Unifié, pas de survente | Dupliqué, risque de survente (sync 1×/jour) |
 | Produits partagés (199) | Gérés nativement | Dupliqués manuellement |
-| Coût Shopify | 1 abonnement | 2 abonnements |
+| Coût Shopify | 1 abonnement | 2 abonnements (dont 1 Basic) |
 | Branding Butterfly | Thème adaptatif ou sections conditionnelles | Thème 100% dédié |
 | Complexité initiale | Plus élevée (Markets, Catalogs) | Plus simple |
 | Maintenance quotidienne | Centralisée | Double effort sur les partagés |
@@ -184,15 +210,61 @@ Le même fichier CSV de stock alimente les deux (les SKU sont identiques).
 
 ---
 
-## Recommandation
+## Décision finale
 
-**Option A (instance unique)** est recommandée pour ce projet car :
+**Option B (deux boutiques séparées) retenue le 29 juillet 2026**, Butterfly TT sur un plan
+Basic. Le client a priorisé la **séparation totale du branding Butterfly** (thème et
+expérience 100% dédiés) et accepté en contrepartie :
 
-1. Le stock sans ERP et la sync 1×/jour rendent la **survente** très probable avec deux boutiques
-2. Les **199 produits partagés (dont 35 actifs)** représentent un effort de maintenance significatif en double
-3. Shopify Markets couvre le besoin multi-domaine / multi-langue nativement
-4. Un seul flux Stock Sync simplifie l'infrastructure
+1. La duplication et la double maintenance des **199 produits partagés (35 actifs)**
+2. Le **risque de survente** sur ces produits partagés (sync stock 1×/jour, deux boutiques distinctes)
+3. Le coût de deux abonnements Shopify plutôt qu'un seul
 
-L'Option B reste pertinente si le branding Butterfly exige une **séparation totale**
-(thème, expérience, équipe de gestion distincte) et que le risque de survente sur les
-produits partagés est accepté.
+Tous les scripts de génération (`02_ANALYSIS_AND_MAPPING/SCRIPTS/`) implémentent cette
+architecture — voir section « Mise en oeuvre » ci-dessus.
+
+---
+
+## Gestion de la TVA par marché
+
+### Constat
+
+Le prix affiché diffère entre `.eu` et `.com` pour un même produit — ex. Donic Coppa X1 Gold :
+**36,90 €** sur `fr.dandoy-sports.eu` vs **30,50 €** sur `dandoy-sports.com`.
+
+L'export Magento ne contient **qu'un seul prix par SKU** (`price` / `special_price` — pas de
+colonne prix par site). L'écart s'explique par la **TVA** :
+
+```
+36,90 € / 1.21 (TVA belge 21%) ≈ 30,50 €
+```
+
+`tax_rates.csv` confirme la règle **VAT21 (21%)** appliquée aux store views `eu_fr` / `eu_nl`
+(marché EU), absente du store view `ww_en` (`dandoy-sports.com`, hors Union Européenne — voir
+`CLAUDE.md` section 1). Magento stocke un prix catalogue **TTC** et recalcule dynamiquement
+l'affichage **HT** pour le marché hors UE. Ce n'est donc **pas** un vrai prix distinct à migrer,
+mais un même prix avec un traitement de taxe différent selon le marché.
+
+### Solution Shopify — pas de changement de données
+
+Shopify gère nativement ce cas via **Settings → Taxes and duties**, avec le réglage par pays/marché
+*"Include or exclude tax based on your customer's country"* (Shopify Markets). Principe :
+
+- **Un seul `Variant Price` par variante** dans le CSV — la valeur actuelle exportée
+  (36,90 €, prix TTC EU) ne change pas
+- **Marché Dandoy EU** : TVA 21% incluse dans le prix affiché (configuration existante à répliquer)
+- **Marché Dandoy Hors UE** (`.com`) : TVA non applicable → Shopify recalcule automatiquement
+  l'affichage HT (≈30,50 €) à la volée, sans second prix en base
+
+→ Aucun impact sur `magento_to_shopify.py` ni sur les fichiers `shopify_products_*.csv`. C'est une
+**configuration Shopify Markets/Taxes** à faire côté admin (Phase 1), pas un sujet de migration
+de données.
+
+### À vérifier avant configuration
+
+- Confirmer le taux de TVA à appliquer par marché EU (FR/NL/BE peuvent différer du taux belge
+  21% selon le pays de livraison — Shopify Tax calcule normalement automatiquement par pays
+  une fois le marché configuré, mais à valider sur quelques produits après import test)
+- Vérifier qu'aucun produit n'a un `special_price` réellement différencié par marché au-delà
+  de la TVA (promotions locales, etc.) — non détecté dans l'échantillon audité, à confirmer
+  sur le catalogue complet si des écarts additionnels apparaissent après import

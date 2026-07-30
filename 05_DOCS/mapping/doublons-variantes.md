@@ -58,5 +58,11 @@ un âge pour les tailles enfant) avant le prochain import complet.
 32 produits distincts (certains ont 2-3 doublons : `andro-batcover-round-moriva`,
 `butterfly-sock-yonago-grey`, `andro-double-wallet-maboon`).
 
-Confirmé lors du test Matrixify sur le catalogue complet (25 514 lignes, 272 échecs) :
-ces 36 paires représentent 246 des 272 lignes en échec — voir [Avancement](../avancement.md).
+Confirmé lors du test Matrixify sur le catalogue complet (25 514 lignes, 272 échecs, avant le
+passage à deux boutiques séparées) : ces 36 paires représentaient 246 des 272 lignes en échec.
+
+> **Depuis le passage à l'Option B (deux boutiques)**, la validation locale
+> (`validate_shopify_csv.py`) rapporte ces mêmes doublons répartis par boutique :
+> 61 erreurs bloquantes sur Dandoy-Sports (4 183 produits), 14 sur Butterfly TT (849 produits) —
+> essentiellement les mêmes paires ci-dessus, désormais comptées côté Dandoy et/ou Butterfly
+> selon le catalogue où le produit apparaît. Voir [Avancement](../avancement.md).
