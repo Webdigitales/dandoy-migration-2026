@@ -22,6 +22,12 @@ Matrixify import: Import → Orders sheet
 import csv
 import sys
 from datetime import datetime
+from itertools import count
+
+# Line: ID must be a unique number per line item row (Matrixify requirement,
+# not per-order) — a single counter shared across every order keeps that
+# true regardless of how orders get split across the two store output files.
+_line_id_counter = count(1)
 
 INPUT            = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_order_all_2025_2026.csv'
 OUTPUT_DANDOY    = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders_dandoy.csv'
@@ -50,46 +56,73 @@ STORE_TAGS = {
     'butterfly nl':     'butterfly',
 }
 
+# Column names below mix two Matrixify conventions on purpose:
+# - Plain names (Billing Name, Billing City…) are the ones confirmed working
+#   against a live Matrixify import test (2026-07-30).
+# - "Section: Field" names (Payment: Status, Line: Name, Billing: Address 1…)
+#   are Matrixify's current documented convention — required for the fields
+#   that a live test proved fail silently as "unknown column" under their
+#   old plain-name equivalent (Financial Status, Lineitem name, Subtotal,
+#   Shipping, Taxes, Total, Billing/Shipping Address1/2, Payment Method).
+# Don't rename the plain ones back to colon form without testing — some
+# colon fields (e.g. Billing: Name) may not carry the same alias.
+#
+# 'Line: Type' + 'Line: ID' are mandatory for a row to be recognized as a
+# line item at all — without them Matrixify rejected every order with
+# "must have at least one line item" despite Quantity/Price/SKU being
+# present (confirmed via a second live test, 2026-07-30). 'Line: Title'
+# is the field Shopify actually displays; 'Line: Name' is accepted but
+# silently ignored by Shopify on import (kept anyway, harmless).
+#
+# No 'Line: Fulfillment Status' / 'Fulfillment Status' column at all: both
+# are export-only (computed from actual Fulfillment records, not settable)
+# — writing either made Matrixify validate our value against the unrelated
+# Fulfillment-record status enum (cancelled/error/failure/open/pending/
+# success) and reject every row (confirmed via 2 live tests, 2026-07-30).
+# To reflect real fulfillment status on import, Matrixify requires extra
+# 'Line: Type' = 'Fulfillment Line' rows per shipped order (Fulfillment: ID,
+# Fulfillment: Status, matching Line: Title/Variant Title/Price/Quantity) —
+# out of scope for now; all imported orders will show as unfulfilled until
+# that's implemented.
 SHOPIFY_COLS = [
     'Name',
     'Command',
     'Email',
-    'Financial Status',
-    'Fulfillment Status',
+    'Payment: Status',
     'Currency',
-    'Subtotal',
-    'Shipping',
-    'Taxes',
-    'Total',
-    'Lineitem name',
-    'Lineitem quantity',
-    'Lineitem price',
-    'Lineitem sku',
-    'Lineitem requires shipping',
-    'Lineitem taxable',
-    'Lineitem fulfillment status',
-    'Lineitem discount',
+    'Price: Subtotal',
+    'Price: Current Total Shipping',
+    'Tax: Total',
+    'Price: Total',
+    'Line: Type',
+    'Line: ID',
+    'Line: Title',
+    'Line: Name',
+    'Line: Quantity',
+    'Line: Price',
+    'Line: SKU',
+    'Line: Requires Shipping',
+    'Line: Taxable',
+    'Line: Discount',
     'Billing Name',
-    'Billing Address1',
-    'Billing Address2',
+    'Billing: Address 1',
+    'Billing: Address 2',
     'Billing City',
     'Billing Province',
     'Billing Zip',
     'Billing Country',
-    'Billing Country Code',
     'Billing Phone',
     'Shipping Name',
-    'Shipping Address1',
-    'Shipping Address2',
+    'Shipping: Address 1',
+    'Shipping: Address 2',
     'Shipping City',
     'Shipping Province',
     'Shipping Zip',
     'Shipping Country',
-    'Shipping Country Code',
     'Shipping Phone',
     'Shipping Line Title',
     'Shipping Line Price',
-    'Payment Method',
+    'Transaction: Payment Method',
     'Tags',
     'Note',
     'Created at',
@@ -123,22 +156,6 @@ def financial_status(row):
     if paid > 0:
         return 'paid'
     return 'paid'
-
-
-def fulfillment_status(statuses):
-    """List of item statuses → order fulfillment status."""
-    if not statuses:
-        return 'unfulfilled'
-    shipped = sum(1 for s in statuses if s.lower() in ('shipped', 'complete', 'invoiced'))
-    if shipped == len(statuses):
-        return 'fulfilled'
-    if shipped > 0:
-        return 'partial'
-    return 'unfulfilled'
-
-
-def item_fulfillment(status):
-    return 'fulfilled' if status.lower() in ('shipped', 'complete', 'invoiced') else 'unfulfilled'
 
 
 def store_tag(store_name):
@@ -178,15 +195,21 @@ def clean_street(street, city):
 
 
 def address_fields(row, prefix):
-    """prefix: 'BillingAddress' or 'ShippingAddress'."""
+    """prefix: 'BillingAddress' or 'ShippingAddress'.
+
+    Country is filled with the raw ISO code into Matrixify's 'Country'
+    column (not a separate 'Country Code' column — that name isn't part of
+    the Orders template and gets silently ignored, leaving 'Country' empty
+    and the whole address rejected as invalid even though every other
+    field is present)."""
     city = row.get(f'{prefix}.City', '').strip()
     return {
-        'Address1':     clean_street(row.get(f'{prefix}.Street', ''), city),
-        'City':         city,
-        'Province':     row.get(f'{prefix}.Region', '').strip(),
-        'Zip':          row.get(f'{prefix}.Postcode', '').strip(),
-        'CountryCode':  row.get(f'{prefix}.Country Id', '').strip(),
-        'Phone':        row.get(f'{prefix}.Telephone', '').strip(),
+        'Address1': clean_street(row.get(f'{prefix}.Street', ''), city),
+        'City':     city,
+        'Province': row.get(f'{prefix}.Region', '').strip(),
+        'Zip':      row.get(f'{prefix}.Postcode', '').strip(),
+        'Country':  row.get(f'{prefix}.Country Id', '').strip(),
+        'Phone':    row.get(f'{prefix}.Telephone', '').strip(),
     }
 
 
@@ -213,13 +236,11 @@ def build_rows(order):
     if not items:
         return None, []
 
-    item_statuses = [it['status'] for it in items]
     order_name    = order['Increment Id'].strip()
     payment       = PAYMENT_MAP.get(order.get('Payment Method', '').strip(),
                                     order.get('Payment Method', '').strip())
     tag           = store_tag(order.get('Store Name', ''))
     fin_status    = financial_status(order)
-    ful_status    = fulfillment_status(item_statuses)
     b_name        = billing_name(order)
     s_name        = shipping_name(order)
     b_addr        = address_fields(order, 'BillingAddress')
@@ -237,44 +258,45 @@ def build_rows(order):
         r = {col: '' for col in SHOPIFY_COLS}
 
         # Line item fields (every row)
-        r['Lineitem name']               = item['name']
-        r['Lineitem quantity']           = item['qty']
-        r['Lineitem price']              = f"{item['price']:.4f}"
-        r['Lineitem sku']                = item['sku']
-        r['Lineitem requires shipping']  = 'TRUE'
-        r['Lineitem taxable']            = taxable
-        r['Lineitem fulfillment status'] = item_fulfillment(item['status'])
-        r['Lineitem discount']           = f"{item['discount']:.4f}" if item['discount'] else ''
+        r['Line: Type']                = 'Line Item'
+        r['Line: ID']                  = str(next(_line_id_counter))
+        r['Line: Title']              = item['name']
+        r['Line: Name']               = item['name']
+        r['Line: Quantity']           = item['qty']
+        r['Line: Price']              = f"{item['price']:.4f}"
+        r['Line: SKU']                = item['sku']
+        r['Line: Requires Shipping']  = 'TRUE'
+        r['Line: Taxable']            = taxable
+        r['Line: Discount']           = f"{item['discount']:.4f}" if item['discount'] else ''
 
         # Order header fields (first row only)
         if idx == 0:
             r['Name']               = order_name
             r['Command']            = 'MERGE'
             r['Email']              = order.get('Customer Email', '').strip().lower()
-            r['Financial Status']   = fin_status
-            r['Fulfillment Status'] = ful_status
+            r['Payment: Status']    = fin_status
             r['Currency']           = 'EUR'
-            r['Subtotal']           = order.get('Subtotal', '').strip()
-            r['Shipping']           = order.get('Base Shipping Incl Tax', '').strip()
-            r['Taxes']              = f"{taxes:.2f}"
-            r['Total']              = order.get('Grand Total', '').strip()
+            r['Price: Subtotal']    = order.get('Subtotal', '').strip()
+            r['Price: Current Total Shipping'] = order.get('Base Shipping Incl Tax', '').strip()
+            r['Tax: Total']         = f"{taxes:.2f}"
+            r['Price: Total']       = order.get('Grand Total', '').strip()
             r['Billing Name']       = b_name
-            r['Billing Address1']   = b_addr['Address1']
+            r['Billing: Address 1'] = b_addr['Address1']
             r['Billing City']       = b_addr['City']
             r['Billing Province']   = b_addr['Province']
             r['Billing Zip']        = b_addr['Zip']
-            r['Billing Country Code'] = b_addr['CountryCode']
+            r['Billing Country']    = b_addr['Country']
             r['Billing Phone']      = b_addr['Phone']
             r['Shipping Name']      = s_name
-            r['Shipping Address1']  = s_addr['Address1']
+            r['Shipping: Address 1'] = s_addr['Address1']
             r['Shipping City']      = s_addr['City']
             r['Shipping Province']  = s_addr['Province']
             r['Shipping Zip']       = s_addr['Zip']
-            r['Shipping Country Code'] = s_addr['CountryCode']
+            r['Shipping Country']   = s_addr['Country']
             r['Shipping Phone']     = s_addr['Phone']
             r['Shipping Line Title']= order.get('Shipping Description', '').strip()
             r['Shipping Line Price']= order.get('Base Shipping Incl Tax', '').strip()
-            r['Payment Method']     = payment
+            r['Transaction: Payment Method'] = payment
             r['Tags']               = tag
             r['Created at']         = created
         else:
@@ -316,11 +338,11 @@ def main():
         print(f"  Commandes avec items  : {orders_written:,}")
         fin_counts = {}
         for r in all_rows:
-            s = r.get('Financial Status')
+            s = r.get('Payment: Status')
             if s:
                 fin_counts[s] = fin_counts.get(s, 0) + 1
         for s, c in sorted(fin_counts.items()):
-            print(f"  Financial status [{s}] : {c:,}")
+            print(f"  Payment status [{s}] : {c:,}")
         print(f"  Written to            : {outputs[store]}")
 
 
