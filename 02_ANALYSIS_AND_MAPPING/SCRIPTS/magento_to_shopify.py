@@ -14,16 +14,32 @@ Rules:
 - Variant options mapped per attribute_set (Handle, Color, Size, Thickness…)
 - Product-level metafields extracted from additional_attributes
 - Translations exported from eu_fr, eu_nl, bt_be_fr store views
+
+Two Shopify stores (Option B — separate stores decided 2026-07-29): a product's
+`product_websites` (base/ds_ww = Dandoy, bt_be/bt_nl = Butterfly) drives which
+store(s) it is written to. Products on both scopes (199 shared) are duplicated
+into both output files.
 """
 
 import csv
 import re
 import sys
 
-INPUT       = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_magento_products_all.csv'
-OUTPUT      = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_products.csv'
-OUTPUT_TR   = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_translations.csv'
+INPUT        = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_magento_products_all.csv'
+OUTPUT_DANDOY    = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_products_dandoy.csv'
+OUTPUT_BUTTERFLY = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_products_butterfly.csv'
+OUTPUT_TR_DANDOY    = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_translations_dandoy.csv'
+OUTPUT_TR_BUTTERFLY = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_translations_butterfly.csv'
 IMAGE_BASE  = 'https://www.dandoy-sports.com/pub/media/catalog/product'
+
+DANDOY_WEBSITES    = {'base', 'ds_ww'}
+BUTTERFLY_WEBSITES = {'bt_be', 'bt_nl'}
+
+
+def brand_scope(row):
+    """Return (is_dandoy, is_butterfly) for a base row's product_websites."""
+    websites = {w.strip() for w in (row.get('product_websites', '') or '').split(',') if w.strip()}
+    return bool(websites & DANDOY_WEBSITES), bool(websites & BUTTERFLY_WEBSITES)
 
 
 # ---------------------------------------------------------------------------
@@ -444,40 +460,26 @@ def product_fields(row, handle):
 # Main
 # ---------------------------------------------------------------------------
 
-def main():
-    # ------------------------------------------------------------------
-    # Pass 1: Load ALL rows, indexed by (sku, store_view_code)
-    # ------------------------------------------------------------------
-    print("Loading CSV…")
-    all_by_sku_sv = {}   # (sku, store_view_code) → row
-    base_rows = {}       # sku → row  (base store only)
+def add_brand_tags(tags_str, row):
+    """Tag with both 'dandoy' and 'butterfly' when the product is shared
+    across the two stores, so it's identifiable as shared from either
+    store's admin — not just the tag of the store the file belongs to."""
+    is_dandoy, is_butterfly = brand_scope(row)
+    tags = [t.strip() for t in tags_str.split(',') if t.strip()]
+    for tag in (['dandoy'] if is_dandoy else []) + (['butterfly'] if is_butterfly else []):
+        if tag not in tags:
+            tags.append(tag)
+    return ','.join(tags)
 
-    with open(INPUT, encoding='utf-8') as f:
-        for row in csv.DictReader(f):
-            sv = row.get('store_view_code', '') or ''
-            sku = row['sku']
-            all_by_sku_sv[(sku, sv)] = row
-            if sv == '' and sku not in base_rows:
-                base_rows[sku] = row
 
-    print(f"  Total rows loaded: {len(all_by_sku_sv)}")
-    print(f"  Base rows: {len(base_rows)}")
-
-    grouped_child_skus = set()
-    for row in base_rows.values():
-        if row['product_type'] == 'grouped':
-            for sp in (row.get('associated_skus', '') or '').split(','):
-                child = sp.split('=')[0].strip()
-                if child:
-                    grouped_child_skus.add(child)
-
-    print(f"  Grouped children: {len(grouped_child_skus)}")
-    print(f"  Metafield columns: {len(METAFIELD_COLS)}")
-
-    # ------------------------------------------------------------------
-    # Pass 2: Write products CSV (same as before)
-    # ------------------------------------------------------------------
-    print("\nWriting products CSV…")
+def write_store(store_name, output_path, output_tr_path, scope_predicate,
+                 base_rows, grouped_child_skus, all_by_sku_sv):
+    """Write one store's products + translations CSVs (Option B — two
+    separate Shopify stores). scope_predicate(row) selects which base rows
+    belong to this store; products in both scopes (shared Dandoy/Butterfly
+    catalog) are written independently into each store's files."""
+    print(f"\n=== {store_name} ===")
+    print("Writing products CSV…")
     counters = {'products': 0, 'rows': 0, 'skipped': 0}
     skipped_types = {}
     fallback_count = 0
@@ -486,11 +488,13 @@ def main():
     handle_collisions = [] # (original_handle, first_sku, colliding_sku, new_handle)
     option_dup_warnings = []  # (handle, first_sku, colliding_sku, option_values) still duplicate after retry
 
-    with open(OUTPUT, 'w', newline='', encoding='utf-8') as f:
+    with open(output_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=SHOPIFY_COLS)
         writer.writeheader()
 
         for sku, row in base_rows.items():
+            if not scope_predicate(row):
+                continue
             pt = row['product_type']
             handle = (row.get('url_key', '') or sku).strip()
             # A grouped product's own simple children legitimately share its
@@ -533,6 +537,7 @@ def main():
 
                 images  = collect_images(row)
                 pfields = product_fields(row, handle)
+                pfields['Tags'] = add_brand_tags(pfields['Tags'], row)
                 mfields = resolve_metafields(row)
                 # custom_options (Gluing/EdgeTape/Lacquering) live on the
                 # child simple SKUs, not the grouped parent — union them so
@@ -618,6 +623,7 @@ def main():
                 mfields = resolve_metafields(row)
                 out     = blank()
                 out.update(product_fields(row, handle))
+                out['Tags'] = add_brand_tags(out['Tags'], row)
                 out.update(variant_fields(row))
                 out.update(mfields)
                 out['Option1 Name']  = 'Title'
@@ -660,12 +666,12 @@ def main():
         print(f"  ⚠ Variantes dupliquées non résolues : {len(option_dup_warnings)} (donnée source à corriger manuellement)")
         for handle_, first_sku, dup_sku, key in option_dup_warnings:
             print(f"    └─ '{handle_}' : {first_sku} et {dup_sku} ont la même combinaison d'options {key}")
-    print(f"  Output → {OUTPUT}")
+    print(f"  Output → {output_path}")
 
     # ------------------------------------------------------------------
-    # Pass 3: Write translations CSV
+    # Write translations CSV for this store
     # ------------------------------------------------------------------
-    print("\nWriting translations CSV…")
+    print("Writing translations CSV…")
     tr_counters = {'rows': 0, 'products_fr': 0, 'products_nl': 0}
 
     def get_translation(sku, store_view, field):
@@ -686,7 +692,7 @@ def main():
         """NL: eu_nl is the main source."""
         return get_translation(sku, 'eu_nl', field)
 
-    with open(OUTPUT_TR, 'w', newline='', encoding='utf-8') as f:
+    with open(output_tr_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=TRANSLATION_COLS)
         writer.writeheader()
 
@@ -728,7 +734,55 @@ def main():
     print(f"  Translation rows  : {tr_counters['rows']}")
     print(f"  Products with FR  : {tr_counters['products_fr']}")
     print(f"  Products with NL  : {tr_counters['products_nl']}")
-    print(f"  Output → {OUTPUT_TR}")
+    print(f"  Output → {output_tr_path}")
+
+
+def main():
+    # ------------------------------------------------------------------
+    # Pass 1: Load ALL rows, indexed by (sku, store_view_code)
+    # ------------------------------------------------------------------
+    print("Loading CSV…")
+    all_by_sku_sv = {}   # (sku, store_view_code) → row
+    base_rows = {}       # sku → row  (base store only)
+
+    with open(INPUT, encoding='utf-8') as f:
+        for row in csv.DictReader(f):
+            sv = row.get('store_view_code', '') or ''
+            sku = row['sku']
+            all_by_sku_sv[(sku, sv)] = row
+            if sv == '' and sku not in base_rows:
+                base_rows[sku] = row
+
+    print(f"  Total rows loaded: {len(all_by_sku_sv)}")
+    print(f"  Base rows: {len(base_rows)}")
+
+    grouped_child_skus = set()
+    for row in base_rows.values():
+        if row['product_type'] == 'grouped':
+            for sp in (row.get('associated_skus', '') or '').split(','):
+                child = sp.split('=')[0].strip()
+                if child:
+                    grouped_child_skus.add(child)
+
+    print(f"  Grouped children: {len(grouped_child_skus)}")
+    print(f"  Metafield columns: {len(METAFIELD_COLS)}")
+
+    shared = sum(1 for row in base_rows.values() if all(brand_scope(row)))
+    print(f"  Shared Dandoy/Butterfly products: {shared} (duplicated in both stores)")
+
+    # ------------------------------------------------------------------
+    # Pass 2+3: Write products + translations CSVs, once per store
+    # ------------------------------------------------------------------
+    write_store(
+        'Dandoy-Sports', OUTPUT_DANDOY, OUTPUT_TR_DANDOY,
+        lambda row: brand_scope(row)[0],
+        base_rows, grouped_child_skus, all_by_sku_sv,
+    )
+    write_store(
+        'Butterfly TT', OUTPUT_BUTTERFLY, OUTPUT_TR_BUTTERFLY,
+        lambda row: brand_scope(row)[1],
+        base_rows, grouped_child_skus, all_by_sku_sv,
+    )
 
     print("\nDone.")
 

@@ -4,11 +4,16 @@ Generate Shopify Smart Collections CSV for Matrixify import.
 
 Each collection uses rules based on Product Type and/or Product Tag.
 Multi-rule collections use additional rows with the same Handle.
+
+Two Shopify stores (Option B): rules are evaluated by each store against
+its own catalog, so the same collection definitions are written unchanged
+into both stores' CSVs — no per-store filtering needed here.
 """
 
 import csv
 
-OUTPUT = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_collections.csv'
+OUTPUT_DANDOY    = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_collections_dandoy.csv'
+OUTPUT_BUTTERFLY = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_collections_butterfly.csv'
 
 COLS = [
     'Handle', 'Command', 'Title', 'Body HTML', 'Published', 'Sort Order',
@@ -184,10 +189,10 @@ COLLECTIONS = [
 ]
 
 
-def main():
+def write_collections(output_path):
     rows_written = 0
 
-    with open(OUTPUT, 'w', newline='', encoding='utf-8') as f:
+    with open(output_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.DictWriter(f, fieldnames=COLS)
         writer.writeheader()
 
@@ -209,13 +214,21 @@ def main():
                 writer.writerow(row)
                 rows_written += 1
 
+    return rows_written
+
+
+def main():
     top_level = sum(1 for _, _, _, r in COLLECTIONS if len(r) == 1)
     sub_level = sum(1 for _, _, _, r in COLLECTIONS if len(r) > 1)
 
-    print(f"Done.")
-    print(f"  Collections: {len(COLLECTIONS)} ({top_level} top-level + {sub_level} sub)")
-    print(f"  CSV rows: {rows_written}")
-    print(f"  Output → {OUTPUT}")
+    for store_name, output_path in (('Dandoy-Sports', OUTPUT_DANDOY), ('Butterfly TT', OUTPUT_BUTTERFLY)):
+        rows_written = write_collections(output_path)
+        print(f"=== {store_name} ===")
+        print(f"  Collections: {len(COLLECTIONS)} ({top_level} top-level + {sub_level} sub)")
+        print(f"  CSV rows: {rows_written}")
+        print(f"  Output → {output_path}")
+
+    print("Done.")
 
 
 if __name__ == '__main__':

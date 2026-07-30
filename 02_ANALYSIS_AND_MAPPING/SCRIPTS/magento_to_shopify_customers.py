@@ -7,6 +7,10 @@ Rules:
 - Merge default billing + shipping addresses
 - Tag customers by source website (dandoy, butterfly)
 - Passwords cannot be migrated (Shopify uses different hashing)
+
+Two Shopify stores (Option B): a customer is written to whichever store(s)
+their tags cover — customers who registered on both brands (tagged
+'dandoy' AND 'butterfly') are written into both stores' CSVs.
 """
 
 import csv
@@ -14,7 +18,8 @@ from collections import defaultdict
 
 INPUT_CUSTOMERS  = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_customer.csv'
 INPUT_ADDRESSES  = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_customer_address.csv'
-OUTPUT           = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_customers.csv'
+OUTPUT_DANDOY    = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_customers_dandoy.csv'
+OUTPUT_BUTTERFLY = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_customers_butterfly.csv'
 
 SHOPIFY_COLS = [
     'Command',
@@ -88,12 +93,20 @@ def main():
     # ------------------------------------------------------------------
     # Write Shopify CSV
     # ------------------------------------------------------------------
-    print("Writing Shopify CSV…")
-    counters = {'customers': 0, 'with_address': 0, 'no_address': 0}
+    print("Writing Shopify CSVs…")
+    counters = {
+        'dandoy':    {'customers': 0, 'with_address': 0, 'no_address': 0},
+        'butterfly': {'customers': 0, 'with_address': 0, 'no_address': 0},
+    }
 
-    with open(OUTPUT, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=SHOPIFY_COLS)
-        writer.writeheader()
+    with open(OUTPUT_DANDOY, 'w', newline='', encoding='utf-8') as f_dandoy, \
+         open(OUTPUT_BUTTERFLY, 'w', newline='', encoding='utf-8') as f_butterfly:
+        writers = {
+            'dandoy':    csv.DictWriter(f_dandoy, fieldnames=SHOPIFY_COLS),
+            'butterfly': csv.DictWriter(f_butterfly, fieldnames=SHOPIFY_COLS),
+        }
+        for w in writers.values():
+            w.writeheader()
 
         for email, cust in by_email.items():
             tags = sorted(cust.get('_tags', set()))
@@ -122,6 +135,7 @@ def main():
             out['Tags'] = ','.join(tags)
             out['Tax Exempt'] = ''
 
+            has_address = bool(best_addr)
             if best_addr:
                 street = best_addr.get('street', '')
                 lines = street.split('\n') if '\n' in street else [street]
@@ -137,22 +151,26 @@ def main():
                 out['Address Zip'] = best_addr.get('postcode', '').strip()
                 out['Address Phone'] = best_addr.get('telephone', '').strip()
                 out['Address Default'] = 'TRUE'
-                counters['with_address'] += 1
-            else:
-                counters['no_address'] += 1
 
             # Phone from address if available
             if not out['Phone'] and best_addr:
                 out['Phone'] = best_addr.get('telephone', '').strip()
 
-            writer.writerow(out)
-            counters['customers'] += 1
+            for store in tags:
+                if store not in writers:
+                    continue
+                writers[store].writerow(out)
+                counters[store]['customers'] += 1
+                counters[store]['with_address' if has_address else 'no_address'] += 1
 
     print(f"\nDone.")
-    print(f"  Customers exported : {counters['customers']}")
-    print(f"  With address       : {counters['with_address']}")
-    print(f"  Without address    : {counters['no_address']}")
-    print(f"\nOutput → {OUTPUT}")
+    for store in ('dandoy', 'butterfly'):
+        c = counters[store]
+        print(f"  [{store}] Customers exported : {c['customers']}")
+        print(f"  [{store}] With address       : {c['with_address']}")
+        print(f"  [{store}] Without address    : {c['no_address']}")
+    print(f"\nOutput → {OUTPUT_DANDOY}")
+    print(f"Output → {OUTPUT_BUTTERFLY}")
     print(f"\n⚠  Passwords cannot be migrated — customers will need to reset via 'Forgot password'.")
 
 

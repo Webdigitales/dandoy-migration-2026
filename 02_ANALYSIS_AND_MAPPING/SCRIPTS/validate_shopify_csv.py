@@ -18,11 +18,24 @@ import sys
 
 DIR      = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 IMPORTS  = os.path.join(DIR, '04_SHOPIFY_IMPORTS')
-REDIRECTS = os.path.join(DIR, '03_SEO_AND_REDIRECTS', 'shopify_redirects.csv')
+REDIRECTS_DIR = os.path.join(DIR, '03_SEO_AND_REDIRECTS')
 
-PRODUCTS_CSV     = os.path.join(IMPORTS, 'shopify_products.csv')
-TRANSLATIONS_CSV = os.path.join(IMPORTS, 'shopify_translations.csv')
-COLLECTIONS_CSV  = os.path.join(IMPORTS, 'shopify_collections.csv')
+# Two Shopify stores (Option B): each has its own products/translations/
+# collections/redirects CSV, validated independently.
+STORES = [
+    ('Dandoy-Sports', {
+        'products':     os.path.join(IMPORTS, 'shopify_products_dandoy.csv'),
+        'translations': os.path.join(IMPORTS, 'shopify_translations_dandoy.csv'),
+        'collections':  os.path.join(IMPORTS, 'shopify_collections_dandoy.csv'),
+        'redirects':    os.path.join(REDIRECTS_DIR, 'shopify_redirects_dandoy.csv'),
+    }),
+    ('Butterfly TT', {
+        'products':     os.path.join(IMPORTS, 'shopify_products_butterfly.csv'),
+        'translations': os.path.join(IMPORTS, 'shopify_translations_butterfly.csv'),
+        'collections':  os.path.join(IMPORTS, 'shopify_collections_butterfly.csv'),
+        'redirects':    os.path.join(REDIRECTS_DIR, 'shopify_redirects_butterfly.csv'),
+    }),
+]
 
 MAX_VARIANTS = 100
 
@@ -102,7 +115,7 @@ def validate_translations(rows, product_handles):
     for r in rows:
         handle = r.get('Entity Handle', '')
         if handle and handle not in product_handles:
-            errors.append(f"Traduction orpheline : handle '{handle}' absent de shopify_products.csv")
+            errors.append(f"Traduction orpheline : handle '{handle}' absent du fichier produits de ce store")
     return errors
 
 
@@ -138,17 +151,17 @@ def validate_collections(rows):
     return errors
 
 
-def main():
-    products = load_rows(PRODUCTS_CSV)
+def validate_store(store_name, paths):
+    products = load_rows(paths['products'])
     if products is None:
-        print(f"✗ Introuvable : {PRODUCTS_CSV}")
-        sys.exit(1)
+        print(f"✗ Introuvable : {paths['products']}")
+        return 1
 
-    translations = load_rows(TRANSLATIONS_CSV)
-    collections  = load_rows(COLLECTIONS_CSV)
-    redirects    = load_rows(REDIRECTS)
+    translations = load_rows(paths['translations'])
+    collections  = load_rows(paths['collections'])
+    redirects    = load_rows(paths['redirects'])
 
-    print("=== Validation des fichiers d'import Shopify ===\n")
+    print(f"=== {store_name} ===\n")
 
     prod_errors, prod_warnings, product_handles = validate_products(products)
     tr_errors  = validate_translations(translations, product_handles)
@@ -179,7 +192,16 @@ def main():
         if len(prod_warnings) > 20:
             print(f"  … et {len(prod_warnings) - 20} de plus")
 
-    sys.exit(1 if all_errors else 0)
+    print()
+    return 1 if all_errors else 0
+
+
+def main():
+    print("=== Validation des fichiers d'import Shopify ===\n")
+    exit_code = 0
+    for store_name, paths in STORES:
+        exit_code = max(exit_code, validate_store(store_name, paths))
+    sys.exit(exit_code)
 
 
 if __name__ == '__main__':

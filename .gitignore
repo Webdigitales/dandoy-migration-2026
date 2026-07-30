@@ -1,7 +1,8 @@
 01_DATA_RAW/*.csv
 04_SHOPIFY_IMPORTS/*.csv
 04_SHOPIFY_IMPORTS/ERRORS
-!04_SHOPIFY_IMPORTS/shopify_products_sample.csv
+!04_SHOPIFY_IMPORTS/shopify_products_sample_dandoy.csv
+!04_SHOPIFY_IMPORTS/shopify_products_sample_butterfly.csv
 03_SEO_AND_REDIRECTS/*.csv
 .idea
 site/

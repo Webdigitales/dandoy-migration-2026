@@ -7,9 +7,13 @@ Source  : order-all-2025-2026.csv
           - Line items with SKU, name, price, qty, status, taxes, discounts
           - No billing/shipping address details (only firstname/lastname)
 
-Output  : shopify_orders.csv
+Output  : shopify_orders_dandoy.csv / shopify_orders_butterfly.csv
           - 1 row per line item (Matrixify "long" format)
           - Order header fields repeated on first row only
+
+Two Shopify stores (Option B): each order was placed on exactly one
+Magento website (Store Name), so it is written to exactly one store's
+file — no duplication needed here, unlike products/customers.
 
 Matrixify import: Import → Orders sheet
 """
@@ -18,8 +22,9 @@ import csv
 import sys
 from datetime import datetime
 
-INPUT  = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_order_all_2025_2026.csv'
-OUTPUT = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders.csv'
+INPUT            = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_order_all_2025_2026.csv'
+OUTPUT_DANDOY    = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders_dandoy.csv'
+OUTPUT_BUTTERFLY = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders_butterfly.csv'
 
 MAX_ITEMS = 56
 
@@ -174,7 +179,7 @@ def extract_items(row):
 def build_rows(order):
     items = extract_items(order)
     if not items:
-        return []
+        return None, []
 
     item_statuses = [it['status'] for it in items]
     order_name    = order['Increment Id'].strip()
@@ -230,7 +235,7 @@ def build_rows(order):
 
         rows.append(r)
 
-    return rows
+    return tag, rows
 
 
 def main():
@@ -239,36 +244,36 @@ def main():
         orders = list(csv.DictReader(f))
     print(f"  Input rows   : {len(orders):,}")
 
-    all_rows = []
+    rows_by_store = {'dandoy': [], 'butterfly': []}
     skipped  = 0
     for order in orders:
-        rows = build_rows(order)
-        if rows:
-            all_rows.extend(rows)
+        tag, rows = build_rows(order)
+        if rows and tag in rows_by_store:
+            rows_by_store[tag].extend(rows)
         else:
             skipped += 1
 
-    print(f"  Output rows  : {len(all_rows):,}")
-    print(f"  Skipped      : {skipped} (no items)")
+    outputs = {'dandoy': OUTPUT_DANDOY, 'butterfly': OUTPUT_BUTTERFLY}
+    print(f"  Skipped      : {skipped} (no items / unknown store)")
 
-    with open(OUTPUT, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=SHOPIFY_COLS)
-        writer.writeheader()
-        writer.writerows(all_rows)
+    for store, all_rows in rows_by_store.items():
+        with open(outputs[store], 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=SHOPIFY_COLS)
+            writer.writeheader()
+            writer.writerows(all_rows)
 
-    print(f"  Written to   : {OUTPUT}")
-
-    # Quick stats
-    orders_written = sum(1 for r in all_rows if r.get('Email'))
-    print(f"\nStats :")
-    print(f"  Commandes avec items : {orders_written:,}")
-    fin_counts = {}
-    for r in all_rows:
-        s = r.get('Financial Status')
-        if s:
-            fin_counts[s] = fin_counts.get(s, 0) + 1
-    for s, c in sorted(fin_counts.items()):
-        print(f"  Financial status [{s}] : {c:,}")
+        orders_written = sum(1 for r in all_rows if r.get('Email'))
+        print(f"\n=== {store} ===")
+        print(f"  Output rows           : {len(all_rows):,}")
+        print(f"  Commandes avec items  : {orders_written:,}")
+        fin_counts = {}
+        for r in all_rows:
+            s = r.get('Financial Status')
+            if s:
+                fin_counts[s] = fin_counts.get(s, 0) + 1
+        for s, c in sorted(fin_counts.items()):
+            print(f"  Financial status [{s}] : {c:,}")
+        print(f"  Written to            : {outputs[store]}")
 
 
 if __name__ == '__main__':
