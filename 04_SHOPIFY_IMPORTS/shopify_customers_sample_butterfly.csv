@@ -1,0 +1,11 @@
+Command,First Name,Last Name,Email,Phone,Accepts Email Marketing,Tags,Tax Exempt,Tax Exemptions,Address First Name,Address Last Name,Address Company,Address1,Address2,Address City,Address Province,Address Province Code,Address Country,Address Country Code,Address Zip,Address Phone,Address Default
+MERGE,Jacques,Van Mirlo,jacques_vm@yahoo.com,0498299393,yes,"butterfly,dandoy",,,Jacques,Van Mirlo,,Zonnedauwlaan 20,,Schoten,Antwerpen,,,BE,2900,0498299393,TRUE
+MERGE,Dirk,Levens,dirk.levens@gmail.com,0476321870,yes,"butterfly,dandoy",,,Dirk,Levens,,Zemstbaan 61,,Mechelen,Antwerpen,,,BE,2800,0476321870,TRUE
+MERGE,Dominique,fache,maxidomus@hotmail.com,064678112,yes,"butterfly,dandoy",,,dominique,fache,,rue de nivelles 88,,strepy bracquegnies,-,,,BE,7110,064678112,TRUE
+MERGE,gino,sacchet,ginow602@hotmail.com,071 38 21 92,no,"butterfly,dandoy",,,gino,sacchet,,100 rue lison,,gilly,hainaut,,,BE,6060,071 38 21 92,TRUE
+MERGE,Wilfried,Hertogs,wilfried.hertogs@telenet.be,+32478609688,yes,"butterfly,dandoy",,,Wilfried,Hertogs,TTV HASSELT UNITED,Kraailingenveld 8,,Bilzen,Limburg,,,BE,3740,+32478609688,TRUE
+MERGE,Kimberly,Van Hecke,kimberlyvanhecke20@hotmail.com,,yes,"butterfly,dandoy",,,,,,,,,,,,,,,
+MERGE,Eric,Hégire,botchi46@hotmail.com,,yes,"butterfly,dandoy",,,,,,,,,,,,,,,
+MERGE,Benjamin,Mercier,benjaminmercier01@gmail.com,,yes,"butterfly,dandoy",,,,,,,,,,,,,,,
+MERGE,Stéphane,CLAIRBOIS,stephaneclairbois@hotmail.com,,no,"butterfly,dandoy",,,,,,,,,,,,,,,
+MERGE,Denis,Bertrand,dbertrand@webdigitales.be,,no,butterfly,,,,,,,,,,,,,,,

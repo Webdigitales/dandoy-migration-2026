@@ -30,7 +30,7 @@ echo "[5/8] Commandes 2025-2026..."
 python3 "$SCRIPTS/magento_to_shopify_orders.py"
 echo ""
 
-echo "[6/8] Sample (par boutique)..."
+echo "[6/8] Sample (produits, clients, commandes — par boutique)..."
 python3 - << 'SAMPLEEOF'
 import csv, os
 
@@ -45,7 +45,7 @@ targets = [
     ('Accessories', 'Title', None), ('Blades', 'Title', None),
 ]
 
-def build_sample(store_suffix):
+def build_products_sample(store_suffix):
     src = os.path.join(imports, f'shopify_products_{store_suffix}.csv')
     with open(src, encoding='utf-8') as f:
         reader = csv.DictReader(f)
@@ -71,8 +71,65 @@ def build_sample(store_suffix):
         w.writerows(sample)
     print(f"  {store_suffix}: {len(handles)} produits, {len(sample)} lignes")
 
-build_sample('dandoy')
-build_sample('butterfly')
+
+def build_customers_sample(store_suffix, n=10):
+    src = os.path.join(imports, f'shopify_customers_{store_suffix}.csv')
+    with open(src, encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        all_rows = list(reader)
+        fieldnames = reader.fieldnames
+
+    with_addr = [r for r in all_rows if r.get('Address1')]
+    without_addr = [r for r in all_rows if not r.get('Address1')]
+    half = n // 2
+    sample = with_addr[:half] + without_addr[:n - half]
+    if len(sample) < n:
+        rest = [r for r in all_rows if r not in sample]
+        sample += rest[:n - len(sample)]
+
+    dest = os.path.join(imports, f'shopify_customers_sample_{store_suffix}.csv')
+    with open(dest, 'w', newline='', encoding='utf-8') as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(sample)
+    print(f"  {store_suffix}: {len(sample)} clients")
+
+
+def build_orders_sample(store_suffix, n=5):
+    src = os.path.join(imports, f'shopify_orders_{store_suffix}.csv')
+    with open(src, encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        all_rows = list(reader)
+        fieldnames = reader.fieldnames
+
+    order_names, seen = [], set()
+    for r in all_rows:
+        name = r.get('Name', '')
+        if name and name not in seen:
+            seen.add(name)
+            order_names.append(name)
+        if len(order_names) >= n:
+            break
+
+    wanted = set(order_names)
+    sample = [r for r in all_rows if r.get('Name') in wanted]
+    dest = os.path.join(imports, f'shopify_orders_sample_{store_suffix}.csv')
+    with open(dest, 'w', newline='', encoding='utf-8') as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(sample)
+    print(f"  {store_suffix}: {len(order_names)} commandes, {len(sample)} lignes")
+
+
+print("Produits :")
+build_products_sample('dandoy')
+build_products_sample('butterfly')
+print("Clients :")
+build_customers_sample('dandoy')
+build_customers_sample('butterfly')
+print("Commandes :")
+build_orders_sample('dandoy')
+build_orders_sample('butterfly')
 SAMPLEEOF
 echo ""
 

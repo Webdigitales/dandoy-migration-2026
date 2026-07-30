@@ -59,6 +59,10 @@ dandoy/
 │   ├── shopify_orders_butterfly.csv             (28 725 lignes — 13 607 commandes)
 │   ├── shopify_products_sample_dandoy.csv       (versionné)
 │   ├── shopify_products_sample_butterfly.csv    (versionné)
+│   ├── shopify_customers_sample_dandoy.csv      (versionné — 10 clients)
+│   ├── shopify_customers_sample_butterfly.csv   (versionné — 10 clients)
+│   ├── shopify_orders_sample_dandoy.csv         (versionné — 5 commandes)
+│   ├── shopify_orders_sample_butterfly.csv      (versionné — 5 commandes)
 │   ├── *_PURGE.csv (×6)
 │   └── ERRORS/                                  (rapports d'import Matrixify)
 ├── 05_DOCS/                                     (source MkDocs — GitHub Pages)
@@ -88,7 +92,9 @@ deux jeux ; chaque commande n'apparaît que dans un seul jeu (boutique d'origine
 | `shopify_customers_dandoy.csv` / `_butterfly.csv` | 33 357 / 11 404 | Clients dédupliqués + adresse par défaut + tags source |
 | `shopify_orders_dandoy.csv` / `_butterfly.csv` | 71 096 / 28 725 | 23 823 / 13 607 commandes avec line items |
 | `*_PURGE.csv` (×6) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
-| `shopify_products_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon (tous types) |
+| `shopify_products_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon produits (tous types) |
+| `shopify_customers_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon clients (5 avec adresse + 5 sans) |
+| `shopify_orders_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon commandes (5 commandes complètes avec line items) |
 
 ### Ordre d'import recommandé (à répéter dans chaque boutique)
 

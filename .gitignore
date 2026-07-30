@@ -3,6 +3,10 @@
 04_SHOPIFY_IMPORTS/ERRORS
 !04_SHOPIFY_IMPORTS/shopify_products_sample_dandoy.csv
 !04_SHOPIFY_IMPORTS/shopify_products_sample_butterfly.csv
+!04_SHOPIFY_IMPORTS/shopify_customers_sample_dandoy.csv
+!04_SHOPIFY_IMPORTS/shopify_customers_sample_butterfly.csv
+!04_SHOPIFY_IMPORTS/shopify_orders_sample_dandoy.csv
+!04_SHOPIFY_IMPORTS/shopify_orders_sample_butterfly.csv
 03_SEO_AND_REDIRECTS/*.csv
 .idea
 site/

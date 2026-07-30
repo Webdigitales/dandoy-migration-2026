@@ -88,6 +88,10 @@ dandoy/
 │   ├── shopify_orders_butterfly.csv        (28 725 lignes — 13 607 commandes)
 │   ├── shopify_products_sample_dandoy.csv     (versionné)
 │   ├── shopify_products_sample_butterfly.csv  (versionné)
+│   ├── shopify_customers_sample_dandoy.csv    (versionné — 10 clients)
+│   ├── shopify_customers_sample_butterfly.csv (versionné — 10 clients)
+│   ├── shopify_orders_sample_dandoy.csv       (versionné — 5 commandes)
+│   ├── shopify_orders_sample_butterfly.csv    (versionné — 5 commandes)
 │   └── *_PURGE.csv (×6 — produits/collections/redirections × 2 boutiques)
 │
 └── 05_DOCS/                                # Source MkDocs (GitHub Pages)
@@ -160,7 +164,7 @@ Chaque entité est scindée en deux fichiers, un par boutique (produits partagé
 - Ne jamais modifier la structure des SKUs
 - Les options Shopify vides sont omises (ne pas déclarer `Option Name` sans `Option Value`)
 - Metafields multi-valeurs : séparer par `|` (pipe), type `list.single_line_text_field`
-- Les CSV générés sont gitignorés (sauf `shopify_products_sample_dandoy.csv` et `shopify_products_sample_butterfly.csv`)
+- Les CSV générés sont gitignorés (sauf les 6 fichiers `*_sample_{dandoy|butterfly}.csv` : produits, clients, commandes)
 - Toute nouvelle documentation va dans `05_DOCS/` et est référencée dans `mkdocs.yml`
 - Le site MkDocs se déploie automatiquement via GitHub Actions sur push `master`
 - **Deux boutiques Shopify (Option B)** : tout script de génération doit produire une paire de fichiers `_dandoy` / `_butterfly` (voir `brand_scope()` dans `magento_to_shopify.py`, basé sur `product_websites`). Les produits partagés (tag `dandoy,butterfly`) sont dupliqués volontairement dans les deux fichiers produits — ne pas les dédupliquer.
