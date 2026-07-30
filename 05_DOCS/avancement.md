@@ -55,8 +55,8 @@ dandoy/
 │   ├── shopify_collections_butterfly.csv        (37 collections)
 │   ├── shopify_customers_dandoy.csv             (33 357 clients)
 │   ├── shopify_customers_butterfly.csv          (11 404 clients)
-│   ├── shopify_orders_dandoy.csv                (71 096 lignes — 23 823 commandes)
-│   ├── shopify_orders_butterfly.csv             (28 725 lignes — 13 607 commandes)
+│   ├── shopify_orders_dandoy.csv                (74 535 lignes — 24 855 commandes)
+│   ├── shopify_orders_butterfly.csv             (30 027 lignes — 14 196 commandes)
 │   ├── shopify_products_sample_dandoy.csv       (versionné)
 │   ├── shopify_products_sample_butterfly.csv    (versionné)
 │   ├── shopify_customers_sample_dandoy.csv      (versionné — 10 clients)
@@ -90,7 +90,7 @@ deux jeux ; chaque commande n'apparaît que dans un seul jeu (boutique d'origine
 | `shopify_collections_dandoy.csv` / `_butterfly.csv` | 58 / 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects_dandoy.csv` / `_butterfly.csv` | 2 045 / 380 | Redirections 301 (produits actifs + catégories, scopées par boutique) |
 | `shopify_customers_dandoy.csv` / `_butterfly.csv` | 33 357 / 11 404 | Clients dédupliqués + adresse par défaut + tags source |
-| `shopify_orders_dandoy.csv` / `_butterfly.csv` | 71 096 / 28 725 | 23 823 / 13 607 commandes avec line items |
+| `shopify_orders_dandoy.csv` / `_butterfly.csv` | 74 535 / 30 027 | 24 855 / 14 196 commandes avec line items (39 051 au total, période complète jan. 2025 → aujourd'hui) |
 | `*_PURGE.csv` (×6) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
 | `shopify_products_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon produits (tous types) |
 | `shopify_customers_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon clients (5 avec adresse + 5 sans) |
@@ -221,6 +221,54 @@ Importer via Matrixify dans l'ordre inverse, dans chaque boutique :
 - Fichiers obsolètes de l'ancienne architecture mono-boutique supprimés
   (`shopify_products.csv`, `shopify_collections.csv`, etc.)
 
+### Repasse documentaire complète + samples clients/commandes (30 juillet 2026)
+
+- Revue systématique des 18 pages MkDocs + leurs mirrors `02_ANALYSIS_AND_MAPPING/` pour
+  éliminer toute référence résiduelle à l'Option A ou aux anciens noms de fichiers mono-boutique
+  (`multi-sites.md`, `langues.md`, `redirections.md`, `orders.md`, `customers.md`,
+  `plan-migration.md`, `quick-start.md`, `contraintes-techniques.md`, `custom-options.md`,
+  `bundles.md`, README/CLAUDE/GUIDE_PRESTATAIRE)
+- Corrections indépendantes trouvées au passage : lien cassé `quick-start.md` →
+  `mapping/metafields.md` (page scindée depuis), typo d'en-tête dans `contraintes-techniques.md`,
+  comptage obsolète 19→20 metafields (`custom.available_options` manquant), `custom_options_shopify.md`
+  très en retard sur sa version 05_DOCS
+- `regenerate_all.sh` génère désormais aussi des échantillons clients (10/boutique, 5 avec
+  adresse + 5 sans) et commandes (5 commandes complètes/boutique, avec line items) — versionnés
+  comme le sample produits, à la demande du client malgré les données personnelles réelles qu'ils
+  contiennent en petite quantité
+
+### Debug Matrixify commandes — 5 itérations de test réel (30 juillet 2026)
+
+Le premier test Matrixify sur le sample commandes échouait à 100% (adresse manquante dans
+l'export Magento). Après ajout des colonnes d'adresse côté Magento, 5 allers-retours de test réel
+ont été nécessaires pour obtenir un import propre :
+
+1. **Adresses manquantes** → 14 colonnes ajoutées côté export Magento (`BillingAddress.Street/
+   City/Region/Postcode/Country Id/Telephone/Company` + équivalent `ShippingAddress.*`) ; mapping
+   ajouté dans `magento_to_shopify_orders.py`, avec nettoyage du champ `Street` (tabulations +
+   duplication de la ville) — ~39% des commandes ont une rue multi-lignes, 64% de celles-ci
+   dupliquaient la ville
+2. **Colonne `Country Code` non reconnue** par le template Orders (contrairement à Customers) →
+   code ISO déplacé vers la colonne `Country` d'origine
+3. **18 colonnes en échec silencieux** (`Financial Status`, `Subtotal`, `Lineitem *`, `Billing/
+   Shipping Address1/2`, `Payment Method`…) → renommées vers la convention Matrixify actuelle
+   `Section: Champ` (`Payment: Status`, `Line: Name`, `Billing: Address 1`, `Transaction: Payment
+   Method`…), confirmée via la doc officielle Matrixify
+4. **"must have at least one line item"** malgré SKU/prix/quantité présents → `Line: Type` =
+   `"Line Item"` et `Line: ID` (compteur unique global) sont obligatoires, ajoutés
+5. **`Line: Fulfillment Status` puis `Fulfillment Status`** → tous deux export-only (calculés
+   depuis de vrais enregistrements de fulfillment Shopify, pas settable à l'import), retirés
+
+**Import du sample confirmé fonctionnel** à l'issue de ces 5 corrections. Limitation connue : sans
+un mécanisme `Fulfillment Line` (chantier séparé, plus conséquent), les commandes importées
+apparaîtront comme non expédiées dans Shopify quel que soit leur statut historique réel — décision
+à prendre plus tard sur l'opportunité de l'implémenter.
+
+Au passage, découverte que l'export Magento des commandes avait une période tronquée
+(30 mai 2025 → 30 juillet 2026 au lieu de janvier 2025 → aujourd'hui, -7 741 commandes) lors du
+premier ajout des colonnes d'adresse — corrigé côté Magento, période complète restaurée
+(39 051 commandes au total désormais, contre 37 430 avant).
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -250,6 +298,7 @@ Importer via Matrixify dans l'ordre inverse, dans chaque boutique :
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 | **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
+| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | À décider | Sans le mécanisme `Fulfillment Line`, toutes les commandes importées afficheront "non expédiées" dans Shopify |
 
 ---
 
@@ -259,15 +308,17 @@ Importer via Matrixify dans l'ordre inverse, dans chaque boutique :
 |---|---|---|
 | Plan de migration | ~~À faire~~ | **Fait** — 5 phases documentées ([Plan de migration](./import/plan-migration.md)) |
 | Décision multi-sites (A ou B) | ~~Haute~~ | **Fait** — Option B retenue, scripts adaptés (29-30 juillet 2026) |
-| Import test complet Matrixify | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessus, sur l'ancien catalogue unique — à retester par boutique) |
+| Import test complet Matrixify (produits) | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessus, sur l'ancien catalogue unique — à retester par boutique) |
+| Import test commandes Matrixify | ~~Haute~~ | **Fait** — sample confirmé fonctionnel après 5 corrections (colonnes, adresses, line items — voir ci-dessus) |
 | 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — [Doublons de variantes](./mapping/doublons-variantes.md) |
 | 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
+| Décider du mécanisme Fulfillment Line (commandes) | Moyenne | À trancher — impact : statut "non expédiée" par défaut sinon |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
-| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (33 357 / 11 404 clients) |
-| Migration commandes | ~~À évaluer~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (23 823 / 13 607 commandes) |
+| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (33 357 / 11 404 clients), sample testé OK |
+| Migration commandes | ~~À évaluer~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (24 855 / 14 196 commandes), sample testé OK |
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
 | Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2), à dupliquer sur les 2 boutiques |
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
@@ -280,6 +331,12 @@ Importer via Matrixify dans l'ordre inverse, dans chaque boutique :
 
 | Date | Commit | Description |
 |---|---|---|
+| 30 juillet | `6e39f86` | Fix noms de colonnes Matrixify Orders — confirmé fonctionnel par tests réels |
+| 30 juillet | `25986a0` | Mapping adresses billing/shipping (colonnes ajoutées à l'export Magento) |
+| 30 juillet | `3ddbbd2` | Ajout samples clients et commandes pour tests Matrixify |
+| 30 juillet | `7993a42` | Scripts adaptés pour générer les fichiers par boutique (Option B) |
+| 30 juillet | `6f8fc7d` | Repasse documentaire complète pour l'architecture deux boutiques |
+| 10 juillet | `047837f` | Suivi avancement mis à jour au 10 juillet 2026 |
 | 10 juillet | `01fd804` | Fix import collections Matrixify (en-tête et valeurs de règle) |
 | 10 juillet | `8a0c348` | Fix champs Custom options hors formulaire produit (thème Horizon) |
 | 10 juillet | `9145c31` | Doc intégration Custom options thème Horizon |
