@@ -84,6 +84,14 @@ STORE_TAGS = {
 # Fulfillment: Status, matching Line: Title/Variant Title/Price/Quantity) —
 # out of scope for now; all imported orders will show as unfulfilled until
 # that's implemented.
+#
+# 'Tax: Total' alone is NOT enough to make tax show up in the order total:
+# per Matrixify's own docs, "if any Line Item ... has tax applied in the
+# import file, then order level tax will not be imported to avoid
+# duplicating taxes" — and without a per-line tax entry, no tax gets
+# applied at all. Confirmed live: order WEB1-0125-17658 showed Total =
+# Subtotal - Discount with the 18.82€ VAT entirely missing. Fixed via
+# 'Line: Tax 1 Title/Rate/Price' per item instead.
 SHOPIFY_COLS = [
     'Name',
     'Command',
@@ -93,6 +101,7 @@ SHOPIFY_COLS = [
     'Price: Subtotal',
     'Price: Current Total Shipping',
     'Tax: Total',
+    'Price: Total Discount',
     'Price: Total',
     'Line: Type',
     'Line: ID',
@@ -103,6 +112,9 @@ SHOPIFY_COLS = [
     'Line: SKU',
     'Line: Requires Shipping',
     'Line: Taxable',
+    'Line: Tax 1 Title',
+    'Line: Tax 1 Rate',
+    'Line: Tax 1 Price',
     'Line: Discount',
     'Billing Name',
     'Billing: Address 1',
@@ -213,7 +225,26 @@ def address_fields(row, prefix):
     }
 
 
-def extract_items(row):
+def fx_rate(row):
+    """Some orders (997 of 39,051, all on the WW / non-EU store) have a
+    'Grand Total' in the customer's local checkout currency alongside a
+    'Base Grand_total' in EUR (the shop's base currency) — no explicit
+    currency code is exported, only these two amounts. Everything else
+    (Subtotal, item Price, Tax Amount, Discount Amount) is only given in
+    the local currency, so we derive one conversion rate per order and
+    apply it everywhere rather than mixing EUR and local-currency fields
+    under a hardcoded Currency=EUR (confirmed bug: order WEB4-0125-22963
+    was sent to Shopify as "112.38 EUR" when the real EUR amount is
+    104.06€). Orders without this split (the other 97.5%) get rate=1.0,
+    a no-op."""
+    grand = parse_float(row.get('Grand Total'))
+    base = parse_float(row.get('Base Grand_total'))
+    if grand and base and abs(grand - base) > 0.01:
+        return grand / base
+    return 1.0
+
+
+def extract_items(row, rate):
     items = []
     for i in range(1, MAX_ITEMS + 1):
         sku = (row.get(f'item {i}(Sku)') or '').strip()
@@ -222,17 +253,19 @@ def extract_items(row):
         items.append({
             'name':     (row.get(f'item {i}(Name)') or '').strip(),
             'sku':      sku,
-            'price':    parse_float(row.get(f'item {i}(Price)')),
+            'price':    parse_float(row.get(f'item {i}(Price)')) / rate,
             'qty':      int(parse_float(row.get(f'item {i}(Qty Ordered)'))),
             'status':   (row.get(f'item {i}(Status)') or '').strip(),
             'tax_pct':  parse_float(row.get(f'item {i}(Tax Percent)')),
-            'discount': parse_float(row.get(f'item {i}(Discount Amount)')),
+            'tax_amt':  parse_float(row.get(f'item {i}(Tax Amount)')) / rate,
+            'discount': parse_float(row.get(f'item {i}(Discount Amount)')) / rate,
         })
     return items
 
 
 def build_rows(order):
-    items = extract_items(order)
+    rate  = fx_rate(order)
+    items = extract_items(order, rate)
     if not items:
         return None, []
 
@@ -249,8 +282,25 @@ def build_rows(order):
         s_addr = b_addr
     created       = parse_date(order.get('Created At', ''))
 
-    # Compute taxes from items (approximate: price × qty × tax_rate)
-    taxes = sum(it['price'] * it['qty'] * (it['tax_pct'] / 100) for it in items)
+    # Use Magento's own per-item tax amounts rather than recomputing
+    # price × qty × rate — that approximation ignores per-item discounts
+    # entirely and overstates tax whenever a discount applies (confirmed:
+    # order WEB1-0125-17658 computed 20.92 vs Magento's actual 18.82,
+    # since the discount reduces the taxable base before Magento's own
+    # calculation). Magento already did that math correctly.
+    taxes = sum(it['tax_amt'] for it in items)
+
+    # Magento's 'Discount Amount' is a tax-inclusive (TTC) figure, but
+    # 'Line: Price' is tax-exclusive (HT, matches 'item N(Price)'/'Row
+    # Total'). Sending the raw TTC discount next to an HT price makes
+    # Shopify's own Total = Subtotal - Discount + Tax land 2-3% short of
+    # Magento's real Grand Total (confirmed: order WEB1-0125-17658 —
+    # Shopify computed 106.37€ vs the real 108.45€). Converting each
+    # discount to its HT equivalent before subtracting fixes it exactly:
+    # 99.59 - (12.05 / 1.21) + 18.82 = 108.45, matching Magento to the cent.
+    for it in items:
+        it['discount_ht'] = it['discount'] / (1 + it['tax_pct'] / 100) if it['tax_pct'] else it['discount']
+    total_discount = sum(it['discount_ht'] for it in items)
 
     rows = []
     for idx, item in enumerate(items):
@@ -267,7 +317,11 @@ def build_rows(order):
         r['Line: SKU']                = item['sku']
         r['Line: Requires Shipping']  = 'TRUE'
         r['Line: Taxable']            = taxable
-        r['Line: Discount']           = f"{item['discount']:.4f}" if item['discount'] else ''
+        if item['tax_pct'] > 0:
+            r['Line: Tax 1 Title'] = 'VAT'
+            r['Line: Tax 1 Rate']  = f"{item['tax_pct'] / 100:.4f}"
+            r['Line: Tax 1 Price'] = f"{item['tax_amt']:.4f}"
+        r['Line: Discount']           = f"{item['discount_ht']:.4f}" if item['discount'] else ''
 
         # Order header fields (first row only)
         if idx == 0:
@@ -276,10 +330,13 @@ def build_rows(order):
             r['Email']              = order.get('Customer Email', '').strip().lower()
             r['Payment: Status']    = fin_status
             r['Currency']           = 'EUR'
-            r['Price: Subtotal']    = order.get('Subtotal', '').strip()
+            r['Price: Subtotal']    = f"{parse_float(order.get('Subtotal')) / rate:.4f}"
             r['Price: Current Total Shipping'] = order.get('Base Shipping Incl Tax', '').strip()
             r['Tax: Total']         = f"{taxes:.2f}"
-            r['Price: Total']       = order.get('Grand Total', '').strip()
+            r['Price: Total Discount'] = f"{total_discount:.2f}" if total_discount else ''
+            # 'Base Grand_total' is already EUR — more direct and exact than
+            # dividing 'Grand Total' by the same derived rate a second time.
+            r['Price: Total']       = order.get('Base Grand_total', '').strip() or order.get('Grand Total', '').strip()
             r['Billing Name']       = b_name
             r['Billing: Address 1'] = b_addr['Address1']
             r['Billing City']       = b_addr['City']
