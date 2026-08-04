@@ -151,13 +151,22 @@ SHOPIFY_COLS = [
 ]
 
 
+DATE_FORMATS = (
+    '%b %d, %Y %I:%M:%S %p',  # Created At: 'Jan 1, 2025 02:12:20 AM'
+    '%Y-%m-%d %H:%M:%S',      # Updated At: '2025-01-02 11:11:43'
+)
+
+
 def parse_date(raw):
-    """Jan 1, 2025 02:12:20 AM  →  2025-01-01 02:12:20 +0100"""
-    try:
-        dt = datetime.strptime(raw.strip(), '%b %d, %Y %I:%M:%S %p')
-        return dt.strftime('%Y-%m-%d %H:%M:%S +0100')
-    except ValueError:
-        return raw.strip()
+    """→ 2025-01-01 02:12:20 +0100 (either source format above)."""
+    raw = raw.strip()
+    for fmt in DATE_FORMATS:
+        try:
+            dt = datetime.strptime(raw, fmt)
+            return dt.strftime('%Y-%m-%d %H:%M:%S +0100')
+        except ValueError:
+            continue
+    return raw
 
 
 def parse_float(raw):
@@ -214,6 +223,45 @@ def clean_street(street, city):
                   if p.lower() != city_l
                   and not (len(p) > len(city_l) and p.lower().endswith(city_l))]
     return ', '.join(parts)
+
+
+# Relay point columns for 3 possible carriers (bpost/DPD/Sendcloud), tried
+# in this order — in practice only Sendcloud is ever populated (23.8% of
+# orders, confirmed 2026-08-04); bpost/DPD columns exist in the export but
+# were empty in every order checked, kept as a harmless fallback in case
+# that changes.
+RELAY_POINT_FIELDS = (
+    ('Bpost Point Office', 'Bpost Point Street', 'Bpost Point Nr',
+     'Bpost Point Zip', 'Bpost Point City'),
+    ('Dpd Parcelshop Name', 'Dpd Parcelshop Street', 'Dpd Parcelshop House Number',
+     'Dpd Parcelshop Zip Code', 'Dpd Parcelshop City'),
+    ('Sendcloud Service Point Name', 'Sendcloud Service Point Street',
+     'Sendcloud Service Point House Number', 'Sendcloud Service Point Zip Code',
+     'Sendcloud Service Point City'),
+)
+
+
+def order_note(row):
+    """'Point relais: <name> <street> <nr>, <zip> <city> | Mollie: <id>'
+    — either half omitted if not present on this order."""
+    parts = []
+    for name_col, street_col, nr_col, zip_col, city_col in RELAY_POINT_FIELDS:
+        name = (row.get(name_col) or '').strip()
+        if name:
+            street = (row.get(street_col) or '').strip()
+            nr     = (row.get(nr_col) or '').strip()
+            zipc   = (row.get(zip_col) or '').strip()
+            city   = (row.get(city_col) or '').strip()
+            addr = ' '.join(p for p in (street, nr) if p)
+            addr = ', '.join(p for p in (addr, f"{zipc} {city}".strip()) if p)
+            parts.append(f"Point relais: {name} {addr}".strip())
+            break
+
+    mollie_id = (row.get('Mollie Transaction Id') or '').strip()
+    if mollie_id:
+        parts.append(f"Mollie: {mollie_id}")
+
+    return ' | '.join(parts)
 
 
 def address_fields(row, prefix):
@@ -365,6 +413,7 @@ def build_rows(order):
             r['Shipping Line Price']= order.get('Base Shipping Incl Tax', '').strip()
             r['Transaction: Payment Method'] = payment
             r['Tags']               = tag
+            r['Note']                = order_note(order)
             r['Created at']         = created
         else:
             # Repeat Name to link this row to the order
