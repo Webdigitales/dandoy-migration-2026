@@ -297,6 +297,32 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
   Sendcloud) et l'ID de transaction Mollie — colonnes disponibles côté attributs Magento
   (`mollie_transaction_id`, `bpost_point_*`, `dpd_parcelshop_*`, `sendcloud_service_point_*`)
   mais absentes de l'export actuel — à demander en même temps que `Updated At`.
+- **PayPlug/PayPal Express/Klarna** : aucun ID de transaction dans la liste d'attributs order
+  Magento Admin (confirmé — l'utilisateur est lui-même le prestataire/dev Magento du projet,
+  a vérifié directement). Probablement stocké hors des attributs order plats
+  (`sales_order_payment.additional_information`) — à vérifier en base si besoin.
+
+### Export Magento mis à jour : Fulfillment + Note débloqués (4 août 2026)
+
+`Updated At`, les colonnes point relais (bpost/DPD/Sendcloud) et `Mollie Transaction Id`
+ajoutés à `export_order_all_2025_2026.csv` (39 094 commandes, +43 vs la veille — période
+glissante). Vérification et câblage dans `magento_to_shopify_orders.py` :
+
+- **`Updated At`** : 100 % rempli, mais format différent de `Created At` (`2025-01-02
+  11:11:43` vs `Jan 1, 2025 02:12:20 AM`) — `parse_date()` étendu pour reconnaître les deux
+  formats. `Fulfillment: Processed At` n'est donc plus vide.
+- **Point relais** : seul **Sendcloud** est réellement utilisé (23,8 % des commandes) — les
+  colonnes `Bpost Point *` et `Dpd Parcelshop *` sont vides à 100 % dans ce jeu de données
+  (conservées en fallback dans le code au cas où, sans coût). Correspond aux libellés "Point
+  Relais - UPS/DPD/Mondial Relay" observés dans `Shipping Description` : Sendcloud est
+  l'intégration meta-transporteur derrière ces méthodes.
+- **`Mollie Transaction Id`** : 89,7 % rempli (cohérent avec la part Mollie des paiements).
+- **`Note`** générée, ex. : `Point relais: LOPES WELKENRAEDT RUE DE L EGLISE 24, 4840
+  WELKENRAEDT | Mollie: tr_cAMbSG6aTS` — 23 836/24 896 commandes Dandoy renseignées.
+- Repéré au passage : le header de l'export contient désormais des colonnes `item 57`…
+  `item 67` (au-delà du `MAX_ITEMS = 56` du script) — vérifié qu'aucune commande n'en utilise
+  plus de 56 dans les faits, donc pas de correctif nécessaire pour l'instant ; à surveiller si
+  ça change dans un futur export.
 
 ### Documentation (17–24 juin 2026)
 
@@ -329,7 +355,7 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 | **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
-| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu** (4 août 2026) — implémenté, non testé en live | Bloqué sur `Fulfillment: Processed At` (date) tant que `Updated At` n'est pas dans l'export Magento — voir ci-dessous |
+| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu** (4 août 2026) — implémenté avec `Fulfillment: Processed At` = `Updated At`, non testé en live | Débloqué (export Magento mis à jour 4 août 2026) — reste à valider en live |
 
 ---
 
@@ -344,8 +370,8 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — `doublons_variantes_a_corriger.csv` |
 | 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
-| Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | **Haute** | Demandé au client (4 août 2026) — bloque la date de fulfillment (`Fulfillment: Processed At`) et le remplissage du champ `Note` (support client) |
-Vérifier en base (table `sales_order_payment.additional_information`, pas exposée comme attribut order) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin (vérifié 4 août 2026, seul `mollie_transaction_id` y figure) | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
+| Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
+| Vérifier en base (table `sales_order_payment.additional_information`, pas exposée comme attribut order) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin (vérifié 4 août 2026, seul `mollie_transaction_id` y figure) | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
 | Tester en live le mécanisme Fulfillment Line (commandes) | Moyenne | Implémenté 4 août 2026 (voir ci-dessus), non testé en live — à valider au prochain import Matrixify sample |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |

@@ -11,7 +11,7 @@
 
 | Fichier | Lignes | Contenu |
 |---|---|---|
-| `export_order_all_2025_2026.csv` | 39 051 commandes | Commandes jan 2025–aujourd'hui avec line items (SKU, prix, qté), adresses billing/shipping |
+| `export_order_all_2025_2026.csv` | 39 094 commandes | Commandes jan 2025–aujourd'hui avec line items (SKU, prix, qté), adresses billing/shipping |
 
 ---
 
@@ -34,7 +34,7 @@ export tronqué — voir Historique des commits).
 | Dandoy Sports EU English | 2 192 | Dandoy-Sports |
 | Butterfly BE Nederlands | 943 | Butterfly TT |
 
-**Total : 24 855 commandes → `shopify_orders_dandoy.csv` / 14 196 commandes → `shopify_orders_butterfly.csv`.**
+**Total : 24 896 commandes → `shopify_orders_dandoy.csv` / 14 198 commandes → `shopify_orders_butterfly.csv`.**
 
 ### Statistiques
 
@@ -42,7 +42,7 @@ export tronqué — voir Historique des commits).
 |---|---|
 | CA total | 5 094 918 € |
 | Panier moyen | 130,47 € |
-| Commandes | 39 051 |
+| Commandes | 39 094 |
 | Line items total | 104 562 |
 | Items/commande | moy. 2,68 — max 56 |
 | Financial status paid | 36 324 (93%) |
@@ -79,8 +79,8 @@ Pic en **novembre-décembre** (Black Friday + Noël) : 3 963 + 3 198 commandes. 
 | Adresse billing/shipping (rue, ville, CP, pays) | ✅ (14 colonnes ajoutées le 30 juillet 2026) |
 | Téléphone | ✅ |
 | Statut d'expédition par item (`Shipped`/`Invoiced`/`Mixed`) | ✅ |
-| Date d'expédition réelle | ❌ — voir [Fulfillment](#fulfillment-des-commandes-expédiées) |
-| Point relais (bpost/DPD/Sendcloud), ID transaction Mollie | ❌ — demandé, voir [Champ Note](#champ-note) |
+| Date d'expédition réelle | ⚠️ approximée par `Updated At` — voir [Fulfillment](#fulfillment-des-commandes-expédiées) |
+| Point relais (Sendcloud), ID transaction Mollie | ✅ (89,7 %) — voir [Champ Note](#champ-note) |
 
 ---
 
@@ -106,8 +106,8 @@ python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/magento_to_shopify_orders.py
 Inclus dans `regenerate_all.sh` (étape 5/8). Génère les deux fichiers de sortie en une seule exécution.
 
 Sortie :
-- `04_SHOPIFY_IMPORTS/shopify_orders_dandoy.csv` — **99 135 lignes** (24 855 commandes)
-- `04_SHOPIFY_IMPORTS/shopify_orders_butterfly.csv` — **44 149 lignes** (14 196 commandes)
+- `04_SHOPIFY_IMPORTS/shopify_orders_dandoy.csv` — **99 294 lignes** (24 896 commandes)
+- `04_SHOPIFY_IMPORTS/shopify_orders_butterfly.csv` — **44 154 lignes** (14 198 commandes)
 
 Format long Matrixify, 1 ligne par item + 1 ligne `Fulfillment Line` par commande expédiée
 (voir [Fulfillment des commandes expédiées](#fulfillment-des-commandes-expédiées)).
@@ -154,40 +154,43 @@ confirmé en échec). Il faut une ligne séparée par commande avec `Line: Type 
 Line'` — confirmé par la doc officielle Matrixify (contredit une suggestion externe qui
 proposait des colonnes directement sur les lignes `Line Item`).
 
-- **99,2 % des commandes** (38 722/39 051) ont tous leurs items à `Status = Shipped` → une
+- **99,2 % des commandes** (38 765/39 094) ont tous leurs items à `Status = Shipped` → une
   ligne `Fulfillment Line` par commande (`Fulfillment: Status = success`,
   `Fulfillment: Send Receipt = FALSE` pour ne pas ré-notifier les clients par email).
 - Les **0,8 % restants** (statuts `Invoiced`/`Mixed`) restent non expédiées plutôt que de
   deviner un état incertain.
-- `Fulfillment: Processed At` (date d'expédition historique) est **laissé vide** : aucune
-  date fiable disponible côté export Magento actuel (`Bpost Drop/Delivery Date` ne couvre que
-  18 % des commandes — bpost est loin d'être le seul transporteur ; `Created At` est la date
-  de commande, pas d'expédition). `Updated At` a été demandé côté export Magento (couvre
-  100 % des commandes) — une fois ajouté, le script le reprendra automatiquement.
+- `Fulfillment: Processed At` (date d'expédition historique) est mappé sur `Updated At`
+  (ajouté à l'export Magento le 4 août 2026, 100 % rempli — approximatif, c'est la date de
+  dernière modification de la commande, pas une vraie date d'expédition, mais la meilleure
+  source disponible). Format source différent de `Created At`
+  (`2025-01-02 11:11:43` vs `Jan 1, 2025 02:12:20 AM`) — `parse_date()` reconnaît les deux.
 
 > ⚠️ **Non testé en live** — contrairement au reste du mapping commandes, ce mécanisme n'a
 > pas encore été validé par un import Matrixify réel. À vérifier au prochain test sample.
 
 ### Champ Note
 
-`Note` est actuellement vide. Objectif : y placer le point relais (bpost/DPD/Sendcloud) et
-l'ID de transaction Mollie, utiles au support client. Colonnes Magento disponibles mais
-**absentes de l'export actuel** — demandées le 4 août 2026 :
+Rempli avec le point relais et l'ID de transaction Mollie quand disponibles, ex. :
+`Point relais: LOPES WELKENRAEDT RUE DE L EGLISE 24, 4840 WELKENRAEDT | Mollie:
+tr_cAMbSG6aTS`. Colonnes ajoutées à l'export Magento le 4 août 2026 :
 
-| Donnée | Colonnes Magento à ajouter à l'export |
-|---|---|
-| Point relais bpost | `bpost_point_office`, `bpost_point_street`, `bpost_point_nr`, `bpost_point_zip`, `bpost_point_city` |
-| Point relais DPD | `dpd_parcelshop_name`, `dpd_parcelshop_street`, `dpd_parcelshop_house_number`, `dpd_parcelshop_zip_code`, `dpd_parcelshop_city` |
-| Point relais Sendcloud | `sendcloud_service_point_name`, `sendcloud_service_point_street`, `sendcloud_service_point_house_number`, `sendcloud_service_point_zip_code`, `sendcloud_service_point_city` |
-| Transaction Mollie | `mollie_transaction_id` |
+| Donnée | Colonnes Magento | Taux de remplissage réel |
+|---|---|---|
+| Point relais bpost | `bpost_point_office`, `bpost_point_street`, `bpost_point_nr`, `bpost_point_zip`, `bpost_point_city` | 0 % — vide dans tout le jeu de données |
+| Point relais DPD | `dpd_parcelshop_name`, `dpd_parcelshop_street`, `dpd_parcelshop_house_number`, `dpd_parcelshop_zip_code`, `dpd_parcelshop_city` | 0 % — vide dans tout le jeu de données |
+| Point relais Sendcloud | `sendcloud_service_point_name`, `sendcloud_service_point_street`, `sendcloud_service_point_house_number`, `sendcloud_service_point_zip_code`, `sendcloud_service_point_city` | **23,8 %** — seul mécanisme réellement utilisé |
+| Transaction Mollie | `mollie_transaction_id` | **89,7 %** |
 
-Une commande n'aura qu'un seul type de point relais rempli (selon le transporteur choisi) —
-le script essaiera bpost → DPD → Sendcloud dans cet ordre.
+Une commande n'aura qu'un seul type de point relais rempli — le script essaie bpost → DPD →
+Sendcloud dans cet ordre, mais en pratique seul Sendcloud est jamais renseigné (correspond aux
+libellés "Point Relais - UPS/DPD/Mondial Relay" dans `Shipping Description` : Sendcloud est
+l'intégration meta-transporteur derrière ces méthodes). Les colonnes bpost/DPD sont conservées
+en fallback sans coût, au cas où un futur export les remplirait.
 
 **Question ouverte côté PayPlug/PayPal Express/Klarna (~2 850 commandes, 7,3 % du volume,
 méthodes `payplug_payments_*`, `paypal_express`, `klarna`)** : seul `mollie_transaction_id`
-apparaît dans la liste d'attributs Magento — **confirmé absent** pour ces trois passerelles
-(vérifié dans l'admin Magento le 4 août 2026). Probablement stocké hors des attributs order
+existe côté Magento — **confirmé absent** pour ces trois passerelles (vérifié directement dans
+l'admin Magento le 4 août 2026). Probablement stocké hors des attributs order
 plats, dans `sales_order_payment.additional_information` — à vérifier directement en base ;
 non accessible via ce type d'export en l'état. À défaut, `Note` restera vide pour ces
 commandes.
