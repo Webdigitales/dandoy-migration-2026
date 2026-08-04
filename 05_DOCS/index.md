@@ -37,7 +37,7 @@ Après mise à jour de l'export Magento :
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-Régénère en une seule commande les fichiers des deux boutiques. Des fichiers `*_PURGE.csv` (×6, un par entité et par boutique) sont aussi générés pour repartir à zéro entre tests (import via Matrixify avec commande DELETE).
+Régénère en une seule commande les fichiers des deux boutiques. Des fichiers `*_PURGE.csv` (×8, un par entité et par boutique) sont aussi générés pour repartir à zéro entre tests (import via Matrixify avec commande DELETE).
 
 ## Navigation
 

@@ -62,7 +62,7 @@ dandoy/
 │   ├── shopify_customers_sample_butterfly.csv   (versionné — 10 clients)
 │   ├── shopify_orders_sample_dandoy.csv         (versionné — 5 commandes)
 │   ├── shopify_orders_sample_butterfly.csv      (versionné — 5 commandes)
-│   ├── *_PURGE.csv (×6)
+│   ├── *_PURGE.csv (×8)
 │   └── ERRORS/                                  (rapports d'import Matrixify)
 ├── 05_DOCS/                                     (source MkDocs — GitHub Pages)
 │   ├── index.md, quick-start.md, contraintes-techniques.md, avancement.md
@@ -90,7 +90,7 @@ n'apparaît que dans un seul jeu (boutique d'origine).
 | `shopify_redirects_dandoy.csv` / `_butterfly.csv` | 2 045 / 380 | Redirections 301 (produits actifs + catégories, scopées par boutique) |
 | `shopify_customers_dandoy.csv` / `_butterfly.csv` | 33 357 / 11 404 | Clients dédupliqués + adresse par défaut + tags source |
 | `shopify_orders_dandoy.csv` / `_butterfly.csv` | 74 535 / 30 027 | 24 855 / 14 196 commandes avec line items (39 051 au total, période complète jan. 2025 → aujourd'hui) |
-| `*_PURGE.csv` (×6) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests |
+| `*_PURGE.csv` (×8) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests (produits, collections, redirections, commandes × 2 boutiques) |
 | `shopify_products_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon produits (tous types) |
 | `shopify_customers_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon clients (5 avec adresse + 5 sans) |
 | `shopify_orders_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon commandes (5 commandes complètes avec line items) |
@@ -125,9 +125,16 @@ chaque boutique.
 
 Importer via Matrixify dans l'ordre inverse, dans chaque boutique :
 
-1. `shopify_redirects_{dandoy|butterfly}_PURGE.csv`
-2. `shopify_collections_{dandoy|butterfly}_PURGE.csv`
-3. `shopify_products_{dandoy|butterfly}_PURGE.csv`
+1. `shopify_orders_{dandoy|butterfly}_PURGE.csv` (`Command = DELETE`, une ligne par `Name`)
+2. `shopify_redirects_{dandoy|butterfly}_PURGE.csv`
+3. `shopify_collections_{dandoy|butterfly}_PURGE.csv`
+4. `shopify_products_{dandoy|butterfly}_PURGE.csv`
+
+Les commandes importées via l'API Shopify (comme le fait Matrixify) restent supprimables même
+une fois fulfilled — contrairement à l'annulation en masse (`Cancel`), bloquée par Matrixify dès
+qu'une commande est fulfilled. Seules les commandes où Shopify a lui-même traité un paiement
+réel ("Shopify-brokered transactions") ne peuvent pas être supprimées ; ne concerne pas nos
+imports de test.
 
 ---
 

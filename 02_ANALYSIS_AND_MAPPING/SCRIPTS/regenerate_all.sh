@@ -166,6 +166,25 @@ def purge_redirects(src_path, dest_path):
             w.writerow({'Command': 'DELETE', 'Redirect From': r['Redirect From'], 'Redirect To': r['Redirect To']})
     return len(rows)
 
+# Orders imported through the Shopify API (as Matrixify does) are eligible
+# for bulk DELETE regardless of fulfillment status — unlike bulk CANCEL,
+# which Matrixify blocks once an order is fulfilled. Filename must contain
+# "Order" for Matrixify to route it to the Orders importer.
+def purge_orders(src_path, dest_path):
+    names, seen = [], set()
+    with open(src_path, encoding='utf-8') as f:
+        for row in csv.DictReader(f):
+            n = row.get('Name', '')
+            if n and n not in seen:
+                seen.add(n)
+                names.append(n)
+    with open(dest_path, 'w', newline='', encoding='utf-8') as f:
+        w = csv.DictWriter(f, fieldnames=['Command', 'Name'])
+        w.writeheader()
+        for n in names:
+            w.writerow({'Command': 'DELETE', 'Name': n})
+    return len(names)
+
 for suffix in ('dandoy', 'butterfly'):
     n_products = purge_handles(
         os.path.join(imports, f'shopify_products_{suffix}.csv'),
@@ -176,7 +195,10 @@ for suffix in ('dandoy', 'butterfly'):
     n_redirects = purge_redirects(
         os.path.join(redirects_dir, f'shopify_redirects_{suffix}.csv'),
         os.path.join(imports, f'shopify_redirects_{suffix}_PURGE.csv'))
-    print(f"  {suffix}: {n_products} produits, {n_collections} collections, {n_redirects} redirections")
+    n_orders = purge_orders(
+        os.path.join(imports, f'shopify_orders_{suffix}.csv'),
+        os.path.join(imports, f'shopify_orders_{suffix}_PURGE.csv'))
+    print(f"  {suffix}: {n_products} produits, {n_collections} collections, {n_redirects} redirections, {n_orders} commandes")
 PYEOF
 
 echo ""

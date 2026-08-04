@@ -92,7 +92,7 @@ dandoy/
 │   ├── shopify_customers_sample_butterfly.csv (versionné — 10 clients)
 │   ├── shopify_orders_sample_dandoy.csv       (versionné — 5 commandes)
 │   ├── shopify_orders_sample_butterfly.csv    (versionné — 5 commandes)
-│   └── *_PURGE.csv (×6 — produits/collections/redirections × 2 boutiques)
+│   └── *_PURGE.csv (×8 — produits/collections/redirections/commandes × 2 boutiques)
 │
 └── 05_DOCS/                                # Source MkDocs (GitHub Pages)
     ├── index.md, quick-start.md, contraintes-techniques.md, avancement.md

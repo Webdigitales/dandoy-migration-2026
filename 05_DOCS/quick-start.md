@@ -34,6 +34,7 @@ Cela crée dans `04_SHOPIFY_IMPORTS/`, un jeu de fichiers par boutique :
 | `shopify_products_{dandoy\|butterfly}_PURGE.csv` | Suppression produits (pour tests) |
 | `shopify_collections_{dandoy\|butterfly}_PURGE.csv` | Suppression collections (pour tests) |
 | `shopify_redirects_{dandoy\|butterfly}_PURGE.csv` | Suppression redirections (pour tests) |
+| `shopify_orders_{dandoy\|butterfly}_PURGE.csv` | Suppression commandes (pour tests) |
 
 Et dans `03_SEO_AND_REDIRECTS/` :
 
@@ -149,9 +150,10 @@ Pour supprimer toutes les données importées d'une boutique et recommencer :
 
 ```
 Importer dans cet ordre via Matrixify (fichiers _dandoy ou _butterfly selon la boutique) :
-1. shopify_redirects_{store}_PURGE.csv
-2. shopify_collections_{store}_PURGE.csv
-3. shopify_products_{store}_PURGE.csv
+1. shopify_orders_{store}_PURGE.csv
+2. shopify_redirects_{store}_PURGE.csv
+3. shopify_collections_{store}_PURGE.csv
+4. shopify_products_{store}_PURGE.csv
 ```
 
 > **Ordre important**
