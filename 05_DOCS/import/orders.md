@@ -167,9 +167,14 @@ proposait des colonnes directement sur les lignes `Line Item`).
 - **`Line: ID` doit rester vide** sur la ligne `Fulfillment Line` — un ID neuf fait que
   Matrixify traite la ligne comme un fulfillment **partiel** référençant ce `Line Item`
   précis (qui n'existe pas), et rejette la commande.
+- **`Fulfillment: Shipment Status` obligatoire dès que `Processed At` est rempli** —
+  Matrixify refuse la ligne sinon (`"you also need to set the 'Fulfillment: Shipment
+  Status' of: 'delivered' or 'failure'"`). Mis à `delivered` (commandes historiques déjà
+  expédiées).
 
-> ✅ **Testé en live le 4 août 2026** — 1ᵉʳ essai échoué 5/5 (`Line: ID` en trop, voir
-> ci-dessus), corrigé le jour même. À revalider au prochain import Matrixify sample.
+> ✅ **Testé en live le 4 août 2026** — 2 essais échoués (`Line: ID` en trop, puis
+> `Shipment Status` manquant), corrigés le jour même. À revalider au prochain import
+> Matrixify sample.
 
 ### Champ Note
 

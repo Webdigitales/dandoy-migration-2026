@@ -335,7 +335,13 @@ Cause : donner un `Line: ID` neuf à la ligne `Fulfillment Line` fait que Matrix
 comme un fulfillment **partiel** référençant ce `Line Item` précis — qui n'existe pas
 puisque les vrais items de la commande ont des ID différents (1 à 7 par ex.). Il fallait
 laisser `Line: ID` **vide** sur ces lignes pour déclencher un fulfillment complet de la
-commande. Corrigé dans `magento_to_shopify_orders.py` — à retester.
+commande. Corrigé dans `magento_to_shopify_orders.py`.
+
+**2ᵉ test** (`Import_Result_2026-08-04_110302`, après le fix ci-dessus) : erreur `Cannot find
+Line Item` disparue, mais nouvelle erreur sur les 5 commandes — `You have set the
+"Fulfillment: Processed At" date - therefore you also need to set the "Fulfillment: Shipment
+Status" of: "delivered" or "failure".` Ajouté `Fulfillment: Shipment Status = 'delivered'`
+(commandes historiques déjà expédiées) — à retester.
 
 ### Documentation (17–24 juin 2026)
 
