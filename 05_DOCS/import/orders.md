@@ -184,13 +184,13 @@ l'ID de transaction Mollie, utiles au support client. Colonnes Magento disponibl
 Une commande n'aura qu'un seul type de point relais rempli (selon le transporteur choisi) —
 le script essaiera bpost → DPD → Sendcloud dans cet ordre.
 
-**Question ouverte côté PayPlug/PayPal Express (~2 500 commandes, 6,4 % du volume, méthodes
-`payplug_payments_*` et `paypal_express`)** : seul `mollie_transaction_id` apparaît dans la
-liste d'attributs Magento actuellement disponible — pas d'équivalent visible pour ces deux
-passerelles. Possible que l'ID de transaction y soit stocké hors des attributs order plats
-(`sales_order_payment.additional_information`), non accessible via ce type d'export. Question
-posée au prestataire/dev Magento le 4 août 2026 ; à défaut de réponse, `Note` restera vide
-pour ces commandes.
+**Question ouverte côté PayPlug/PayPal Express/Klarna (~2 850 commandes, 7,3 % du volume,
+méthodes `payplug_payments_*`, `paypal_express`, `klarna`)** : seul `mollie_transaction_id`
+apparaît dans la liste d'attributs Magento — **confirmé absent** pour ces trois passerelles
+(vérifié dans l'admin Magento le 4 août 2026). Probablement stocké hors des attributs order
+plats (`sales_order_payment.additional_information`), non accessible via ce type d'export.
+Question posée au prestataire/dev Magento le 4 août 2026 ; à défaut de réponse, `Note` restera
+vide pour ces commandes.
 
 ### Format de sortie
 
