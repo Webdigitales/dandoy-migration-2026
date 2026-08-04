@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **30 juillet 2026**
+Dernière mise à jour : **4 août 2026**
 
 > **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées
 > (Dandoy-Sports plan complet + Butterfly TT plan Basic), et non l'instance unique (Option A)
@@ -265,6 +265,39 @@ Au passage, découverte que l'export Magento des commandes avait une période tr
 premier ajout des colonnes d'adresse — corrigé côté Magento, période complète restaurée
 (39 051 commandes au total désormais, contre 37 430 avant).
 
+### Fix taxes/remise/devise + mécanisme Fulfillment Line (4 août 2026)
+
+- **Bug fiscal découvert en test live** (commande WEB1-0125-17658) : `Tax: Total` seul
+  n'affiche pas la taxe si les line items sont eux-mêmes taxables — Matrixify l'ignore pour
+  éviter une double taxation (doc officielle). Corrigé via `Line: Tax 1 Title/Rate/Price` par
+  item. La remise Magento (`Discount Amount`) est TTC alors que `Line: Price` est HT — la
+  soustraire brute faisait dévier le Total Shopify de 2-3 % ; conversion en HT avant
+  soustraction ajoutée (`Price: Total Discount`).
+- **Bug devise découvert par relecture** : 997 commandes (2,5 %, boutique WW hors UE)
+  exportent un `Grand Total` en devise locale à côté d'un `Base Grand_total` en EUR, sans
+  code devise explicite — envoyées à Shopify comme si le montant local était de l'EUR. Un
+  taux de change dérivé par commande (`fx_rate()`) corrige tous les montants concernés
+  (Subtotal, Price, Tax, Discount).
+- **Mécanisme Fulfillment Line implémenté** (déblocage de la décision en attente, voir
+  ci-dessous) : recherche de la doc officielle Matrixify (contredit partiellement une
+  suggestion externe — Gemini proposait des colonnes `Fulfillment: Status/Date/Send Receipt`
+  directement sur les lignes `Line Item`, alors que Matrixify exige une ligne séparée
+  `Line: Type = 'Fulfillment Line'`, confirmé par leur documentation officielle). 99,2 % des
+  commandes (38 722/39 051) ont tous leurs items à `Status = Shipped` → une ligne
+  Fulfillment par commande (`Fulfillment: Status = success`, `Fulfillment: Send Receipt =
+  FALSE` pour ne pas ré-notifier les clients) ; les 0,8 % restants (statuts Invoiced/Mixed)
+  restent non expédiés plutôt que de deviner un état. **Non testé en live** (contrairement au
+  reste du fichier) — à valider au prochain test Matrixify.
+- **Date d'expédition (`Fulfillment: Processed At`) laissée vide** : aucune date fiable
+  disponible côté export Magento actuel. Écarté `Bpost Drop/Delivery Date` (ne couvre que
+  18 % des commandes — bpost est loin d'être le seul transporteur) et `Created At` (date de
+  commande, pas d'expédition). Décidé de demander l'ajout de `Updated At` à l'export Magento
+  (couvre 100 % des commandes, approximatif mais mieux que rien) — voir Reste à faire.
+- **Champ `Note` identifié comme utile** : pourrait porter le point relais (bpost/DPD/
+  Sendcloud) et l'ID de transaction Mollie — colonnes disponibles côté attributs Magento
+  (`mollie_transaction_id`, `bpost_point_*`, `dpd_parcelshop_*`, `sendcloud_service_point_*`)
+  mais absentes de l'export actuel — à demander en même temps que `Updated At`.
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -296,7 +329,7 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 | **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
-| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | À décider | Sans le mécanisme `Fulfillment Line`, toutes les commandes importées afficheront "non expédiées" dans Shopify |
+| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu** (4 août 2026) — implémenté, non testé en live | Bloqué sur `Fulfillment: Processed At` (date) tant que `Updated At` n'est pas dans l'export Magento — voir ci-dessous |
 
 ---
 
@@ -311,7 +344,8 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — `doublons_variantes_a_corriger.csv` |
 | 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
-| Décider du mécanisme Fulfillment Line (commandes) | Moyenne | À trancher — impact : statut "non expédiée" par défaut sinon |
+| Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | **Haute** | Demandé au client (4 août 2026) — bloque la date de fulfillment (`Fulfillment: Processed At`) et le remplissage du champ `Note` (support client) |
+| Tester en live le mécanisme Fulfillment Line (commandes) | Moyenne | Implémenté 4 août 2026 (voir ci-dessus), non testé en live — à valider au prochain import Matrixify sample |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
