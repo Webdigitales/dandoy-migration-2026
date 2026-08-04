@@ -126,6 +126,7 @@ SHOPIFY_COLS = [
     'Line: Tax 1 Price',
     'Line: Discount',
     'Fulfillment: Status',
+    'Fulfillment: Shipment Status',
     'Fulfillment: Processed At',
     'Fulfillment: Send Receipt',
     'Billing Name',
@@ -437,6 +438,11 @@ def build_rows(order):
         f['Command']                   = 'MERGE'
         f['Line: Type']                = 'Fulfillment Line'
         f['Fulfillment: Status']       = 'success'
+        # Matrixify requires 'Shipment Status' whenever 'Processed At' is
+        # set ("you also need to set the 'Fulfillment: Shipment Status' of
+        # 'delivered' or 'failure'" — confirmed live, 2026-08-04). These
+        # are historical Shipped orders, so 'delivered' is the correct value.
+        f['Fulfillment: Shipment Status'] = 'delivered'
         f['Fulfillment: Processed At'] = parse_date(order['Updated At']) if order.get('Updated At', '').strip() else ''
         f['Fulfillment: Send Receipt'] = 'FALSE'
         rows.append(f)
