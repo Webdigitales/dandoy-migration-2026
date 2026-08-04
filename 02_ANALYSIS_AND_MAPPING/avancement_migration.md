@@ -345,6 +345,7 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | **Haute** | Demandé au client (4 août 2026) — bloque la date de fulfillment (`Fulfillment: Processed At`) et le remplissage du champ `Note` (support client) |
+| Demander au prestataire/dev Magento : existe-t-il un ID de transaction pour PayPlug et PayPal Express (~2 500 commandes, 6,4%) ? Seul `mollie_transaction_id` apparaît dans la liste d'attributs actuelle — peut-être stocké hors des attributs order plats (`sales_order_payment.additional_information`) | Moyenne | Question posée (4 août 2026) — à défaut, `Note` restera vide pour ces commandes |
 | Tester en live le mécanisme Fulfillment Line (commandes) | Moyenne | Implémenté 4 août 2026 (voir ci-dessus), non testé en live — à valider au prochain import Matrixify sample |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
