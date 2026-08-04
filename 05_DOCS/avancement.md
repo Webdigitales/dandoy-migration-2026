@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **30 juillet 2026**
+Dernière mise à jour : **4 août 2026**
 
 > **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées
 > (Dandoy-Sports plan complet + Butterfly TT plan Basic), et non l'instance unique (Option A)
@@ -114,7 +114,14 @@ Après mise à jour de l'export Magento :
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-Régénère les fichiers des deux boutiques en une seule commande.
+8 étapes : produits + traductions → collections → redirections → customers → commandes →
+sample → purge → validation, chacune générant les fichiers des deux boutiques.
+
+La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font échouer un
+import Matrixify : SKU dupliqués entre produits, combinaisons de variantes dupliquées,
+options incohérentes, plafond des 100 variantes, prix manquant/négatif, handles orphelins.
+Sort en erreur (code 1) sans empêcher la génération des autres fichiers. Validée
+indépendamment pour chaque boutique.
 
 ### Purge (pour repartir à zéro entre tests)
 
@@ -274,6 +281,89 @@ Au passage, découverte que l'export Magento des commandes avait une période tr
 premier ajout des colonnes d'adresse — corrigé côté Magento, période complète restaurée
 (39 051 commandes au total désormais, contre 37 430 avant).
 
+### Fix taxes/remise/devise + mécanisme Fulfillment Line (4 août 2026)
+
+- **Bug fiscal découvert en test live** (commande WEB1-0125-17658) : `Tax: Total` seul
+  n'affiche pas la taxe si les line items sont eux-mêmes taxables — Matrixify l'ignore pour
+  éviter une double taxation (doc officielle). Corrigé via `Line: Tax 1 Title/Rate/Price` par
+  item. La remise Magento (`Discount Amount`) est TTC alors que `Line: Price` est HT — la
+  soustraire brute faisait dévier le Total Shopify de 2-3 % ; conversion en HT avant
+  soustraction ajoutée (`Price: Total Discount`).
+- **Bug devise découvert par relecture** : 997 commandes (2,5 %, boutique WW hors UE)
+  exportent un `Grand Total` en devise locale à côté d'un `Base Grand_total` en EUR, sans
+  code devise explicite — envoyées à Shopify comme si le montant local était de l'EUR. Un
+  taux de change dérivé par commande (`fx_rate()`) corrige tous les montants concernés
+  (Subtotal, Price, Tax, Discount).
+- **Mécanisme Fulfillment Line implémenté** (déblocage de la décision en attente, voir
+  ci-dessous) : recherche de la doc officielle Matrixify (contredit partiellement une
+  suggestion externe — colonnes `Fulfillment: Status/Date/Send Receipt` proposées directement
+  sur les lignes `Line Item`, alors que Matrixify exige une ligne séparée
+  `Line: Type = 'Fulfillment Line'`, confirmé par leur documentation officielle). 99,2 % des
+  commandes (38 722/39 051) ont tous leurs items à `Status = Shipped` → une ligne
+  Fulfillment par commande (`Fulfillment: Status = success`, `Fulfillment: Send Receipt =
+  FALSE` pour ne pas ré-notifier les clients) ; les 0,8 % restants (statuts Invoiced/Mixed)
+  restent non expédiés plutôt que de deviner un état.
+- **Date d'expédition (`Fulfillment: Processed At`)** : aucune date fiable disponible côté
+  export Magento à ce stade. Écarté `Bpost Drop/Delivery Date` (ne couvre que 18 % des
+  commandes — bpost est loin d'être le seul transporteur) et `Created At` (date de commande,
+  pas d'expédition). Décidé de demander l'ajout de `Updated At` à l'export Magento (couvre
+  100 % des commandes, approximatif mais mieux que rien).
+- **Champ `Note` identifié comme utile** : pourrait porter le point relais (bpost/DPD/
+  Sendcloud) et l'ID de transaction Mollie — colonnes disponibles côté attributs Magento
+  (`mollie_transaction_id`, `bpost_point_*`, `dpd_parcelshop_*`, `sendcloud_service_point_*`)
+  mais absentes de l'export actuel — à demander en même temps que `Updated At`.
+- **PayPlug/PayPal Express/Klarna** : aucun ID de transaction dans la liste d'attributs order
+  Magento Admin (confirmé — le prestataire/dev Magento du projet a vérifié directement).
+  Probablement stocké hors des attributs order plats
+  (`sales_order_payment.additional_information`) — à vérifier en base si besoin.
+
+### Export Magento mis à jour : Fulfillment + Note débloqués (4 août 2026)
+
+`Updated At`, les colonnes point relais (bpost/DPD/Sendcloud) et `Mollie Transaction Id`
+ajoutés à `export_order_all_2025_2026.csv` (39 094 commandes, +43 vs la veille — période
+glissante). Vérification et câblage dans `magento_to_shopify_orders.py` :
+
+- **`Updated At`** : 100 % rempli, mais format différent de `Created At` (`2025-01-02
+  11:11:43` vs `Jan 1, 2025 02:12:20 AM`) — `parse_date()` étendu pour reconnaître les deux
+  formats. `Fulfillment: Processed At` n'est donc plus vide.
+- **Point relais** : seul **Sendcloud** est réellement utilisé (23,8 % des commandes) — les
+  colonnes `Bpost Point *` et `Dpd Parcelshop *` sont vides à 100 % dans ce jeu de données
+  (conservées en fallback dans le code au cas où, sans coût). Correspond aux libellés "Point
+  Relais - UPS/DPD/Mondial Relay" observés dans `Shipping Description` : Sendcloud est
+  l'intégration meta-transporteur derrière ces méthodes.
+- **`Mollie Transaction Id`** : 89,7 % rempli (cohérent avec la part Mollie des paiements).
+- **`Note`** générée, ex. : `Point relais: LOPES WELKENRAEDT RUE DE L EGLISE 24, 4840
+  WELKENRAEDT | Mollie: tr_cAMbSG6aTS` — 23 836/24 896 commandes Dandoy renseignées.
+- Repéré au passage : le header de l'export contient désormais des colonnes `item 57`…
+  `item 67` (au-delà du `MAX_ITEMS = 56` du script) — vérifié qu'aucune commande n'en utilise
+  plus de 56 dans les faits, donc pas de correctif nécessaire pour l'instant ; à surveiller si
+  ça change dans un futur export.
+
+### Test live Fulfillment Line : 2 échecs, correction, puis validation (4 août 2026)
+
+Premier test réel du mécanisme Fulfillment Line sur le sample commandes (`Import_Result_
+2026-08-04_105413`) : **échec des 5 commandes**, toutes avec la même erreur — `Error saving
+Fulfillment: Cannot find Line Item [N] to fulfill`, où `N` est l'ID que le script avait
+attribué à la ligne `Fulfillment Line` elle-même (8, 10, 18, 23, 28). Cause : donner un
+`Line: ID` neuf à la ligne `Fulfillment Line` fait que Matrixify la traite comme un
+fulfillment **partiel** référençant ce `Line Item` précis — qui n'existe pas puisque les
+vrais items de la commande ont des ID différents (1 à 7 par ex.). Il fallait laisser
+`Line: ID` **vide** sur ces lignes pour déclencher un fulfillment complet de la commande.
+
+**2ᵉ test** (`Import_Result_2026-08-04_110302`, après le fix ci-dessus) : erreur `Cannot find
+Line Item` disparue, mais nouvelle erreur — `You have set the "Fulfillment: Processed At"
+date - therefore you also need to set the "Fulfillment: Shipment Status" of: "delivered" or
+"failure".` Ajouté `Fulfillment: Shipment Status = 'delivered'` (commandes historiques déjà
+expédiées).
+
+**3ᵉ test confirmé fonctionnel** (`shopify-cmd-exemple.png`, commande WEB1-0125-17658) : statut
+"Traitée" + "Livré le mercredi 15 janvier 2025" (correspond à `Fulfillment: Processed At =
+2025-01-15 09:55:04`), `Note` affichée correctement (`Mollie: tr_z3dhtPdFyW`), taxe et remise
+conformes (VAT 21% = 18,82€, réduction -9,96€). Écart d'1 centime observé sur le Total affiché
+(108,46€ vs 108,45€ attendu/Magento) — probablement un arrondi d'affichage Shopify recalculant
+à partir des composants plutôt que d'utiliser `Price: Total` tel quel ; non bloquant, à
+surveiller si ça se reproduit à plus grande échelle.
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -292,6 +382,8 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | `contraintes-techniques.md` | 12 contraintes techniques (Trustpilot, Variant Image, plan Matrixify) |
 | `quick-start.md` | Mode d'emploi en 8 étapes (test sample → import → purge) |
 | `import/customers.md` | Migration clients : déduplication, mapping, mots de passe, post-migration |
+| [Historique des commandes](./import/orders.md) | Script conversion, fiscalité, Fulfillment Line, champ Note, liaisons clients, import Matrixify |
+| [Plan de migration](./import/plan-migration.md) | Plan 5 phases : foundation → theming → recette → pré-go-live → go-live |
 
 ---
 
@@ -303,7 +395,7 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 | **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
-| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | À décider | Sans le mécanisme `Fulfillment Line`, toutes les commandes importées afficheront "non expédiées" dans Shopify |
+| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu et validé en live** (4 août 2026) — 2 échecs corrigés, 3ᵉ test confirmé fonctionnel (commande WEB1-0125-17658 : "Traitée", "Livré le 15 janvier 2025") | Terminé |
 
 ---
 
@@ -318,7 +410,9 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 | 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — [Doublons de variantes](./mapping/doublons-variantes.md) |
 | 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
-| Décider du mécanisme Fulfillment Line (commandes) | Moyenne | À trancher — impact : statut "non expédiée" par défaut sinon |
+| Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
+| Vérifier en base (`sales_order_payment.additional_information`) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
+| Tester en live le mécanisme Fulfillment Line (commandes) | ~~Haute~~ | **Fait** — 2 échecs corrigés le 4 août 2026, 3ᵉ test confirmé |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
@@ -336,6 +430,22 @@ premier ajout des colonnes d'adresse — corrigé côté Magento, période compl
 
 | Date | Commit | Description |
 |---|---|---|
+| 4 août | `678d1bd` | Ajout génération PURGE commandes (DELETE en masse, pas Cancel) |
+| 4 août | `3f46076` | Confirmation mécanisme Fulfillment Line validé en test live |
+| 4 août | `9ee4251` | Doc 2e échec test live Fulfillment Line + correction |
+| 4 août | `defcf28` | Ajout `Fulfillment: Shipment Status` requis avec `Processed At` |
+| 4 août | `8f98a11` | Doc 1er échec test live Fulfillment Line + correction |
+| 4 août | `18721ee` | Fix Fulfillment Line : `Line: ID` doit rester vide |
+| 4 août | `653e03b` | Doc Fulfillment/Note débloqués, chiffres commandes rafraîchis |
+| 4 août | `2cb5844` | Câblage `Updated At`, point relais et transaction Mollie dans le script |
+| 4 août | `abe5128` | Correction : vérification en base = action du prestataire Magento (l'utilisateur), pas d'un tiers |
+| 4 août | `1162948` | Confirmation absence transaction ID PayPlug/PayPal Express/Klarna |
+| 4 août | `aa5683c` | Ajout question ouverte mapping transaction PayPlug/PayPal Express |
+| 4 août | `9feb5d0` | Repasse doc en ligne commandes : chiffres, colonnes confirmées, fiscalité/fulfillment/note |
+| 4 août | `dce46c1` | Doc fixes commandes du jour, décision Fulfillment Line, idée champ Note |
+| 4 août | `93e8b7e` | Ajout mécanisme Fulfillment Line pour commandes expédiées |
+| 4 août | `fa82347` | Ajout capture test Matrixify commande WEB1-0125-17658 |
+| 3 août | `4197493` | Fix gestion taxes/remise/devise commandes (import Matrixify) |
 | 30 juillet | `6e39f86` | Fix noms de colonnes Matrixify Orders — confirmé fonctionnel par tests réels |
 | 30 juillet | `25986a0` | Mapping adresses billing/shipping (colonnes ajoutées à l'export Magento) |
 | 30 juillet | `3ddbbd2` | Ajout samples clients et commandes pour tests Matrixify |
