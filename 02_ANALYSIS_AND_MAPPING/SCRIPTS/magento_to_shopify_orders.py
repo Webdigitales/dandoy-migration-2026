@@ -81,16 +81,18 @@ STORE_TAGS = {
 # success) and reject every row (confirmed via 2 live tests, 2026-07-30).
 #
 # Fulfillment status IS settable, but only via an extra row per order with
-# 'Line: Type' = 'Fulfillment Line' (per Matrixify's own docs — not yet
-# live-tested, unlike everything else in this file). 99.2% of orders
-# (38,722/39,051) have every item at Status='Shipped', so one full-order
-# Fulfillment Line row is enough for those; the remaining 0.8%
-# (Invoiced/Mixed item statuses) are left unfulfilled rather than guess a
-# wrong state. 'Fulfillment: Processed At' (the historical ship date) is
-# left blank for now — Magento's export has no reliable per-order ship
-# date (bpost-only fields cover just 18% of orders by carrier; 'Updated
-# At' isn't in the export yet) — see avancement_migration.md. Once
-# 'Updated At' is added to the Magento export, wire it in here.
+# 'Line: Type' = 'Fulfillment Line' and 'Line: ID' left EMPTY (a filled-in
+# ID makes Matrixify treat it as a partial fulfillment referencing that
+# Line Item ID — confirmed live, 2026-08-04: all 5 sample orders failed
+# with "Cannot find Line Item [N] to fulfill" until Line: ID was dropped).
+# 99.2% of orders (38,722/39,051) have every item at Status='Shipped', so
+# one full-order Fulfillment Line row is enough for those; the remaining
+# 0.8% (Invoiced/Mixed item statuses) are left unfulfilled rather than
+# guess a wrong state. 'Fulfillment: Processed At' (the historical ship
+# date) is mapped from Magento's 'Updated At' (added to the export
+# 2026-08-04) — an approximation (last order modification, not a true
+# ship date), but the only field covering 100% of orders; bpost-only
+# fields cover just 18% by carrier and were dropped as a candidate.
 #
 # 'Tax: Total' alone is NOT enough to make tax show up in the order total:
 # per Matrixify's own docs, "if any Line Item ... has tax applied in the
@@ -422,17 +424,18 @@ def build_rows(order):
         rows.append(r)
 
     # Fulfillment Line: one full-order row when every item is 'Shipped'
-    # (see header comment — mechanism confirmed via Matrixify docs, not
-    # yet live-tested). No 'Line: ID'/'Line: Quantity' needed for a full
-    # (non-partial) fulfillment per those docs; 'Line: ID' is still set
-    # defensively since it was mandatory for 'Line Item' rows to be
-    # recognized at all.
+    # (see header comment). 'Line: ID' must stay EMPTY here — confirmed via
+    # a live Matrixify test (2026-08-04, all 5 sample orders failed):
+    # setting it to a fresh unique ID made Matrixify treat the row as a
+    # PARTIAL fulfillment referencing that specific Line Item ID, which
+    # doesn't exist ("Error saving Fulfillment: Cannot find Line Item [8]
+    # to fulfill" — 8 was this row's own made-up Line: ID). Leaving it
+    # blank is what actually triggers "fulfill the whole order".
     if all(it['status'] == 'Shipped' for it in items):
         f = {col: '' for col in SHOPIFY_COLS}
         f['Name']                      = order_name
         f['Command']                   = 'MERGE'
         f['Line: Type']                = 'Fulfillment Line'
-        f['Line: ID']                  = str(next(_line_id_counter))
         f['Fulfillment: Status']       = 'success'
         f['Fulfillment: Processed At'] = parse_date(order['Updated At']) if order.get('Updated At', '').strip() else ''
         f['Fulfillment: Send Receipt'] = 'FALSE'
