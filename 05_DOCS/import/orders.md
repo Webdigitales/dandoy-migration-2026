@@ -172,9 +172,11 @@ proposait des colonnes directement sur les lignes `Line Item`).
   Status' of: 'delivered' or 'failure'"`). Mis à `delivered` (commandes historiques déjà
   expédiées).
 
-> ✅ **Testé en live le 4 août 2026** — 2 essais échoués (`Line: ID` en trop, puis
-> `Shipment Status` manquant), corrigés le jour même. À revalider au prochain import
-> Matrixify sample.
+> ✅ **Validé en live le 4 août 2026** — 2 essais échoués (`Line: ID` en trop, puis
+> `Shipment Status` manquant), corrigés le jour même ; 3ᵉ test confirmé fonctionnel
+> (commande WEB1-0125-17658 : statut "Traitée", "Livré le mercredi 15 janvier 2025", `Note`
+> affichée correctement). Écart d'1 centime observé sur le Total affiché (108,46€ vs 108,45€
+> attendu) — probablement un arrondi d'affichage Shopify, non bloquant.
 
 ### Champ Note
 

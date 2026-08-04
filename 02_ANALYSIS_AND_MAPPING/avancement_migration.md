@@ -341,7 +341,15 @@ commande. Corrigé dans `magento_to_shopify_orders.py`.
 Line Item` disparue, mais nouvelle erreur sur les 5 commandes — `You have set the
 "Fulfillment: Processed At" date - therefore you also need to set the "Fulfillment: Shipment
 Status" of: "delivered" or "failure".` Ajouté `Fulfillment: Shipment Status = 'delivered'`
-(commandes historiques déjà expédiées) — à retester.
+(commandes historiques déjà expédiées).
+
+**3ᵉ test confirmé fonctionnel** (`shopify-cmd-exemple.png`, commande WEB1-0125-17658) : statut
+"Traitée" + "Livré le mercredi 15 janvier 2025" (correspond à `Fulfillment: Processed At =
+2025-01-15 09:55:04`), `Note` affichée correctement (`Mollie: tr_z3dhtPdFyW`), taxe et remise
+conformes (VAT 21% = 18,82€, réduction -9,96€). Écart d'1 centime observé sur le Total affiché
+(108,46€ vs 108,45€ attendu/Magento) — probablement un arrondi d'affichage Shopify recalculant
+à partir des composants plutôt que d'utiliser `Price: Total` tel quel ; non bloquant, à
+surveiller si ça se reproduit à plus grande échelle.
 
 ### Documentation (17–24 juin 2026)
 
@@ -374,7 +382,7 @@ Status" of: "delivered" or "failure".` Ajouté `Fulfillment: Shipment Status = '
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 | **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
-| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu** (4 août 2026) — 1er test live échoué (`Line: ID` ne devait pas être rempli), corrigé, à retester | Débloqué (export Magento mis à jour 4 août 2026) — reste à revalider en live après le fix |
+| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu et validé en live** (4 août 2026) — 2 échecs corrigés, 3e test confirmé fonctionnel (commande WEB1-0125-17658 : "Traitée", "Livré le 15 janvier 2025") | Terminé |
 
 ---
 
@@ -391,7 +399,7 @@ Status" of: "delivered" or "failure".` Ajouté `Fulfillment: Shipment Status = '
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
 | Vérifier en base (table `sales_order_payment.additional_information`, pas exposée comme attribut order) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin (vérifié 4 août 2026, seul `mollie_transaction_id` y figure) | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
-| Tester en live le mécanisme Fulfillment Line (commandes) | **Haute** | 1er test échoué le 4 août 2026 (`Line: ID` en trop), corrigé le jour même — à revalider au prochain import Matrixify sample |
+| Tester en live le mécanisme Fulfillment Line (commandes) | ~~Haute~~ | **Fait** — 2 échecs corrigés le 4 août 2026, 3e test confirmé (`shopify-cmd-exemple.png`) |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
