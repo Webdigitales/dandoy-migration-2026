@@ -164,9 +164,12 @@ proposait des colonnes directement sur les lignes `Line Item`).
   dernière modification de la commande, pas une vraie date d'expédition, mais la meilleure
   source disponible). Format source différent de `Created At`
   (`2025-01-02 11:11:43` vs `Jan 1, 2025 02:12:20 AM`) — `parse_date()` reconnaît les deux.
+- **`Line: ID` doit rester vide** sur la ligne `Fulfillment Line` — un ID neuf fait que
+  Matrixify traite la ligne comme un fulfillment **partiel** référençant ce `Line Item`
+  précis (qui n'existe pas), et rejette la commande.
 
-> ⚠️ **Non testé en live** — contrairement au reste du mapping commandes, ce mécanisme n'a
-> pas encore été validé par un import Matrixify réel. À vérifier au prochain test sample.
+> ✅ **Testé en live le 4 août 2026** — 1ᵉʳ essai échoué 5/5 (`Line: ID` en trop, voir
+> ci-dessus), corrigé le jour même. À revalider au prochain import Matrixify sample.
 
 ### Champ Note
 

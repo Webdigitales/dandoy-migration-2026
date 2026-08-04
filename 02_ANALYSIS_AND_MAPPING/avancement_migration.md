@@ -324,6 +324,19 @@ glissante). Vérification et câblage dans `magento_to_shopify_orders.py` :
   plus de 56 dans les faits, donc pas de correctif nécessaire pour l'instant ; à surveiller si
   ça change dans un futur export.
 
+### Test live Fulfillment Line : échec 5/5 et correction (4 août 2026)
+
+Premier test réel du mécanisme Fulfillment Line sur le sample commandes (`Import_Result_
+2026-08-04_105413`) : **échec des 5 commandes**, toutes avec la même erreur — `Error saving
+Fulfillment: Cannot find Line Item [N] to fulfill`, où `N` est l'ID que le script avait
+attribué à la ligne `Fulfillment Line` elle-même (8, 10, 18, 23, 28).
+
+Cause : donner un `Line: ID` neuf à la ligne `Fulfillment Line` fait que Matrixify la traite
+comme un fulfillment **partiel** référençant ce `Line Item` précis — qui n'existe pas
+puisque les vrais items de la commande ont des ID différents (1 à 7 par ex.). Il fallait
+laisser `Line: ID` **vide** sur ces lignes pour déclencher un fulfillment complet de la
+commande. Corrigé dans `magento_to_shopify_orders.py` — à retester.
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -355,7 +368,7 @@ glissante). Vérification et câblage dans `magento_to_shopify_orders.py` :
 | **Custom options** | Line item properties / App tierce | **Line item properties** (natif, gratuit) | Code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 | **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
-| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu** (4 août 2026) — implémenté avec `Fulfillment: Processed At` = `Updated At`, non testé en live | Débloqué (export Magento mis à jour 4 août 2026) — reste à valider en live |
+| **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu** (4 août 2026) — 1er test live échoué (`Line: ID` ne devait pas être rempli), corrigé, à retester | Débloqué (export Magento mis à jour 4 août 2026) — reste à revalider en live après le fix |
 
 ---
 
@@ -372,7 +385,7 @@ glissante). Vérification et câblage dans `magento_to_shopify_orders.py` :
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
 | Vérifier en base (table `sales_order_payment.additional_information`, pas exposée comme attribut order) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin (vérifié 4 août 2026, seul `mollie_transaction_id` y figure) | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
-| Tester en live le mécanisme Fulfillment Line (commandes) | Moyenne | Implémenté 4 août 2026 (voir ci-dessus), non testé en live — à valider au prochain import Matrixify sample |
+| Tester en live le mécanisme Fulfillment Line (commandes) | **Haute** | 1er test échoué le 4 août 2026 (`Line: ID` en trop), corrigé le jour même — à revalider au prochain import Matrixify sample |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
