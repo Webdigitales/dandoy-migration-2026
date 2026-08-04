@@ -79,11 +79,18 @@ STORE_TAGS = {
 # — writing either made Matrixify validate our value against the unrelated
 # Fulfillment-record status enum (cancelled/error/failure/open/pending/
 # success) and reject every row (confirmed via 2 live tests, 2026-07-30).
-# To reflect real fulfillment status on import, Matrixify requires extra
-# 'Line: Type' = 'Fulfillment Line' rows per shipped order (Fulfillment: ID,
-# Fulfillment: Status, matching Line: Title/Variant Title/Price/Quantity) —
-# out of scope for now; all imported orders will show as unfulfilled until
-# that's implemented.
+#
+# Fulfillment status IS settable, but only via an extra row per order with
+# 'Line: Type' = 'Fulfillment Line' (per Matrixify's own docs — not yet
+# live-tested, unlike everything else in this file). 99.2% of orders
+# (38,722/39,051) have every item at Status='Shipped', so one full-order
+# Fulfillment Line row is enough for those; the remaining 0.8%
+# (Invoiced/Mixed item statuses) are left unfulfilled rather than guess a
+# wrong state. 'Fulfillment: Processed At' (the historical ship date) is
+# left blank for now — Magento's export has no reliable per-order ship
+# date (bpost-only fields cover just 18% of orders by carrier; 'Updated
+# At' isn't in the export yet) — see avancement_migration.md. Once
+# 'Updated At' is added to the Magento export, wire it in here.
 #
 # 'Tax: Total' alone is NOT enough to make tax show up in the order total:
 # per Matrixify's own docs, "if any Line Item ... has tax applied in the
@@ -116,6 +123,9 @@ SHOPIFY_COLS = [
     'Line: Tax 1 Rate',
     'Line: Tax 1 Price',
     'Line: Discount',
+    'Fulfillment: Status',
+    'Fulfillment: Processed At',
+    'Fulfillment: Send Receipt',
     'Billing Name',
     'Billing: Address 1',
     'Billing: Address 2',
@@ -361,6 +371,23 @@ def build_rows(order):
             r['Name'] = order_name
 
         rows.append(r)
+
+    # Fulfillment Line: one full-order row when every item is 'Shipped'
+    # (see header comment — mechanism confirmed via Matrixify docs, not
+    # yet live-tested). No 'Line: ID'/'Line: Quantity' needed for a full
+    # (non-partial) fulfillment per those docs; 'Line: ID' is still set
+    # defensively since it was mandatory for 'Line Item' rows to be
+    # recognized at all.
+    if all(it['status'] == 'Shipped' for it in items):
+        f = {col: '' for col in SHOPIFY_COLS}
+        f['Name']                      = order_name
+        f['Command']                   = 'MERGE'
+        f['Line: Type']                = 'Fulfillment Line'
+        f['Line: ID']                  = str(next(_line_id_counter))
+        f['Fulfillment: Status']       = 'success'
+        f['Fulfillment: Processed At'] = parse_date(order['Updated At']) if order.get('Updated At', '').strip() else ''
+        f['Fulfillment: Send Receipt'] = 'FALSE'
+        rows.append(f)
 
     return tag, rows
 
