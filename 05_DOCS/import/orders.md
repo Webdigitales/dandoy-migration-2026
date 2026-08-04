@@ -188,9 +188,9 @@ le script essaiera bpost → DPD → Sendcloud dans cet ordre.
 méthodes `payplug_payments_*`, `paypal_express`, `klarna`)** : seul `mollie_transaction_id`
 apparaît dans la liste d'attributs Magento — **confirmé absent** pour ces trois passerelles
 (vérifié dans l'admin Magento le 4 août 2026). Probablement stocké hors des attributs order
-plats (`sales_order_payment.additional_information`), non accessible via ce type d'export.
-Question posée au prestataire/dev Magento le 4 août 2026 ; à défaut de réponse, `Note` restera
-vide pour ces commandes.
+plats, dans `sales_order_payment.additional_information` — à vérifier directement en base ;
+non accessible via ce type d'export en l'état. À défaut, `Note` restera vide pour ces
+commandes.
 
 ### Format de sortie
 
