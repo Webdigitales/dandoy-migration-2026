@@ -401,10 +401,18 @@ surveiller si ça se reproduit à plus grande échelle.
   réparties sur les deux marques et les 7 stores, sur une période large (2 septembre 2025 →
   2 avril 2026 — certaines vieilles de 11 mois), sans pattern store/date identifiable.
   **Décision du client : garder le comportement actuel** (pas de `Fulfillment Line`, "non
-  traité" dans Shopify) pour ces 102 commandes également, plutôt que de deviner — aucun
-  changement de script. À noter pour référence future si le sujet revient : liste des 102
-  commandes non extraite, disponible sur demande via le même filtre (items tous `Invoiced`,
-  aucun nom d'item ne contient "cadeau"/"gift card").
+  traité" dans Shopify) pour ces 102 commandes également, plutôt que de deviner. À noter pour
+  référence future si le sujet revient : liste des 102 commandes non extraite, disponible sur
+  demande via le même filtre (items tous `Invoiced`, aucun SKU dans `GIFT_CARD_SKUS`).
+  - **Suite (5 août 2026)** : demande du client de marquer les cartes cadeau comme traitées.
+    Confirmé côté catalogue (`product_type = mageworx_giftcards`, 4 SKUs : `giftcard-25/50/
+    75/100`) — correspond exactement aux 216 commandes. Trouvé au passage **5 commandes
+    supplémentaires** mixant un item physique déjà `Shipped` et une ligne carte cadeau
+    `Invoiced` (ex. `WEB1-0525-21006`), elles aussi bloquées "non traité" à cause de la seule
+    ligne carte cadeau. `magento_to_shopify_orders.py` modifié : un item est maintenant
+    considéré fulfilli si `Shipped` **ou** SKU dans `GIFT_CARD_SKUS` — 221 `Fulfillment Line`
+    supplémentaires générées (216 + 5). Les 102 commandes physiques non expliquées restent
+    inchangées (décision précédente toujours valable, sans rapport avec les cartes cadeau).
 
 ### Documentation (17–24 juin 2026)
 
