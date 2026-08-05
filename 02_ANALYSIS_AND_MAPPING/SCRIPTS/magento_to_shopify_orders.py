@@ -56,6 +56,14 @@ STORE_TAGS = {
     'butterfly nl':     'butterfly',
 }
 
+# Gift cards (product_type = mageworx_giftcards in the catalogue export)
+# never carry Shipped — there's no physical parcel, so Magento leaves them
+# at Invoiced forever. 216/329 "not fully shipped" orders are 100% gift
+# cards (client-confirmed 2026-08-05), plus 5 more mix a Shipped physical
+# item with an Invoiced gift card line — both cases should count as fully
+# fulfilled for the 'all items shipped' check below.
+GIFT_CARD_SKUS = {'giftcard-25', 'giftcard-50', 'giftcard-75', 'giftcard-100'}
+
 # Column names below mix two Matrixify conventions on purpose:
 # - Plain names (Billing Name, Billing City…) are the ones confirmed working
 #   against a live Matrixify import test (2026-07-30).
@@ -448,15 +456,16 @@ def build_rows(order):
 
         rows.append(r)
 
-    # Fulfillment Line: one full-order row when every item is 'Shipped'
-    # (see header comment). 'Line: ID' must stay EMPTY here — confirmed via
+    # Fulfillment Line: one full-order row when every item is either
+    # 'Shipped' or a gift card (see GIFT_CARD_SKUS above — those never
+    # reach 'Shipped'). 'Line: ID' must stay EMPTY here — confirmed via
     # a live Matrixify test (2026-08-04, all 5 sample orders failed):
     # setting it to a fresh unique ID made Matrixify treat the row as a
     # PARTIAL fulfillment referencing that specific Line Item ID, which
     # doesn't exist ("Error saving Fulfillment: Cannot find Line Item [8]
     # to fulfill" — 8 was this row's own made-up Line: ID). Leaving it
     # blank is what actually triggers "fulfill the whole order".
-    if all(it['status'] == 'Shipped' for it in items):
+    if all(it['status'] == 'Shipped' or it['sku'] in GIFT_CARD_SKUS for it in items):
         f = {col: '' for col in SHOPIFY_COLS}
         f['Name']                      = order_name
         f['Command']                   = 'MERGE'
