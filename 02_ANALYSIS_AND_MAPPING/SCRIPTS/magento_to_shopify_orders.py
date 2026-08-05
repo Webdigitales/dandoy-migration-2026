@@ -213,19 +213,43 @@ def shipping_name(row):
 
 
 # Magento's multi-line street attribute is exported tab-separated, and a
-# significant share of rows duplicate the city on its own line (or as
-# "postcode city" glued together) — including it verbatim would show the
-# city twice in the Shopify address. Drop any line that is the city itself
-# or ends with it (postcode+city case) before recombining the rest.
+# significant share of rows duplicate the city — either as its own line, or
+# glued onto the end of a line ("26 rue du bois 60570 ANDEVILLE" followed by
+# a second line "ANDEVILLE", or a single line "Terwenstraat 5, Gouda" with
+# no second line at all). Including it verbatim would show the city twice
+# in the Shopify address.
+#
+# Each line is handled independently rather than by line count: a line
+# that IS the city gets dropped outright (genuine duplicate); a line that
+# merely ENDS WITH the city gets the city suffix trimmed off, keeping the
+# rest of the line. An earlier version dropped any line ending with the
+# city wholesale, which silently emptied Address 1 whenever that was the
+# ONLY line carrying real street data — confirmed live via two rounds of
+# testing (2026-08-04): 8/950 orders in the stratified sample failed
+# Matrixify's address validation outright, and a full-dataset scan then
+# found 45 more (out of 58 total empty-despite-source-data cases; the
+# remaining 13 are genuinely empty in Magento — street equals city with no
+# separate address at all, nothing to recover).
 def clean_street(street, city):
     city = (city or '').strip()
     city_l = city.lower()
-    parts = [p.strip() for p in (street or '').split('\t') if p.strip()]
-    if city_l:
-        parts = [p for p in parts
-                  if p.lower() != city_l
-                  and not (len(p) > len(city_l) and p.lower().endswith(city_l))]
-    return ', '.join(parts)
+    raw_parts = [p.strip() for p in (street or '').split('\t') if p.strip()]
+    parts = []
+    for p in raw_parts:
+        if city_l and p.lower() == city_l:
+            continue
+        if city_l and len(p) > len(city_l) and p.lower().endswith(city_l):
+            p = p[:-len(city_l)].rstrip(' ,\t-')
+        if p:
+            parts.append(p)
+    # Drop consecutive duplicates left behind by the trimming above (e.g. a
+    # postcode-only line matching the postcode already at the end of the
+    # previous line).
+    deduped = []
+    for p in parts:
+        if not deduped or deduped[-1].lower() != p.lower():
+            deduped.append(p)
+    return ', '.join(deduped)
 
 
 # Relay point columns for 3 possible carriers (bpost/DPD/Sendcloud), tried
