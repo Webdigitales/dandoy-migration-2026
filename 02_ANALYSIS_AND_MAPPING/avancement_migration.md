@@ -413,6 +413,16 @@ surveiller si ça se reproduit à plus grande échelle.
     considéré fulfilli si `Shipped` **ou** SKU dans `GIFT_CARD_SKUS` — 221 `Fulfillment Line`
     supplémentaires générées (216 + 5). Les 102 commandes physiques non expliquées restent
     inchangées (décision précédente toujours valable, sans rapport avec les cartes cadeau).
+  - **Explication du client sur les 102 commandes physiques** : il s'agit de commandes
+    **remboursées car annulées par le client** — "statut complet mais pas de numéro d'envoi".
+    Vérifié côté export : **aucune trace du remboursement** — `Total Paid = Grand Total`,
+    `Total Due = 0`, `Subtotal Refunded` vide pour les 102, comme si le paiement était
+    intégralement conservé. Conséquence concrète : le script envoie actuellement
+    `Payment: Status = paid` à Shopify pour ces commandes, alors qu'elles sont en réalité
+    remboursées — une colonne manque côté export Magento (état commande annulée/remboursée,
+    ou `Subtotal Refunded` correctement renseigné) pour corriger ça proprement. **Décision du
+    client : laisser tel quel pour l'instant**, à corriger plus tard une fois la donnée
+    disponible côté export.
 
 ### Documentation (17–24 juin 2026)
 
@@ -462,6 +472,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
 | Vérifier en base (table `sales_order_payment.additional_information`, pas exposée comme attribut order) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin (vérifié 4 août 2026, seul `mollie_transaction_id` y figure) | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
+| Ajouter à l'export Magento une trace fiable du remboursement/annulation (102 commandes physiques `Invoiced`-only, confirmées remboursées par le client — `Subtotal Refunded` vide, `Total Paid = Grand Total` dans l'export actuel) | Moyenne | À demander — en attendant, `Payment: Status` envoyé à Shopify reste `paid` pour ces 102 commandes (incorrect mais accepté temporairement) |
 | Tester en live le mécanisme Fulfillment Line (commandes) | ~~Haute~~ | **Fait** — 2 échecs corrigés le 4 août 2026, 3e test confirmé (`shopify-cmd-exemple.png`) |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
