@@ -392,6 +392,19 @@ surveiller si ça se reproduit à plus grande échelle.
     existante que sur une création) — non représentatif d'un import réel, qui ne fera jamais
     d'UPDATE sur une commande déjà migrée. **Pas d'action prise** — à retester en création
     propre (purge préalable ou nouvelle graine) si besoin de confirmer.
+- **Statut "non traité" pour les commandes `Invoiced` — investigué** (commande
+  WEB1-0126-28708 signalée par le client comme "non traité" dans Shopify) : sur les 329
+  commandes non totalement `Shipped`, 318 (96,7%) ont un statut item purement `Invoiced`.
+  Répartition trouvée en creusant : **216/318 (68%) sont des chèques cadeau** — cohérent,
+  pas d'envoi physique donc jamais de statut `Shipped` en toute logique. Les **102 restantes
+  (32%) sont de vrais produits physiques** (chaussures, sacs, revêtements, vêtements),
+  réparties sur les deux marques et les 7 stores, sur une période large (2 septembre 2025 →
+  2 avril 2026 — certaines vieilles de 11 mois), sans pattern store/date identifiable.
+  **Décision du client : garder le comportement actuel** (pas de `Fulfillment Line`, "non
+  traité" dans Shopify) pour ces 102 commandes également, plutôt que de deviner — aucun
+  changement de script. À noter pour référence future si le sujet revient : liste des 102
+  commandes non extraite, disponible sur demande via le même filtre (items tous `Invoiced`,
+  aucun nom d'item ne contient "cadeau"/"gift card").
 
 ### Documentation (17–24 juin 2026)
 
