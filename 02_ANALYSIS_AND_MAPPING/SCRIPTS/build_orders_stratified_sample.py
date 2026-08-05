@@ -26,6 +26,8 @@ import magento_to_shopify_orders as base
 INPUT             = base.INPUT
 OUTPUT_DANDOY     = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders_stratified_dandoy.csv'
 OUTPUT_BUTTERFLY  = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders_stratified_butterfly.csv'
+PURGE_DANDOY      = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders_stratified_dandoy_PURGE.csv'
+PURGE_BUTTERFLY   = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_orders_stratified_butterfly_PURGE.csv'
 TARGET_MAX        = 950
 SEED              = 20260804
 
@@ -151,16 +153,34 @@ def main():
             rows_by_store[tag].extend(out_rows)
 
     outputs = {'dandoy': OUTPUT_DANDOY, 'butterfly': OUTPUT_BUTTERFLY}
+    purges  = {'dandoy': PURGE_DANDOY, 'butterfly': PURGE_BUTTERFLY}
     for store, all_rows in rows_by_store.items():
         with open(outputs[store], 'w', newline='', encoding='utf-8') as f:
             writer = csv.DictWriter(f, fieldnames=base.SHOPIFY_COLS)
             writer.writeheader()
             writer.writerows(all_rows)
+
+        # Scoped purge (just this sample's orders) rather than the
+        # full-catalog PURGE from regenerate_all.sh — cuts re-test cycle
+        # time when only the stratified sample was imported.
+        names, seen = [], set()
+        for r in all_rows:
+            n = r.get('Name', '')
+            if n and n not in seen:
+                seen.add(n)
+                names.append(n)
+        with open(purges[store], 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=['Command', 'Name'])
+            writer.writeheader()
+            for n in names:
+                writer.writerow({'Command': 'DELETE', 'Name': n})
+
         n_orders = len(set(r['Name'] for r in all_rows if r.get('Name')))
         print(f"\n=== {store} ===")
         print(f"  Commandes   : {n_orders}")
         print(f"  Lignes CSV  : {len(all_rows):,}")
         print(f"  Écrit dans  : {outputs[store]}")
+        print(f"  Purge écrit : {purges[store]}")
 
 
 if __name__ == '__main__':
