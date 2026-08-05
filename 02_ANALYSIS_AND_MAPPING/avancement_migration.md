@@ -414,15 +414,17 @@ surveiller si ça se reproduit à plus grande échelle.
     supplémentaires générées (216 + 5). Les 102 commandes physiques non expliquées restent
     inchangées (décision précédente toujours valable, sans rapport avec les cartes cadeau).
   - **Explication du client sur les 102 commandes physiques** : il s'agit de commandes
-    **remboursées car annulées par le client** — "statut complet mais pas de numéro d'envoi".
-    Vérifié côté export : **aucune trace du remboursement** — `Total Paid = Grand Total`,
-    `Total Due = 0`, `Subtotal Refunded` vide pour les 102, comme si le paiement était
-    intégralement conservé. Conséquence concrète : le script envoie actuellement
-    `Payment: Status = paid` à Shopify pour ces commandes, alors qu'elles sont en réalité
-    remboursées — une colonne manque côté export Magento (état commande annulée/remboursée,
-    ou `Subtotal Refunded` correctement renseigné) pour corriger ça proprement. **Décision du
-    client : laisser tel quel pour l'instant**, à corriger plus tard une fois la donnée
-    disponible côté export.
+    **remboursées car annulées par le client final**. Pas une donnée stockée côté Magento
+    (le prestataire n'a pas ce champ) — c'est une **règle métier** que le client applique
+    lui-même à l'œil : *"commande facturée (Invoiced) mais sans numéro d'envoi (jamais
+    Shipped) = remboursée"*. Cette règle correspond exactement au signal déjà utilisé pour
+    exclure ces commandes du `Fulfillment Line` — rien à demander côté export, la donnée
+    n'existe pas ailleurs. **Règle validée par le client (5 août 2026) et implémentée** :
+    `is_unshipped_refund()` dans `magento_to_shopify_orders.py` marque
+    `Payment: Status = refunded` (au lieu de `paid`) pour toute commande dont tous les items
+    sont `Invoiced` et non `Shipped`, hors cartes cadeau (`GIFT_CARD_SKUS`, gérées à part —
+    elles n'atteignent jamais `Shipped` par nature et ne sont pas des remboursements). 102
+    commandes concernées (39 Dandoy + 63 Butterfly).
 
 ### Documentation (17–24 juin 2026)
 
@@ -472,7 +474,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
 | Vérifier en base (table `sales_order_payment.additional_information`, pas exposée comme attribut order) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin (vérifié 4 août 2026, seul `mollie_transaction_id` y figure) | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
-| Ajouter à l'export Magento une trace fiable du remboursement/annulation (102 commandes physiques `Invoiced`-only, confirmées remboursées par le client — `Subtotal Refunded` vide, `Total Paid = Grand Total` dans l'export actuel) | Moyenne | À demander — en attendant, `Payment: Status` envoyé à Shopify reste `paid` pour ces 102 commandes (incorrect mais accepté temporairement) |
+| Marquer les 102 commandes physiques `Invoiced`-only comme remboursées | ~~Moyenne~~ | **Fait** (5 août 2026) — règle métier du client implémentée (`is_unshipped_refund()`), pas de donnée d'export manquante finalement |
 | Tester en live le mécanisme Fulfillment Line (commandes) | ~~Haute~~ | **Fait** — 2 échecs corrigés le 4 août 2026, 3e test confirmé (`shopify-cmd-exemple.png`) |
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
