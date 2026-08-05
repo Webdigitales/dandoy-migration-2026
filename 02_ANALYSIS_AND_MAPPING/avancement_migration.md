@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **4 août 2026**
+Dernière mise à jour : **5 août 2026**
 
 > **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées
 > (Dandoy-Sports plan complet + Butterfly TT plan Basic), et non l'instance unique (Option A)
@@ -357,6 +357,41 @@ conformes (VAT 21% = 18,82€, réduction -9,96€). Écart d'1 centime observé
 (108,46€ vs 108,45€ attendu/Magento) — probablement un arrondi d'affichage Shopify recalculant
 à partir des composants plutôt que d'utiliser `Price: Total` tel quel ; non bloquant, à
 surveiller si ça se reproduit à plus grande échelle.
+
+### Échantillon stratifié à 950 commandes + fix adresse + finding UPDATE/CREATE (4-5 août 2026)
+
+- **`build_orders_stratified_sample.py` ajouté** : contrairement à l'échantillon de 5 commandes
+  (qui ne couvre que ce que ces 5 commandes contiennent par hasard), tire ~40-100 commandes par
+  cas limite (conversion devise, paiement `pending`, expédition partielle `Invoiced`/`Mixed`,
+  grosses commandes ≥10 articles, point relais Sendcloud) + couverture systématique des 7
+  stores et de toutes les passerelles de paiement, plafonné à 950 commandes. Réutilise
+  `build_rows()`/`SHOPIFY_COLS` du script principal (même logique de transformation).
+- **1er test live** (950 commandes, dont 2 701 lignes côté Dandoy) : 2 678/2 701 lignes OK dès
+  le premier essai. **23 échecs** (8 commandes), tous `"Billing and Shipping Address is not
+  valid"` — adresse `Address 1` vide.
+  - **Cause** : bug dans `clean_street()` — le filtre censé retirer les lignes qui dupliquent
+    la ville (cas multi-lignes : `"3 Rue Pierre Corneille" / "Eaubonne"`) supprimait aussi les
+    adresses **mono-ligne** où la ville est juste accolée en fin de ligne
+    (`"Terwenstraat 5, Gouda"`, sans tabulation) — toute la ligne était jetée, adresse comprise.
+  - **Fix** : chaque ligne est maintenant traitée indépendamment — une ligne strictement égale
+    à la ville est retirée (vrai doublon), une ligne qui se termine juste par la ville ne perd
+    que ce suffixe. Un balayage complet des 39 094 commandes après coup a trouvé 45 cas
+    supplémentaires du même bug (58 au total) ; les ~14-15 restants sont **réellement vides
+    côté Magento** (le client a tapé le nom de la ville dans le champ rue, ex. `"ajman"` / ville
+    `"ajman"`) — rien à récupérer, resteront en échec à l'import quoi qu'il arrive.
+- **2ᵉ test live** (même échantillon régénéré, seed identique) : les 23 erreurs d'adresse ont
+  disparu, mais **30 nouveaux échecs** (4 commandes) — `"Shipping Address: Country/region not
+  supported"` sur des pays valides (RO, AR) déjà acceptés ailleurs dans le même import (8
+  autres commandes RO et 20 autres AR sont passées).
+  - **Cause identifiée** : `SEED` fixe dans `build_orders_stratified_sample.py` → chaque
+    régénération tire **exactement le même lot de 950 commandes**. Le 2ᵉ test réimportait donc
+    un échantillon déjà présent dans Shopify depuis le 1er test — confirmé : 1078/1091 lignes
+    avec `Command` rempli sont revenues `"UPDATE: Found by Name"` (mise à jour d'une commande
+    existante), pas une création. Les 4 échecs de pays sont vraisemblablement un artefact du
+    chemin **UPDATE** de Matrixify (plus strict sur le changement de pays d'une adresse
+    existante que sur une création) — non représentatif d'un import réel, qui ne fera jamais
+    d'UPDATE sur une commande déjà migrée. **Pas d'action prise** — à retester en création
+    propre (purge préalable ou nouvelle graine) si besoin de confirmer.
 
 ### Documentation (17–24 juin 2026)
 
