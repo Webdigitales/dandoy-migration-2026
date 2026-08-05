@@ -200,6 +200,19 @@ def financial_status(row):
     return 'paid'
 
 
+# Client's own diagnostic rule (confirmed 2026-08-05): a physical order
+# invoiced but never shipped means the customer cancelled and was
+# refunded — Magento's export carries no explicit refund flag for these
+# (Subtotal Refunded stays empty, Total Paid = Grand Total), so this
+# status pattern IS the signal. Doesn't apply to gift cards, which never
+# reach 'Shipped' by nature and are handled separately (GIFT_CARD_SKUS).
+def is_unshipped_refund(items):
+    return bool(items) and all(
+        it['status'] == 'Invoiced' and it['sku'] not in GIFT_CARD_SKUS
+        for it in items
+    )
+
+
 def store_tag(store_name):
     name_lower = store_name.lower()
     for key, tag in STORE_TAGS.items():
@@ -366,7 +379,7 @@ def build_rows(order):
     payment       = PAYMENT_MAP.get(order.get('Payment Method', '').strip(),
                                     order.get('Payment Method', '').strip())
     tag           = store_tag(order.get('Store Name', ''))
-    fin_status    = financial_status(order)
+    fin_status    = 'refunded' if is_unshipped_refund(items) else financial_status(order)
     b_name        = billing_name(order)
     s_name        = shipping_name(order)
     b_addr        = address_fields(order, 'BillingAddress')
