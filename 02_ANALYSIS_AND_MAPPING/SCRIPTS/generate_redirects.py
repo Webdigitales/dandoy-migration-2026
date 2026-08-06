@@ -20,7 +20,9 @@ Two Shopify stores (Option B): a product/category only redirects on the
 store(s) that actually carry it (product_websites → brand_scope), otherwise
 the target page doesn't exist on that store.
 
-Output: Matrixify Redirects CSV format (Redirect From, Redirect To)
+Output: Matrixify Redirects CSV format (ID, Path, Command, Target — see
+https://matrixify.app/documentation/redirects/). Matrixify does not recognize
+"Redirect From"/"Redirect To" headers; it needs exactly these column names.
 """
 
 import csv
@@ -31,7 +33,7 @@ INPUT            = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_magen
 OUTPUT_DANDOY    = '/home/gregory/Documents/Labo/dandoy/03_SEO_AND_REDIRECTS/shopify_redirects_dandoy.csv'
 OUTPUT_BUTTERFLY = '/home/gregory/Documents/Labo/dandoy/03_SEO_AND_REDIRECTS/shopify_redirects_butterfly.csv'
 
-REDIRECT_COLS = ['Redirect From', 'Redirect To', 'Command']
+REDIRECT_COLS = ['ID', 'Path', 'Command', 'Target']
 
 
 def parse_attrs(s):
@@ -113,7 +115,7 @@ def write_store_redirects(store_name, output_path, scope_predicate, base_rows):
         writer = csv.DictWriter(f, fieldnames=REDIRECT_COLS)
         writer.writeheader()
         for old, new in redirects:
-            writer.writerow({'Redirect From': old, 'Redirect To': new, 'Command': 'MERGE'})
+            writer.writerow({'ID': '', 'Path': old, 'Command': 'NEW', 'Target': new})
 
     print(f"=== {store_name} ===")
     print(f"  Product redirects  : {product_count}")

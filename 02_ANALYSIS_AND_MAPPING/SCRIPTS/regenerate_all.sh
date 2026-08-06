@@ -160,10 +160,10 @@ def purge_redirects(src_path, dest_path):
     with open(src_path, encoding='utf-8') as f:
         rows = list(csv.DictReader(f))
     with open(dest_path, 'w', newline='', encoding='utf-8') as f:
-        w = csv.DictWriter(f, fieldnames=['Command', 'Redirect From', 'Redirect To'])
+        w = csv.DictWriter(f, fieldnames=['ID', 'Path', 'Command', 'Target'])
         w.writeheader()
         for r in rows:
-            w.writerow({'Command': 'DELETE', 'Redirect From': r['Redirect From'], 'Redirect To': r['Redirect To']})
+            w.writerow({'ID': '', 'Path': r['Path'], 'Command': 'DELETE', 'Target': r['Target']})
     return len(rows)
 
 # Orders imported through the Shopify API (as Matrixify does) are eligible

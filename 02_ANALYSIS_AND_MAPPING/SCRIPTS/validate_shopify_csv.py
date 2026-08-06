@@ -124,11 +124,11 @@ def validate_redirects(rows, product_handles):
     if rows is None:
         return errors
     for r in rows:
-        to = r.get('Redirect To', '')
+        to = r.get('Target', '')
         if to.startswith('/products/'):
             handle = to[len('/products/'):].split('?')[0].strip('/')
             if handle not in product_handles:
-                errors.append(f"Redirection orpheline : '{r.get('Redirect From')}' → handle '{handle}' introuvable")
+                errors.append(f"Redirection orpheline : '{r.get('Path')}' → handle '{handle}' introuvable")
     return errors
 
 

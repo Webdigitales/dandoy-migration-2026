@@ -89,12 +89,20 @@ Magento ajoute parfois un suffixe numérique au `url_path` pour éviter les doub
 03_SEO_AND_REDIRECTS/shopify_redirects_butterfly.csv
 ```
 
-Format Matrixify Redirects :
+Format Matrixify Redirects — colonnes exactes attendues (voir
+[matrixify.app/documentation/redirects](https://matrixify.app/documentation/redirects/)) :
 
 | Colonne | Description | Exemple |
 |---|---|---|
-| `Redirect From` | Ancien chemin (relatif) | `/stiga-allround-classic-anatomic.html` |
-| `Redirect To` | Nouveau chemin Shopify | `/products/stiga-allround-classic` |
+| `ID` | Vide pour une création (Matrixify assigne l'ID à l'import) | *(vide)* |
+| `Path` | Ancien chemin (relatif) | `/stiga-allround-classic-anatomic.html` |
+| `Command` | `NEW` pour les fichiers d'import, `DELETE` pour les fichiers PURGE | `NEW` |
+| `Target` | Nouveau chemin Shopify | `/products/stiga-allround-classic` |
+
+> ⚠️ Matrixify n'utilise **pas** les en-têtes `Redirect From` / `Redirect To` (erreur
+> précédente dans `generate_redirects.py`, corrigée le 06/08/2026) — avec ces mauvais noms de
+> colonnes, Matrixify ne reconnaît pas le fichier et renvoie *"Cannot understand the uploaded
+> file"*. Les colonnes correctes sont `ID, Path, Command, Target`.
 
 ### Import via Matrixify
 
