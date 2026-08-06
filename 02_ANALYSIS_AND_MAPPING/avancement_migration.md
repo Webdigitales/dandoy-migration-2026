@@ -430,7 +430,14 @@ surveiller si ça se reproduit à plus grande échelle.
     dans Shopify. Les 69 commandes restantes n'ont pas été testées individuellement (champ
     déjà validé depuis le 30 juillet, même code path, risque jugé faible par le client) —
     aucune action supplémentaire prévue avant l'import complet.
-
+  - **Question soulevée : ces 102 commandes restent visibles et non archivées** dans Shopify
+    (`Non traité` + `Remboursée`, mais dans la liste active). Recherché côté doc Matrixify :
+    `Cancelled At`/`Cancel: Reason` (annulation) et `Closed At` (archivage) sont **tous deux
+    settable uniquement en mise à jour d'une commande déjà existante** — impossible de
+    créer-et-archiver/annuler en un seul import, il faudrait une 2ᵉ passe après la création.
+    Autre limite : la date réelle d'annulation/archivage n'est jamais conservée, Shopify
+    prend systématiquement la date de l'import. **Décision du client : rien pour l'instant**
+    — pas assez gênant pour justifier une 2ᵉ passe d'import à ce stade.
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
