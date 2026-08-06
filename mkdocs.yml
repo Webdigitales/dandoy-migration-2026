@@ -56,5 +56,6 @@ nav:
     - Redirections 301: import/redirections.md
     - Migration clients: import/customers.md
     - Historique commandes: import/orders.md
+    - Chèques cadeaux (gift cards): import/gift-cards.md
   - Stock Sync:
     - Guide prestataire: stock/guide-prestataire.md

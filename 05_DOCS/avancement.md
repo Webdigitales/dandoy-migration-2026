@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **4 août 2026**
+Dernière mise à jour : **5 août 2026**
 
 > **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées
 > (Dandoy-Sports plan complet + Butterfly TT plan Basic), et non l'instance unique (Option A)
@@ -384,6 +384,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | `import/customers.md` | Migration clients : déduplication, mapping, mots de passe, post-migration |
 | [Historique des commandes](./import/orders.md) | Script conversion, fiscalité, Fulfillment Line, champ Note, liaisons clients, import Matrixify |
 | [Plan de migration](./import/plan-migration.md) | Plan 5 phases : foundation → theming → recette → pré-go-live → go-live |
+| [Chèques cadeaux](./import/gift-cards.md) | Analyse export 841 cartes, 281 actives (9 247,49 €), 2 méthodes de migration — à faire |
 
 ---
 
@@ -421,6 +422,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
 | Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2), à dupliquer sur les 2 boutiques |
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
+| Migration chèques cadeaux (281 cartes actives, 9 247,49 €) | **Haute** | **À faire** — analyse faite, méthode à décider ([Chèques cadeaux](./import/gift-cards.md)) |
 | Pages CMS Magento | Basse | Non commencé (Phase 2) |
 | Thème Shopify + branding Butterfly | Hors périmètre data | Phase 2 — 2 thèmes à prévoir (Option B) |
 
