@@ -414,8 +414,8 @@ surveiller si ça se reproduit à plus grande échelle.
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
 | Vérifier en base (`sales_order_payment.additional_information`) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |
 | Tester en live le mécanisme Fulfillment Line (commandes) | ~~Haute~~ | **Fait** — 2 échecs corrigés le 4 août 2026, 3ᵉ test confirmé |
-| `custom.blade_layers = "4"` refusé (7 produits Tibhar) | Moyenne | Valeur à ajouter aux choix prédéfinis dans l'Admin Shopify |
-| Configuration metafields (choix prédéfinis) | Moyenne | Documenté — Phase 1 |
+| `custom.blade_layers = "4"` refusé (7 produits Tibhar) | ~~Moyenne~~ | **Fait** — valeur ajoutée aux choix prédéfinis dans l'Admin Shopify |
+| Configuration metafields (choix prédéfinis) | ~~Moyenne~~ | **Fait** — metafields configurés dans l'Admin Shopify |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
 | Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (33 357 / 11 404 clients), sample testé OK |
 | Migration commandes | ~~À évaluer~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (24 855 / 14 196 commandes), sample testé OK |
