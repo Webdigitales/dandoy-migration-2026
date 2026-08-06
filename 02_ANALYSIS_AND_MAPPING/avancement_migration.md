@@ -424,7 +424,12 @@ surveiller si ça se reproduit à plus grande échelle.
     `Payment: Status = refunded` (au lieu de `paid`) pour toute commande dont tous les items
     sont `Invoiced` et non `Shipped`, hors cartes cadeau (`GIFT_CARD_SKUS`, gérées à part —
     elles n'atteignent jamais `Shipped` par nature et ne sont pas des remboursements). 102
-    commandes concernées (39 Dandoy + 63 Butterfly).
+    commandes concernées (39 Dandoy + 63 Butterfly). **Testé en live** via l'échantillon
+    stratifié (33/102 couvertes : 8 Dandoy confirmées par le client, 25 Butterfly incluses
+    mais non explicitement confirmées) — `Payment: Status = refunded` s'affiche correctement
+    dans Shopify. Les 69 commandes restantes n'ont pas été testées individuellement (champ
+    déjà validé depuis le 30 juillet, même code path, risque jugé faible par le client) —
+    aucune action supplémentaire prévue avant l'import complet.
 
 ### Documentation (17–24 juin 2026)
 
