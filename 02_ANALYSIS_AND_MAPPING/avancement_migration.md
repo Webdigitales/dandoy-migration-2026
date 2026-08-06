@@ -436,8 +436,9 @@ surveiller si ça se reproduit à plus grande échelle.
     settable uniquement en mise à jour d'une commande déjà existante** — impossible de
     créer-et-archiver/annuler en un seul import, il faudrait une 2ᵉ passe après la création.
     Autre limite : la date réelle d'annulation/archivage n'est jamais conservée, Shopify
-    prend systématiquement la date de l'import. **Décision du client : rien pour l'instant**
-    — pas assez gênant pour justifier une 2ᵉ passe d'import à ce stade.
+    prend systématiquement la date de l'import. **Décision du client : archivage manuel**
+    dans Shopify Admin après l'import (102 commandes, volume gérable à la main) — pas de 2ᵉ
+    passe d'import à développer.
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
