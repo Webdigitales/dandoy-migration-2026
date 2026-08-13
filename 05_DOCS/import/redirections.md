@@ -128,11 +128,43 @@ Format Matrixify Redirects — colonnes exactes attendues (voir
 
 | Élément | Raison | Action |
 |---|---|---|
-| URLs traduites (`/fr/`, `/nl/`) | Seules 18 URL keys FR existent dans Magento, pas significatif | À gérer manuellement si nécessaire |
+| Produits avec `url_key` localisé différent (FR/NL) | `generate_redirects.py` ne génère les redirections qu'à partir de l'`url_key` de la vue de base (store view vide) | Voir « URLs produits localisées (FR/NL) » ci-dessous |
+| Catégories traduites (ex. `/bois.html`, `/palettes.html`) | Colonne `categories` vide sur **toutes** les store views hors base dans l'export Magento — aucune donnée source pour générer les slugs FR/NL | À faire **manuellement** (voir ci-dessous) |
 | Pages CMS Magento | Pas dans l'export produits | Crawl séparé nécessaire |
 | URLs avec paramètres (`?color=red`) | Shopify ne redirige pas les query strings | Géré côté serveur ou `.htaccess` si proxy |
 | Domaines par boutique (6 domaines / 2 boutiques) | Résolu — Option B retenue | Configurer les domaines dans chaque boutique Shopify (DNS), pas de Shopify Markets nécessaire côté Butterfly |
 | Bundle products (105) | Non exportés vers Shopify | URLs en 404 sauf si traitement manuel |
+
+### URLs produits localisées (FR/NL) — audit du 10/08/2026
+
+Comparaison de l'`url_key` par store view vs l'`url_key` de base, restreinte aux produits
+actifs et dans le scope de chaque boutique :
+
+| Store view | Boutique | Langue | Produits actifs concernés |
+|---|---|---|---|
+| `bt_be_fr` | Butterfly TT | FR | **125** |
+| `eu_fr` | Dandoy-Sports | FR | 1 (`butterfly-t-shirt-player-red` → `-rouge`, produit partagé) |
+| `ww_en` | Dandoy-Sports | EN (`.com`) | 1 (`ZZZ-111-1`, probable produit de test) |
+| `eu_en`, `eu_nl`, `bt_be_nl`, `bt_nl` | — | EN/NL | 0 |
+
+Le gros du trou est **Butterfly FR** (`be.butterfly.tt`) : 125 anciennes URLs `.html` en français
+ne redirigent vers rien avec le script actuel et finiront en 404 après migration. Le NL n'est
+quasiment pas concerné (0 partout). Décision : traitement manuel, pas d'extension du script pour
+l'instant.
+
+### Catégories traduites — pas de donnée source
+
+Toutes les redirections de catégories générées (`/blades.html`, `/rubbers.html`, `/clothing.html`…)
+sont en **anglais uniquement**, car l'export `export_magento_products_all.csv` n'a jamais
+d'`categories` renseignées sur les store views FR/NL (`eu_fr`, `eu_nl`, `bt_be_fr`, `bt_be_nl`,
+`bt_nl`) — seule la vue de base (store view vide) porte cette colonne. Si le site live utilise
+des slugs de catégorie traduits (ex. `/bois.html` pour Blades en FR), ils ne sont couverts par
+**aucune** redirection actuelle, faute de source de données exploitable dans cet export.
+
+**Décision : à faire manuellement** (pas de crawl ni de script automatisé prévu pour l'instant) —
+lister les URLs de catégorie FR/NL réellement utilisées sur le site live et créer les
+redirections correspondantes directement dans Shopify Admin (Settings → Navigation → URL
+Redirects) après import, plutôt que via Matrixify.
 
 ---
 
