@@ -5,8 +5,11 @@
 ## Principe clé
 
 **Deux boutiques Shopify séparées** (Option B, décidée le 29 juillet 2026) : Dandoy-Sports
-(plan complet) et Butterfly TT (plan Basic). Chaque phase ci-dessous s'exécute dans les deux
+(**Shopify Plus**) et Butterfly TT (plan Basic). Chaque phase ci-dessous s'exécute dans les deux
 boutiques, sauf mention contraire — voir [Multi-sites](../architecture/multi-sites.md).
+
+Le plan Plus de Dandoy-Sports rend le **B2B natif (Companies)** disponible pour gérer les clubs
+partenaires — voir [Remises club & B2B](../mapping/club-b2b.md).
 
 Le theming et la configuration se font sur des **boutiques Shopify avec de vraies données**
 dès la Phase 1. Les scripts permettent de régénérer et réimporter à tout moment via
@@ -21,7 +24,7 @@ Les données de Phase 1 sont intentionnellement "périmées" — elles servent u
 
 **Objectif :** les deux boutiques Shopify opérationnelles avec leur catalogue complet.
 
-- Créer les deux boutiques Shopify (Dandoy-Sports plan complet, Butterfly TT plan Basic)
+- Créer les deux boutiques Shopify (Dandoy-Sports Shopify Plus, Butterfly TT plan Basic)
 - Installer Matrixify Enterprise ($200 — 1 mois) sur les deux boutiques
 - Installer apps : Stock Sync, Bold Product Options, Bundles (sur chaque boutique concernée)
 - Import `shopify_products_sample_{dandoy|butterfly}.csv` → vérifier → supprimer
@@ -151,6 +154,7 @@ Les fichiers 5–7 sont importés une seule fois, au plus proche du go-live.
 | Sujet | Statut |
 |---|---|
 | **Multi-sites** : instance unique ou deux boutiques ? | **Tranché** — Option B (deux boutiques séparées), décidé le 29 juillet 2026 |
-| **Plan Shopify** : Basic / Shopify / Advanced / Plus ? | **Tranché** — Dandoy-Sports plan complet, Butterfly TT plan Basic |
+| **Plan Shopify** : Basic / Shopify / Advanced / Plus ? | **Tranché** — Dandoy-Sports Shopify Plus, Butterfly TT plan Basic |
 | **Limitations du plan Basic (Butterfly)** | À vérifier avant validation finale (rapports pro, shipping tiers calculé, comptes staff) |
 | **Thème** : thème premium du marché ou développement sur mesure ? | À décider — conditionne le planning Phase 2 (× 2 thèmes à prévoir) |
+| **Portail clubs B2B (Companies)** côté Dandoy-Sports | Piste à valider avec le client — voir [Remises club & B2B](../mapping/club-b2b.md) |

@@ -7,7 +7,7 @@ Documentation technique de la migration Magento 2 vers Shopify pour **Dandoy-Spo
 ## Périmètre
 
 - **Client :** Dandoy-Sports / Butterfly TT
-- **Architecture :** deux boutiques Shopify séparées (Option B, décidée le 29 juillet 2026) — Dandoy-Sports (plan complet) et Butterfly TT (plan Basic). Détails : [Multi-sites](./architecture/multi-sites.md)
+- **Architecture :** deux boutiques Shopify séparées (Option B, décidée le 29 juillet 2026) — Dandoy-Sports (Shopify Plus) et Butterfly TT (plan Basic). Détails : [Multi-sites](./architecture/multi-sites.md)
 - **6 domaines répartis sur 2 boutiques :**
   - Dandoy-Sports : dandoy-sports.com, fr/en/nl.dandoy-sports.eu
   - Butterfly TT : be.butterfly.tt, nl.butterfly.tt

@@ -133,8 +133,8 @@ Un seul flux Stock Sync → **un seul inventaire** pour tous les marchés. Pas d
 
 ### Principe
 
-Deux instances Shopify indépendantes, chacune avec son propre catalogue. Dandoy-Sports
-sur un plan complet, **Butterfly TT sur un plan Basic**.
+Deux instances Shopify indépendantes, chacune avec son propre catalogue. **Dandoy-Sports
+sur Shopify Plus**, **Butterfly TT sur un plan Basic**.
 
 | Boutique | Domaines | Produits (base Magento) |
 |---|---|---|
