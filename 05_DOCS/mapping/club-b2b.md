@@ -108,22 +108,51 @@ scopée sur le segment) a été écartée après comparaison :
 
 ### Import en masse via Matrixify
 
-Matrixify supporte un sheet dédié **Companies** (`Bulk import Shopify B2B Companies`) :
+Matrixify supporte un sheet dédié **Companies**. Colonnes réelles vérifiées sur le fichier
+demo officiel (`Matrixify-Import-Demo-Companies.xlsx`, 43 colonnes) :
 
-- Colonnes : nom de company, locations (adresse/contact/téléphone/langue), contacts clients
-  (email/ID + rôle), catalogues/price lists par location, conditions de paiement (Net 7-90),
-  exonérations fiscales.
-- Commandes `NEW` / `MERGE` / `UPDATE` / `REPLACE` / `DELETE` — réimportable comme le reste
-  du pipeline.
-- **Prérequis strict : les clients doivent déjà exister dans Shopify avant l'import
-  Companies**, sinon échec (liaison par email ou ID). Implique l'ordre d'import :
-  `shopify_customers_*.csv` → `shopify_companies_*.csv`.
-- Aucune restriction de plan Matrixify spécifique aux Companies (Enterprise déjà prévu pour
-  le premier mois — largement suffisant pour 88 companies).
+- **Company** : `Name`, `Command`, `External ID`, `Notes`, `Customer Since`,
+  `Main Contact: Customer ID`, `Main Contact: Customer Email`
+- **Location** : `Location: Name/Command/External ID/Phone/Notes/Locale/Tax ID/
+  Tax Exemptions`, `Allow Shipping To Any Address`, `Checkout To Draft`,
+  `Checkout Payment Terms` (ex. `"Net 30"`), puis adresses **Shipping** et **Billing**
+  complètes (`Recipient`, `Phone`, `Address 1/2`, `Zip`, `City`, `Province Code`,
+  `Country Code`)
+- **Contact lié** : `Customer: Email`, `Customer: Command`, `Customer: Location Role`
+- **Store Credit** (non utilisé ici) : 6 colonnes
+
+Commandes `NEW` / `MERGE` / `UPDATE` / `REPLACE` / `DELETE` — réimportable comme le reste
+du pipeline.
+
+**Prérequis strict : les clients doivent déjà exister dans Shopify avant l'import
+Companies**, sinon échec (liaison par email ou ID). Implique l'ordre d'import :
+`shopify_customers_*.csv` → `shopify_companies_*.csv`.
+
+Aucune restriction de plan Matrixify spécifique aux Companies (Enterprise déjà prévu pour
+le premier mois — largement suffisant pour 88 companies).
+
+#### Catalogs — création manuelle obligatoire
+
+**Matrixify ne peut pas créer de Catalog** (nom, produits, % de remise) — confirmé par le
+tutoriel Matrixify sur le pricing produit par marché/catalog : la création se fait
+uniquement dans Shopify Admin (Settings → B2B / Markets). Une fois le Catalog créé à la
+main avec sa remise en %, Matrixify peut y rattacher des produits et fixer des prix fixes
+par variante (`Included / <Catalog>`, `Price / <Catalog>` sur le sheet Products), mais pas
+poser une règle en pourcentage.
+
+**Décision (14 août 2026) :** le client crée manuellement les Catalogs (un par palier de
+remise × par boutique — 2 pour Dandoy, 3 pour Butterfly, voir §1) et fournit la table
+`taux → nom du Catalog Shopify`. Le rattachement Company → Catalog se fait ensuite via la
+colonne `Location: Catalogs` (nom de colonne indiqué par le client) — **à confirmer** : cette
+colonne n'apparaît pas dans le fichier demo Companies inspecté (43 colonnes listées
+ci-dessus, aucune catalogue) ; il faudra vérifier son existence/format exact directement
+dans l'app Matrixify (peut-être ajoutée depuis, ou disponible sur un sheet distinct) avant
+d'écrire `generate_companies.py`.
 
 Un nouveau script `generate_companies.py` est à prévoir (généré depuis
-`club_discount_mapping.csv`), à ajouter à `regenerate_all.sh` et à l'ordre d'import Matrixify
-de `CLAUDE.md` (après `shopify_customers_*.csv`, avant les traductions/redirections).
+`club_discount_mapping.csv` + la table de correspondance Catalogs fournie par le client), à
+ajouter à `regenerate_all.sh` et à l'ordre d'import Matrixify de `CLAUDE.md` (après
+`shopify_customers_*.csv`, avant les traductions/redirections).
 
 ---
 
@@ -142,8 +171,17 @@ les autres exports bruts, pas dans les fichiers `_sample_*.csv` versionnés.
 
 ## 4. Ouvert — à valider avec le client
 
-Ces points viennent de la réflexion transmise par le client et **ne sont pas dans le
-périmètre actuel du projet** — à trancher avant tout développement :
+### Blocages pour `generate_companies.py`
+
+| Sujet | Statut |
+|---|---|
+| **Table `taux → nom de Catalog`** | En cours — client crée les Catalogs manuellement dans Shopify Admin et fournira les noms |
+| **Colonne Matrixify `Location: Catalogs`** | À confirmer directement dans l'app (absente du fichier demo Companies inspecté) |
+| **Adresse par club** (`Location: Shipping/Billing Address`, `City`, `Zip`, `Country Code`) | Aucune donnée d'adresse club dans les exports Magento (seulement des adresses individuelles de membres) — à demander au client, ou import avec pays seul en attendant complément manuel |
+| **`Main Contact: Customer Email`** (contact principal par club) | Aucun signal exploitable dans les données — proposition : le client avec le plus d'historique de commandes dans le groupe, à valider |
+| **Valeurs exactes de `Customer: Location Role`** | Probablement `"Ordering only"` / `"Location admin"` (terminologie Shopify), non confirmées dans le fichier demo (colonne vide) — à vérifier avant génération |
+
+### Pistes issues de la réflexion client (hors périmètre migration actuel)
 
 | Sujet | Statut |
 |---|---|
