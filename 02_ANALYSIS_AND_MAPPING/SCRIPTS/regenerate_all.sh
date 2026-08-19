@@ -10,27 +10,31 @@ echo "=== Régénération complète ==="
 echo "Source: $DIR/01_DATA_RAW/export_magento_products_all.csv"
 echo ""
 
-echo "[1/8] Produits + traductions..."
+echo "[1/9] Produits + traductions..."
 python3 "$SCRIPTS/magento_to_shopify.py"
 echo ""
 
-echo "[2/8] Collections..."
+echo "[2/9] Collections..."
 python3 "$SCRIPTS/generate_collections.py"
 echo ""
 
-echo "[3/8] Redirections..."
+echo "[3/9] Redirections..."
 python3 "$SCRIPTS/generate_redirects.py"
 echo ""
 
-echo "[4/8] Customers..."
+echo "[4/9] Customers..."
 python3 "$SCRIPTS/magento_to_shopify_customers.py"
 echo ""
 
-echo "[5/8] Commandes 2025-2026..."
+echo "[5/9] Companies (Dandoy uniquement — Butterfly bloqué, voir 05_DOCS/mapping/club-b2b.md)..."
+python3 "$SCRIPTS/generate_companies.py"
+echo ""
+
+echo "[6/9] Commandes 2025-2026..."
 python3 "$SCRIPTS/magento_to_shopify_orders.py"
 echo ""
 
-echo "[6/8] Sample (produits, clients, commandes — par boutique)..."
+echo "[7/9] Sample (produits, clients, commandes — par boutique)..."
 python3 - << 'SAMPLEEOF'
 import csv, os
 
@@ -133,7 +137,7 @@ build_orders_sample('butterfly')
 SAMPLEEOF
 echo ""
 
-echo "[7/8] Fichiers de purge (par boutique)..."
+echo "[8/9] Fichiers de purge (par boutique)..."
 python3 - << 'PYEOF'
 import csv, os
 
@@ -202,7 +206,7 @@ for suffix in ('dandoy', 'butterfly'):
 PYEOF
 
 echo ""
-echo "[8/8] Validation..."
+echo "[9/9] Validation..."
 set +e
 python3 "$SCRIPTS/validate_shopify_csv.py"
 VALIDATION_EXIT=$?

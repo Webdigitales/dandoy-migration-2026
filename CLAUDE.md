@@ -67,7 +67,8 @@ dandoy/
 │   │   ├── magento_to_shopify_customers.py ← conversion clients
 │   │   ├── magento_to_shopify_orders.py    ← conversion commandes 2025-2026
 │   │   ├── validate_shopify_csv.py         ← validation post-régénération (SKU, options, handles)
-│   │   └── regenerate_all.sh               ← tout régénérer (8 étapes)
+│   │   ├── generate_companies.py           ← B2B Companies Dandoy (clubs partenaires)
+│   │   └── regenerate_all.sh               ← tout régénérer (9 étapes)
 │   ├── matrice_data_mapping_products.md
 │   └── avancement_migration.md
 │
@@ -112,7 +113,7 @@ dandoy/
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-8 étapes : [1/8] produits + traductions → [2/8] collections → [3/8] redirections → [4/8] customers → [5/8] commandes → [6/8] sample → [7/8] purge → [8/8] validation.
+9 étapes : [1/9] produits + traductions → [2/9] collections → [3/9] redirections → [4/9] customers → [5/9] companies (Dandoy uniquement) → [6/9] commandes → [7/9] sample → [8/9] purge → [9/9] validation.
 
 La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font échouer un import Matrixify : SKU dupliqués entre produits (risque pour Stock Sync — voir section 2.A), combinaisons de variantes dupliquées ou options incohérentes au sein d'un produit, plafond des 100 variantes, prix manquant/négatif, et handles orphelins dans les traductions/redirections. Le script sort en erreur (code 1) si des problèmes bloquants sont trouvés, sans empêcher la génération des autres fichiers. Les avertissements (ex. Vendor vide) n'affectent pas le code de sortie.
 
@@ -122,9 +123,10 @@ La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font �
 2. `shopify_products_{dandoy|butterfly}.csv`
 3. `shopify_collections_{dandoy|butterfly}.csv`
 4. `shopify_customers_{dandoy|butterfly}.csv`
-5. Activer FR + NL (+ EN pour Dandoy) dans Settings → Languages
-6. `shopify_translations_{dandoy|butterfly}.csv`
-7. `shopify_redirects_{dandoy|butterfly}.csv`
+5. `shopify_companies_dandoy.csv` (Dandoy uniquement — Catalogs B2B créés manuellement au préalable, voir `05_DOCS/mapping/club-b2b.md`)
+6. Activer FR + NL (+ EN pour Dandoy) dans Settings → Languages
+7. `shopify_translations_{dandoy|butterfly}.csv`
+8. `shopify_redirects_{dandoy|butterfly}.csv`
 
 > Les 199 produits partagés (35 actifs) sont présents dans les deux fichiers `shopify_products_*.csv`, tagués `dandoy,butterfly` — à importer normalement dans chaque boutique, aucune étape manuelle supplémentaire.
 
