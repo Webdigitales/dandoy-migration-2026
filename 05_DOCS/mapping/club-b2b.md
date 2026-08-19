@@ -34,10 +34,10 @@ Sources : `01_DATA_RAW/export_customer.csv` (`group_id`), `01_DATA_RAW/customer_
 |---|---|---|---|
 | `Remises club 20% - Dandoy` | 20 % | Dandoy | 41 |
 | `Remises club 15% - Dandoy` | 15 % | Dandoy | 44 |
-| `Remises club 15% - Butterfly` | 15 % | Butterfly | 49 |
+| `Remises club 15% - Butterfly` | 15 % | Butterfly | 49 (dont 5 cumulent aussi 5 % + 7 %, voir ci-dessous) |
 | `Remises club 10% - Butterfly` | 10 % | Butterfly | 27 |
-| `Remises club 7% - Butterfly` | 7 % | Butterfly | 5 |
-| `Remises club 5% - Butterfly` | 5 % | Butterfly | 5 (mêmes clubs, cumulé avec 7 %) |
+| `Remises club 7% - Butterfly` | 7 % | Butterfly | 5 (groupes 20/88/89/93/95 — `website_id=4`/BE uniquement, pas NL) |
+| `Remises club 5% - Butterfly` | 5 % | Butterfly | 5 (mêmes 5 clubs que ci-dessus) |
 | `Remise club 5% addition STIGA` | 6,25 % | Produits STIGA uniquement | 2 (groupes 29, 62) |
 | `Sofiane Boukoula` | 30 % | Nominatif | 1 client |
 
@@ -47,9 +47,75 @@ Sources : `01_DATA_RAW/export_customer.csv` (`group_id`), `01_DATA_RAW/customer_
 - Ces remises club **s'additionnent** aux paliers panier génériques (`5% apd 50€`, etc.,
   eux aussi permanents et automatiques) — ce qui explique le taux de remise moyen assez
   homogène (~20-27 %) observé en analysant `export_order_all_2025_2026.csv` par groupe.
+- **Les règles club elles-mêmes s'empilent entre elles** : toutes ont
+  `stop_rules_processing=0`, donc pour les 5 clubs Butterfly avec 15 %+5 %+7 %, le taux
+  effectif combiné est **~24,9 %** (calcul multiplicatif séquentiel : `1-(0,85×0,95×0,93)`,
+  à confirmer sur une commande réelle avant de figer le taux du catalog Shopify — Magento
+  applique peut-être un cumul additif selon sa config exacte).
 - Aucune donnée de **tier price par produit** (`catalog_product_entity_tier_price`) n'a
   été trouvée dans l'export produits — les remises sont uniquement au niveau panier/%,
   pas de grille tarifaire produit par produit à ce stade.
+- Deux cas hors norme, à traiter à part (pas de catalog dédié standard) : **STIGA addition**
+  (groupes 29, 62 — +6,25 % uniquement sur les produits STIGA, en plus du 20 % Dandoy) et
+  **Sofiane Boukoula** (groupe 10 — 30 % nominatif, Dandoy uniquement ; ce même client a un
+  taux standard 15 % côté Butterfly).
+
+### Référence — rule_id des 8 règles club
+
+| rule_id | Nom | Catalog Shopify cible |
+|---|---|---|
+| `3983` | Remises club 15% - Dandoy | `Dandoy — Club 15%` |
+| `4048` | Remises club 20% - Dandoy | `Dandoy — Club 20%` |
+| `4049` | Remises club 15% - Butterfly | `Butterfly — Club 15%` |
+| `4226` | Remises club 10% - Butterfly | `Butterfly — Club 10%` |
+| `7969` | Remises club 5% - Butterfly | `Butterfly — Club Premium` (cumulée) |
+| `7970` | Remises club 7% - Butterfly | `Butterfly — Club Premium` (cumulée) |
+| `5331` | Remise club 5% addition STIGA | cas particulier (hors catalog standard) |
+| `5695` | Sofiane Boukoula | cas particulier (hors catalog standard) |
+
+### Référence — paliers panier génériques (13 règles, tous plans/groupes confondus)
+
+Toutes permanentes (`to_date=NULL`), `stop_rules_processing=1` sauf `26`.
+
+**Série "ronde" (seuils TTC, groupes `0,1,2,3` = NOT LOGGED IN/General/Wholesale/Retailer) :**
+
+| rule_id | Nom | Remise | Seuil panier |
+|---|---|---|---|
+| `16` | 5% apd 50€ | 5 % | ≥ 50,00 € et < 99,99 € |
+| `17` | 10% apd de 100€ | 10 % | ≥ 100 € et < 149,99 € |
+| `18` | 15% apd de 150€ | 15 % | ≥ 150 € et < 199,99 € |
+| `19` | 20% apd de 200€ | 20 % | ≥ 200 € |
+| `20` | 25% apd de 250€ | 25 % | ≥ 250 € |
+| `21` | 30% apd de 300€ | 30 % | (condition subtotal non lisible dans l'export — probablement ≥ 300 €) |
+
+**Série "62/99€" (seuils légèrement différents, mêmes groupes 0-3) :**
+
+| rule_id | Nom | Remise | Seuil panier |
+|---|---|---|---|
+| `12` | 5% apd 75€ | 5 % | ≥ 61,98 € et < 99,17 € |
+| `13` | 10% apd 120€ | 10 % | ≥ 99,18 € |
+
+⚠️ Cette série (12-13, créée en 2021) recoupe des plages de montants proches de la série
+"ronde" (16-17, créée en 2020) — les deux sont actives simultanément. Comme toutes ont
+`stop_rules_processing=1`, une seule doit se déclencher par commande (priorité Magento non
+disponible dans l'export reçu). Possible redondance de config héritée dans le temps plutôt
+qu'un système à deux niveaux voulu — **à clarifier avec le client** avant de décider si les
+deux séries doivent être répliquées sur Shopify ou une seule.
+
+**Série "HT" (seuils différents, groupes `0,1,2,3,4` + la quasi-totalité des clubs) :**
+
+| rule_id | Nom | Remise | Seuil panier | Groupes |
+|---|---|---|---|---|
+| `22` | 5% apd 50€ | 5 % | ≥ 41,32 € et < 82,64 € | 0,1,2,3,10 |
+| `23` | 10% apd de 100€ | 10 % | ≥ 82,65 € et < 123,96 € | 0,1,2,3,4,10 |
+| `24` | 15% apd de 150€ | 15 % | ≥ 123,97 € et < 165,29 € | 0,1,2,3 |
+| `25` | 20% apd de 200€ | 20 % | ≥ 165,29 € et < 206,61 € | 0,1,2,3,4 + ~48 clubs |
+| `26` | 25% apd de 250€ | 25 % | ≥ 206,61 € | 0,1,2,3,4 + ~92 clubs (`stop=0`) |
+
+C'est cette série qui touche la majorité des clubs en plus de leur remise club — source du
+cumul club + palier panier observé en analysant `export_order_all_2025_2026.csv`. `26` étant
+la seule règle sans `stop_rules_processing`, elle peut légitimement s'empiler avec une remise
+club (`3983`, `4048`, etc.) sur une même commande.
 
 ---
 
@@ -103,8 +169,23 @@ scopée sur le segment) a été écartée après comparaison :
 - Net terms et Companies sont natifs sur tous les plans désormais — l'argument "Basic ne
   peut pas" ne tient plus.
 - Seule limite réelle à surveiller côté Butterfly : **3 catalogues actifs max**. En
-  recomptant les taux réels (15 %, 10 %, et 5+7 % cumulé pour 5 clubs), ça tient exactement
-  en 3 catalogues — mais toute règle supplémentaire à l'avenir dépassera cette limite.
+  recomptant les taux réels (15 %, 10 %, et le palier cumulé ~24,9 % pour 5 clubs), ça
+  tient exactement en 3 catalogues — mais toute règle supplémentaire à l'avenir dépassera
+  cette limite.
+
+### Liste des Catalogs à créer (14 août 2026)
+
+| Boutique | Catalog | Remise | # clubs |
+|---|---|---|---|
+| Dandoy-Sports | `Dandoy — Club 20%` | 20 % | 41 |
+| Dandoy-Sports | `Dandoy — Club 15%` | 15 % | 44 |
+| Butterfly TT | `Butterfly — Club 15%` | 15 % | 44 |
+| Butterfly TT | `Butterfly — Club 10%` | 10 % | 27 |
+| Butterfly TT | `Butterfly — Club Premium` | ~24,9 % (15 %+5 %+7 % cumulés, à confirmer) | 5 |
+
+**5 catalogs standards** (2 Dandoy + 3 Butterfly). Les deux cas particuliers (STIGA
+addition, compte nominatif Boukoula) restent **hors de cette liste** — à trancher avec le
+client avant de décider s'ils méritent un catalog dédié ou un traitement manuel.
 
 ### Import en masse via Matrixify
 
@@ -159,9 +240,12 @@ ajouter à `regenerate_all.sh` et à l'ordre d'import Matrixify de `CLAUDE.md` (
 ## 3. Mapping des 88 clubs (group_id → nom → taux)
 
 Généré dans `02_ANALYSIS_AND_MAPPING/club_discount_mapping.csv` (174 lignes — une ligne par
-club × marque quand le taux diffère entre Dandoy et Butterfly) depuis `cart_price_rules.csv` +
-`customer_group.csv`. Colonnes : `group_id`, `club_name`, `brand`, `discount_pct`,
-`magento_rule`, `rule_id`, `nb_clients`.
+club × règle Magento, donc plusieurs lignes par club quand plusieurs règles s'empilent, ex.
+les 5 clubs Butterfly Premium) depuis `cart_price_rules.csv` + `customer_group.csv`.
+Colonnes : `group_id`, `club_name`, `brand`, `discount_pct` (taux de la règle individuelle),
+`magento_rule`, `rule_id`, `nb_clients`, `catalog_effective_pct` (taux combiné une fois
+toutes les règles du groupe empilées), `catalog_name` (catalog Shopify cible — voir
+[liste des Catalogs](#liste-des-catalogs-à-créer-14-août-2026)).
 
 Sert de base au futur `generate_companies.py` (une Company par club, un Catalog/Price list
 par palier de remise et par boutique). Contient des noms de clients réels — gitignoré comme

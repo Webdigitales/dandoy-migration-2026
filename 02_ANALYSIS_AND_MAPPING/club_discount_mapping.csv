@@ -1,175 +1,175 @@
-group_id,club_name,brand,discount_pct,magento_rule,rule_id,nb_clients
-7,Raquette Club Briec,Butterfly,10.0,Remises club 10% - Butterfly,4226,6
-7,Raquette Club Briec,Dandoy,20.0,Remises club 20% - Dandoy,4048,6
-8,Royal Mickey Falisolle,Dandoy,15.0,Remises club 15% - Dandoy,3983,76
-10,Sofiane Boukoula,Butterfly,15.0,Remises club 15% - Butterfly,4049,1
-10,Sofiane Boukoula,Nominatif,30.0,Sofiane Boukoula,5695,1
-11,TTV Hasselt United,Butterfly,15.0,Remises club 15% - Butterfly,4049,2
-11,TTV Hasselt United,Dandoy,15.0,Remises club 15% - Dandoy,3983,2
-12,CP Montois,Butterfly,15.0,Remises club 15% - Butterfly,4049,215
-12,CP Montois,Dandoy,20.0,Remises club 20% - Dandoy,4048,215
-13,TTC Deinze,Butterfly,15.0,Remises club 15% - Butterfly,4049,4
-13,TTC Deinze,Dandoy,15.0,Remises club 15% - Dandoy,3983,4
-14,TT Progress,Butterfly,15.0,Remises club 15% - Butterfly,4049,414
-14,TT Progress,Dandoy,15.0,Remises club 15% - Dandoy,3983,414
-16,TT Dorlisheim,Butterfly,15.0,Remises club 15% - Butterfly,4049,2
-16,TT Dorlisheim,Dandoy,15.0,Remises club 15% - Dandoy,3983,2
-17,TTC Hamme,Butterfly,15.0,Remises club 15% - Butterfly,4049,272
-17,TTC Hamme,Dandoy,15.0,Remises club 15% - Dandoy,3983,272
-18,Esperance Ledomienne,Butterfly,15.0,Remises club 15% - Butterfly,4049,130
-18,Esperance Ledomienne,Dandoy,20.0,Remises club 20% - Dandoy,4048,130
-19,Estaines La Gorgue Merville,Butterfly,15.0,Remises club 15% - Butterfly,4049,2
-19,Estaines La Gorgue Merville,Dandoy,20.0,Remises club 20% - Dandoy,4048,2
-20,SAINT DIDIER CHATEAUBOURG TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,100
-20,SAINT DIDIER CHATEAUBOURG TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,100
-20,SAINT DIDIER CHATEAUBOURG TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,100
-20,SAINT DIDIER CHATEAUBOURG TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,100
-21,TT Brenne Le Blanc,Dandoy,20.0,Remises club 20% - Dandoy,4048,1
-22,VARCES VIF Tennis De Table,Butterfly,15.0,Remises club 15% - Butterfly,4049,51
-22,VARCES VIF Tennis De Table,Dandoy,20.0,Remises club 20% - Dandoy,4048,51
-23,CTT Buire,Butterfly,15.0,Remises club 15% - Butterfly,4049,4
-23,CTT Buire,Dandoy,20.0,Remises club 20% - Dandoy,4048,4
-24,Club Pongiste Yvetotais,Dandoy,20.0,Remises club 20% - Dandoy,4048,144
-25,AS VILLEREST TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,96
-26,TT Monestier de Clermont,Dandoy,20.0,Remises club 20% - Dandoy,4048,1
-27,Piranha Tennis de Table,Butterfly,10.0,Remises club 10% - Butterfly,4226,156
-27,Piranha Tennis de Table,Dandoy,15.0,Remises club 15% - Dandoy,3983,156
-28,PPC TAGNON,Butterfly,15.0,Remises club 15% - Butterfly,4049,5
-28,PPC TAGNON,Dandoy,20.0,Remises club 20% - Dandoy,4048,5
-29,TT JOUE LES TOURS,Dandoy,20.0,Remises club 20% - Dandoy,4048,9
-29,TT JOUE LES TOURS,STIGA (addition),6.25,Remise club 5% addition STIGA,5331,9
-30,AL NERAC TENNIS DE TABLE,Dandoy,20.0,Remises club 20% - Dandoy,4048,1
-31,LA RAQUETTE CHAUMONTOISE,Butterfly,15.0,Remises club 15% - Butterfly,4049,2
-31,LA RAQUETTE CHAUMONTOISE,Dandoy,20.0,Remises club 20% - Dandoy,4048,2
-32,Effekt‘74,Butterfly,10.0,Remises club 10% - Butterfly,4226,36
-32,Effekt‘74,Dandoy,15.0,Remises club 15% - Dandoy,3983,36
-33,HTC Hoofddorp,Butterfly,10.0,Remises club 10% - Butterfly,4226,32
-33,HTC Hoofddorp,Dandoy,15.0,Remises club 15% - Dandoy,3983,32
-34,Vivier au court,Butterfly,15.0,Remises club 15% - Butterfly,4049,3
-34,Vivier au court,Dandoy,20.0,Remises club 20% - Dandoy,4048,3
-35,Tafeltennis Zwolle,Butterfly,10.0,Remises club 10% - Butterfly,4226,68
-35,Tafeltennis Zwolle,Dandoy,15.0,Remises club 15% - Dandoy,3983,68
-36,EBS - Etoile Basse Sambre,Butterfly,10.0,Remises club 10% - Butterfly,4226,2
-36,EBS - Etoile Basse Sambre,Dandoy,15.0,Remises club 15% - Dandoy,3983,2
-37,The Victory Weesp,Butterfly,10.0,Remises club 10% - Butterfly,4226,22
-37,The Victory Weesp,Dandoy,15.0,Remises club 15% - Dandoy,3983,22
-38,TTV Avanti,Butterfly,10.0,Remises club 10% - Butterfly,4226,2
-38,TTV Avanti,Dandoy,15.0,Remises club 15% - Dandoy,3983,2
-39,Tielse TC,Butterfly,10.0,Remises club 10% - Butterfly,4226,10
-39,Tielse TC,Dandoy,15.0,Remises club 15% - Dandoy,3983,10
-40,TTV Kwiek,Butterfly,10.0,Remises club 10% - Butterfly,4226,10
-40,TTV Kwiek,Dandoy,15.0,Remises club 15% - Dandoy,3983,10
-41,ONI Wijchen,Butterfly,10.0,Remises club 10% - Butterfly,4226,14
-41,ONI Wijchen,Dandoy,15.0,Remises club 15% - Dandoy,3983,14
-42,TTV Never Despair,Butterfly,10.0,Remises club 10% - Butterfly,4226,10
-42,TTV Never Despair,Dandoy,15.0,Remises club 15% - Dandoy,3983,10
-43,PPC ST Mihiel,Butterfly,15.0,Remises club 15% - Butterfly,4049,117
-43,PPC ST Mihiel,Dandoy,20.0,Remises club 20% - Dandoy,4048,117
-44,Treffers Arnhem,Butterfly,10.0,Remises club 10% - Butterfly,4226,29
-44,Treffers Arnhem,Dandoy,15.0,Remises club 15% - Dandoy,3983,29
-45,TT BEAUVAL,Butterfly,15.0,Remises club 15% - Butterfly,4049,2
-45,TT BEAUVAL,Dandoy,20.0,Remises club 20% - Dandoy,4048,2
-46,APB OUTREAU,Butterfly,15.0,Remises club 15% - Butterfly,4049,165
-46,APB OUTREAU,Dandoy,20.0,Remises club 20% - Dandoy,4048,165
-47,TT MERLIMONT,Butterfly,15.0,Remises club 15% - Butterfly,4049,26
-47,TT MERLIMONT,Dandoy,20.0,Remises club 20% - Dandoy,4048,26
-48,TT SAILLY SUR LA LYS,Butterfly,15.0,Remises club 15% - Butterfly,4049,3
-48,TT SAILLY SUR LA LYS,Dandoy,20.0,Remises club 20% - Dandoy,4048,3
-49,CTT Perwez,Butterfly,15.0,Remises club 15% - Butterfly,4049,202
-49,CTT Perwez,Dandoy,15.0,Remises club 15% - Dandoy,3983,202
-50,CAJ-MIR Saint-Ghislain,Butterfly,15.0,Remises club 15% - Butterfly,4049,23
-50,CAJ-MIR Saint-Ghislain,Dandoy,15.0,Remises club 15% - Dandoy,3983,23
-51,KTTC Metor Bree,Butterfly,15.0,Remises club 15% - Butterfly,4049,2
-51,KTTC Metor Bree,Dandoy,15.0,Remises club 15% - Dandoy,3983,2
-52,TT BARR,Butterfly,15.0,Remises club 15% - Butterfly,4049,23
-52,TT BARR,Dandoy,20.0,Remises club 20% - Dandoy,4048,23
-53,UTL Rossfeld,Butterfly,15.0,Remises club 15% - Butterfly,4049,150
-53,UTL Rossfeld,Dandoy,20.0,Remises club 20% - Dandoy,4048,150
-54,CTT ALPA,Butterfly,15.0,Remises club 15% - Butterfly,4049,262
-54,CTT ALPA,Dandoy,15.0,Remises club 15% - Dandoy,3983,262
-55,Amicale Lunévilloise TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,45
-55,Amicale Lunévilloise TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,45
-56,PPC MONTCY,Butterfly,15.0,Remises club 15% - Butterfly,4049,114
-56,PPC MONTCY,Dandoy,20.0,Remises club 20% - Dandoy,4048,114
-57,CORCY TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,22
-58,TT HUNINGUE,Butterfly,15.0,Remises club 15% - Butterfly,4049,66
-58,TT HUNINGUE,Dandoy,20.0,Remises club 20% - Dandoy,4048,66
-59,ASTT GLAIRE,Butterfly,15.0,Remises club 15% - Butterfly,4049,42
-59,ASTT GLAIRE,Dandoy,20.0,Remises club 20% - Dandoy,4048,42
-60,CTT Nouzonville,Butterfly,15.0,Remises club 15% - Butterfly,4049,3
-60,CTT Nouzonville,Dandoy,20.0,Remises club 20% - Dandoy,4048,3
-61,David Levalois,Butterfly,15.0,Remises club 15% - Butterfly,4049,1
-62,MOREZ TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,1
-62,MOREZ TT,STIGA (addition),6.25,Remise club 5% addition STIGA,5331,1
-63,CERCLE ST MAURICE ORSCHWILLER,Butterfly,15.0,Remises club 15% - Butterfly,4049,32
-63,CERCLE ST MAURICE ORSCHWILLER,Dandoy,20.0,Remises club 20% - Dandoy,4048,32
-64,BTTV Elaan,Butterfly,15.0,Remises club 15% - Butterfly,4049,4
-64,BTTV Elaan,Dandoy,15.0,Remises club 15% - Dandoy,3983,4
-65,TTV Cevelum,Butterfly,15.0,Remises club 15% - Butterfly,4049,8
-65,TTV Cevelum,Dandoy,15.0,Remises club 15% - Dandoy,3983,8
-66,TTV DOV,Butterfly,15.0,Remises club 15% - Butterfly,4049,16
-66,TTV DOV,Dandoy,15.0,Remises club 15% - Dandoy,3983,16
-67,TTV Red Stars,Butterfly,15.0,Remises club 15% - Butterfly,4049,1
-68,TT Colmar,Butterfly,15.0,Remises club 15% - Butterfly,4049,3
-68,TT Colmar,Dandoy,20.0,Remises club 20% - Dandoy,4048,3
-69,TT Landrecien,Butterfly,15.0,Remises club 15% - Butterfly,4049,10
-69,TT Landrecien,Dandoy,20.0,Remises club 20% - Dandoy,4048,10
-70,UTTC,Butterfly,10.0,Remises club 10% - Butterfly,4226,1
-70,UTTC,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-71,Royale Palette Hellebecquoise,Butterfly,15.0,Remises club 15% - Butterfly,4049,72
-71,Royale Palette Hellebecquoise,Dandoy,15.0,Remises club 15% - Dandoy,3983,72
-72,Royal Andenne TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,66
-72,Royal Andenne TT,Dandoy,15.0,Remises club 15% - Dandoy,3983,66
-73,Smash'23,Butterfly,10.0,Remises club 10% - Butterfly,4226,4
-73,Smash'23,Dandoy,15.0,Remises club 15% - Dandoy,3983,4
-74,VTV Nieuwegein,Butterfly,10.0,Remises club 10% - Butterfly,4226,4
-74,VTV Nieuwegein,Dandoy,15.0,Remises club 15% - Dandoy,3983,4
-75,VDO,Butterfly,10.0,Remises club 10% - Butterfly,4226,1
-75,VDO,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-76,DTS Enschede,Butterfly,10.0,Remises club 10% - Butterfly,4226,1
-76,DTS Enschede,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-77,TTV SVE,Butterfly,10.0,Remises club 10% - Butterfly,4226,2
-77,TTV SVE,Dandoy,20.0,Remises club 20% - Dandoy,4048,2
-78,ATC Almere,Butterfly,10.0,Remises club 10% - Butterfly,4226,1
-78,ATC Almere,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-79,CTT CHAMP D'EN HAUT,Butterfly,15.0,Remises club 15% - Butterfly,4049,1
-79,CTT CHAMP D'EN HAUT,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-80,TTV Reflex Maarn,Butterfly,10.0,Remises club 10% - Butterfly,4226,8
-80,TTV Reflex Maarn,Dandoy,15.0,Remises club 15% - Dandoy,3983,8
-81,ZTTC,Butterfly,10.0,Remises club 10% - Butterfly,4226,2
-81,ZTTC,Dandoy,15.0,Remises club 15% - Dandoy,3983,2
-82,CTT FRAMERIES,Butterfly,15.0,Remises club 15% - Butterfly,4049,103
-82,CTT FRAMERIES,Dandoy,15.0,Remises club 15% - Dandoy,3983,103
-83,Preures Longfosse TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,54
-83,Preures Longfosse TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,54
-84,Trainer,Dandoy,20.0,Remises club 20% - Dandoy,4048,0
-85,TTC And Leie,Butterfly,15.0,Remises club 15% - Butterfly,4049,8
-85,TTC And Leie,Dandoy,15.0,Remises club 15% - Dandoy,3983,8
-86,TTV EDE,Butterfly,10.0,Remises club 10% - Butterfly,4226,6
-86,TTV EDE,Dandoy,15.0,Remises club 15% - Dandoy,3983,6
-87,TTV Shot Soest,Butterfly,10.0,Remises club 10% - Butterfly,4226,1
-87,TTV Shot Soest,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-88,DIEPPE UC TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,58
-88,DIEPPE UC TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,58
-88,DIEPPE UC TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,58
-88,DIEPPE UC TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,58
-89,AL Gondecourt TT (ALGTT),Butterfly,15.0,Remises club 15% - Butterfly,4049,2
-89,AL Gondecourt TT (ALGTT),Butterfly,7.0,Remises club 7% - Butterfly,7970,2
-89,AL Gondecourt TT (ALGTT),Butterfly,5.0,Remises club 5% - Butterfly,7969,2
-89,AL Gondecourt TT (ALGTT),Dandoy,20.0,Remises club 20% - Dandoy,4048,2
-90,TTV Papendrecht,Butterfly,10.0,Remises club 10% - Butterfly,4226,1
-90,TTV Papendrecht,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-91,TTV Swift Deventer,Butterfly,10.0,Remises club 10% - Butterfly,4226,2
-91,TTV Swift Deventer,Dandoy,15.0,Remises club 15% - Dandoy,3983,2
-92,TTV Amstelveen,Butterfly,10.0,Remises club 10% - Butterfly,4226,1
-92,TTV Amstelveen,Dandoy,15.0,Remises club 15% - Dandoy,3983,1
-93,TOULON LA SEYNE TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,0
-93,TOULON LA SEYNE TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,0
-93,TOULON LA SEYNE TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,0
-93,TOULON LA SEYNE TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,0
-94,TT Venizel,Dandoy,20.0,Remises club 20% - Dandoy,4048,0
-95,SC Morée TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,0
-95,SC Morée TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,0
-95,SC Morée TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,0
-95,SC Morée TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,0
-96,DT Houwald,Dandoy,15.0,Remises club 15% - Dandoy,3983,0
+group_id,club_name,brand,discount_pct,magento_rule,rule_id,nb_clients,catalog_effective_pct,catalog_name
+7,Raquette Club Briec,Butterfly,10.0,Remises club 10% - Butterfly,4226,6,10.0,Butterfly — Club 10%
+7,Raquette Club Briec,Dandoy,20.0,Remises club 20% - Dandoy,4048,6,20.0,Dandoy — Club 20%
+8,Royal Mickey Falisolle,Dandoy,15.0,Remises club 15% - Dandoy,3983,76,15.0,Dandoy — Club 15%
+10,Sofiane Boukoula,Butterfly,15.0,Remises club 15% - Butterfly,4049,1,15.0,Butterfly — Club 15%
+10,Sofiane Boukoula,Nominatif,30.0,Sofiane Boukoula,5695,1,30.0,"Dandoy — Compte nominatif (cas particulier, hors catalog standard)"
+11,TTV Hasselt United,Butterfly,15.0,Remises club 15% - Butterfly,4049,2,15.0,Butterfly — Club 15%
+11,TTV Hasselt United,Dandoy,15.0,Remises club 15% - Dandoy,3983,2,15.0,Dandoy — Club 15%
+12,CP Montois,Butterfly,15.0,Remises club 15% - Butterfly,4049,215,15.0,Butterfly — Club 15%
+12,CP Montois,Dandoy,20.0,Remises club 20% - Dandoy,4048,215,20.0,Dandoy — Club 20%
+13,TTC Deinze,Butterfly,15.0,Remises club 15% - Butterfly,4049,4,15.0,Butterfly — Club 15%
+13,TTC Deinze,Dandoy,15.0,Remises club 15% - Dandoy,3983,4,15.0,Dandoy — Club 15%
+14,TT Progress,Butterfly,15.0,Remises club 15% - Butterfly,4049,414,15.0,Butterfly — Club 15%
+14,TT Progress,Dandoy,15.0,Remises club 15% - Dandoy,3983,414,15.0,Dandoy — Club 15%
+16,TT Dorlisheim,Butterfly,15.0,Remises club 15% - Butterfly,4049,2,15.0,Butterfly — Club 15%
+16,TT Dorlisheim,Dandoy,15.0,Remises club 15% - Dandoy,3983,2,15.0,Dandoy — Club 15%
+17,TTC Hamme,Butterfly,15.0,Remises club 15% - Butterfly,4049,272,15.0,Butterfly — Club 15%
+17,TTC Hamme,Dandoy,15.0,Remises club 15% - Dandoy,3983,272,15.0,Dandoy — Club 15%
+18,Esperance Ledomienne,Butterfly,15.0,Remises club 15% - Butterfly,4049,130,15.0,Butterfly — Club 15%
+18,Esperance Ledomienne,Dandoy,20.0,Remises club 20% - Dandoy,4048,130,20.0,Dandoy — Club 20%
+19,Estaines La Gorgue Merville,Butterfly,15.0,Remises club 15% - Butterfly,4049,2,15.0,Butterfly — Club 15%
+19,Estaines La Gorgue Merville,Dandoy,20.0,Remises club 20% - Dandoy,4048,2,20.0,Dandoy — Club 20%
+20,SAINT DIDIER CHATEAUBOURG TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,100,24.9,Butterfly — Club Premium
+20,SAINT DIDIER CHATEAUBOURG TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,100,24.9,Butterfly — Club Premium
+20,SAINT DIDIER CHATEAUBOURG TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,100,24.9,Butterfly — Club Premium
+20,SAINT DIDIER CHATEAUBOURG TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,100,20.0,Dandoy — Club 20%
+21,TT Brenne Le Blanc,Dandoy,20.0,Remises club 20% - Dandoy,4048,1,20.0,Dandoy — Club 20%
+22,VARCES VIF Tennis De Table,Butterfly,15.0,Remises club 15% - Butterfly,4049,51,15.0,Butterfly — Club 15%
+22,VARCES VIF Tennis De Table,Dandoy,20.0,Remises club 20% - Dandoy,4048,51,20.0,Dandoy — Club 20%
+23,CTT Buire,Butterfly,15.0,Remises club 15% - Butterfly,4049,4,15.0,Butterfly — Club 15%
+23,CTT Buire,Dandoy,20.0,Remises club 20% - Dandoy,4048,4,20.0,Dandoy — Club 20%
+24,Club Pongiste Yvetotais,Dandoy,20.0,Remises club 20% - Dandoy,4048,144,20.0,Dandoy — Club 20%
+25,AS VILLEREST TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,96,20.0,Dandoy — Club 20%
+26,TT Monestier de Clermont,Dandoy,20.0,Remises club 20% - Dandoy,4048,1,20.0,Dandoy — Club 20%
+27,Piranha Tennis de Table,Butterfly,10.0,Remises club 10% - Butterfly,4226,156,10.0,Butterfly — Club 10%
+27,Piranha Tennis de Table,Dandoy,15.0,Remises club 15% - Dandoy,3983,156,15.0,Dandoy — Club 15%
+28,PPC TAGNON,Butterfly,15.0,Remises club 15% - Butterfly,4049,5,15.0,Butterfly — Club 15%
+28,PPC TAGNON,Dandoy,20.0,Remises club 20% - Dandoy,4048,5,20.0,Dandoy — Club 20%
+29,TT JOUE LES TOURS,Dandoy,20.0,Remises club 20% - Dandoy,4048,9,20.0,Dandoy — Club 20%
+29,TT JOUE LES TOURS,STIGA (addition),6.25,Remise club 5% addition STIGA,5331,9,6.25,"Dandoy — STIGA addition (cas particulier, hors catalog standard)"
+30,AL NERAC TENNIS DE TABLE,Dandoy,20.0,Remises club 20% - Dandoy,4048,1,20.0,Dandoy — Club 20%
+31,LA RAQUETTE CHAUMONTOISE,Butterfly,15.0,Remises club 15% - Butterfly,4049,2,15.0,Butterfly — Club 15%
+31,LA RAQUETTE CHAUMONTOISE,Dandoy,20.0,Remises club 20% - Dandoy,4048,2,20.0,Dandoy — Club 20%
+32,Effekt‘74,Butterfly,10.0,Remises club 10% - Butterfly,4226,36,10.0,Butterfly — Club 10%
+32,Effekt‘74,Dandoy,15.0,Remises club 15% - Dandoy,3983,36,15.0,Dandoy — Club 15%
+33,HTC Hoofddorp,Butterfly,10.0,Remises club 10% - Butterfly,4226,32,10.0,Butterfly — Club 10%
+33,HTC Hoofddorp,Dandoy,15.0,Remises club 15% - Dandoy,3983,32,15.0,Dandoy — Club 15%
+34,Vivier au court,Butterfly,15.0,Remises club 15% - Butterfly,4049,3,15.0,Butterfly — Club 15%
+34,Vivier au court,Dandoy,20.0,Remises club 20% - Dandoy,4048,3,20.0,Dandoy — Club 20%
+35,Tafeltennis Zwolle,Butterfly,10.0,Remises club 10% - Butterfly,4226,68,10.0,Butterfly — Club 10%
+35,Tafeltennis Zwolle,Dandoy,15.0,Remises club 15% - Dandoy,3983,68,15.0,Dandoy — Club 15%
+36,EBS - Etoile Basse Sambre,Butterfly,10.0,Remises club 10% - Butterfly,4226,2,10.0,Butterfly — Club 10%
+36,EBS - Etoile Basse Sambre,Dandoy,15.0,Remises club 15% - Dandoy,3983,2,15.0,Dandoy — Club 15%
+37,The Victory Weesp,Butterfly,10.0,Remises club 10% - Butterfly,4226,22,10.0,Butterfly — Club 10%
+37,The Victory Weesp,Dandoy,15.0,Remises club 15% - Dandoy,3983,22,15.0,Dandoy — Club 15%
+38,TTV Avanti,Butterfly,10.0,Remises club 10% - Butterfly,4226,2,10.0,Butterfly — Club 10%
+38,TTV Avanti,Dandoy,15.0,Remises club 15% - Dandoy,3983,2,15.0,Dandoy — Club 15%
+39,Tielse TC,Butterfly,10.0,Remises club 10% - Butterfly,4226,10,10.0,Butterfly — Club 10%
+39,Tielse TC,Dandoy,15.0,Remises club 15% - Dandoy,3983,10,15.0,Dandoy — Club 15%
+40,TTV Kwiek,Butterfly,10.0,Remises club 10% - Butterfly,4226,10,10.0,Butterfly — Club 10%
+40,TTV Kwiek,Dandoy,15.0,Remises club 15% - Dandoy,3983,10,15.0,Dandoy — Club 15%
+41,ONI Wijchen,Butterfly,10.0,Remises club 10% - Butterfly,4226,14,10.0,Butterfly — Club 10%
+41,ONI Wijchen,Dandoy,15.0,Remises club 15% - Dandoy,3983,14,15.0,Dandoy — Club 15%
+42,TTV Never Despair,Butterfly,10.0,Remises club 10% - Butterfly,4226,10,10.0,Butterfly — Club 10%
+42,TTV Never Despair,Dandoy,15.0,Remises club 15% - Dandoy,3983,10,15.0,Dandoy — Club 15%
+43,PPC ST Mihiel,Butterfly,15.0,Remises club 15% - Butterfly,4049,117,15.0,Butterfly — Club 15%
+43,PPC ST Mihiel,Dandoy,20.0,Remises club 20% - Dandoy,4048,117,20.0,Dandoy — Club 20%
+44,Treffers Arnhem,Butterfly,10.0,Remises club 10% - Butterfly,4226,29,10.0,Butterfly — Club 10%
+44,Treffers Arnhem,Dandoy,15.0,Remises club 15% - Dandoy,3983,29,15.0,Dandoy — Club 15%
+45,TT BEAUVAL,Butterfly,15.0,Remises club 15% - Butterfly,4049,2,15.0,Butterfly — Club 15%
+45,TT BEAUVAL,Dandoy,20.0,Remises club 20% - Dandoy,4048,2,20.0,Dandoy — Club 20%
+46,APB OUTREAU,Butterfly,15.0,Remises club 15% - Butterfly,4049,165,15.0,Butterfly — Club 15%
+46,APB OUTREAU,Dandoy,20.0,Remises club 20% - Dandoy,4048,165,20.0,Dandoy — Club 20%
+47,TT MERLIMONT,Butterfly,15.0,Remises club 15% - Butterfly,4049,26,15.0,Butterfly — Club 15%
+47,TT MERLIMONT,Dandoy,20.0,Remises club 20% - Dandoy,4048,26,20.0,Dandoy — Club 20%
+48,TT SAILLY SUR LA LYS,Butterfly,15.0,Remises club 15% - Butterfly,4049,3,15.0,Butterfly — Club 15%
+48,TT SAILLY SUR LA LYS,Dandoy,20.0,Remises club 20% - Dandoy,4048,3,20.0,Dandoy — Club 20%
+49,CTT Perwez,Butterfly,15.0,Remises club 15% - Butterfly,4049,202,15.0,Butterfly — Club 15%
+49,CTT Perwez,Dandoy,15.0,Remises club 15% - Dandoy,3983,202,15.0,Dandoy — Club 15%
+50,CAJ-MIR Saint-Ghislain,Butterfly,15.0,Remises club 15% - Butterfly,4049,23,15.0,Butterfly — Club 15%
+50,CAJ-MIR Saint-Ghislain,Dandoy,15.0,Remises club 15% - Dandoy,3983,23,15.0,Dandoy — Club 15%
+51,KTTC Metor Bree,Butterfly,15.0,Remises club 15% - Butterfly,4049,2,15.0,Butterfly — Club 15%
+51,KTTC Metor Bree,Dandoy,15.0,Remises club 15% - Dandoy,3983,2,15.0,Dandoy — Club 15%
+52,TT BARR,Butterfly,15.0,Remises club 15% - Butterfly,4049,23,15.0,Butterfly — Club 15%
+52,TT BARR,Dandoy,20.0,Remises club 20% - Dandoy,4048,23,20.0,Dandoy — Club 20%
+53,UTL Rossfeld,Butterfly,15.0,Remises club 15% - Butterfly,4049,150,15.0,Butterfly — Club 15%
+53,UTL Rossfeld,Dandoy,20.0,Remises club 20% - Dandoy,4048,150,20.0,Dandoy — Club 20%
+54,CTT ALPA,Butterfly,15.0,Remises club 15% - Butterfly,4049,262,15.0,Butterfly — Club 15%
+54,CTT ALPA,Dandoy,15.0,Remises club 15% - Dandoy,3983,262,15.0,Dandoy — Club 15%
+55,Amicale Lunévilloise TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,45,15.0,Butterfly — Club 15%
+55,Amicale Lunévilloise TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,45,20.0,Dandoy — Club 20%
+56,PPC MONTCY,Butterfly,15.0,Remises club 15% - Butterfly,4049,114,15.0,Butterfly — Club 15%
+56,PPC MONTCY,Dandoy,20.0,Remises club 20% - Dandoy,4048,114,20.0,Dandoy — Club 20%
+57,CORCY TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,22,20.0,Dandoy — Club 20%
+58,TT HUNINGUE,Butterfly,15.0,Remises club 15% - Butterfly,4049,66,15.0,Butterfly — Club 15%
+58,TT HUNINGUE,Dandoy,20.0,Remises club 20% - Dandoy,4048,66,20.0,Dandoy — Club 20%
+59,ASTT GLAIRE,Butterfly,15.0,Remises club 15% - Butterfly,4049,42,15.0,Butterfly — Club 15%
+59,ASTT GLAIRE,Dandoy,20.0,Remises club 20% - Dandoy,4048,42,20.0,Dandoy — Club 20%
+60,CTT Nouzonville,Butterfly,15.0,Remises club 15% - Butterfly,4049,3,15.0,Butterfly — Club 15%
+60,CTT Nouzonville,Dandoy,20.0,Remises club 20% - Dandoy,4048,3,20.0,Dandoy — Club 20%
+61,David Levalois,Butterfly,15.0,Remises club 15% - Butterfly,4049,1,15.0,Butterfly — Club 15%
+62,MOREZ TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,1,20.0,Dandoy — Club 20%
+62,MOREZ TT,STIGA (addition),6.25,Remise club 5% addition STIGA,5331,1,6.25,"Dandoy — STIGA addition (cas particulier, hors catalog standard)"
+63,CERCLE ST MAURICE ORSCHWILLER,Butterfly,15.0,Remises club 15% - Butterfly,4049,32,15.0,Butterfly — Club 15%
+63,CERCLE ST MAURICE ORSCHWILLER,Dandoy,20.0,Remises club 20% - Dandoy,4048,32,20.0,Dandoy — Club 20%
+64,BTTV Elaan,Butterfly,15.0,Remises club 15% - Butterfly,4049,4,15.0,Butterfly — Club 15%
+64,BTTV Elaan,Dandoy,15.0,Remises club 15% - Dandoy,3983,4,15.0,Dandoy — Club 15%
+65,TTV Cevelum,Butterfly,15.0,Remises club 15% - Butterfly,4049,8,15.0,Butterfly — Club 15%
+65,TTV Cevelum,Dandoy,15.0,Remises club 15% - Dandoy,3983,8,15.0,Dandoy — Club 15%
+66,TTV DOV,Butterfly,15.0,Remises club 15% - Butterfly,4049,16,15.0,Butterfly — Club 15%
+66,TTV DOV,Dandoy,15.0,Remises club 15% - Dandoy,3983,16,15.0,Dandoy — Club 15%
+67,TTV Red Stars,Butterfly,15.0,Remises club 15% - Butterfly,4049,1,15.0,Butterfly — Club 15%
+68,TT Colmar,Butterfly,15.0,Remises club 15% - Butterfly,4049,3,15.0,Butterfly — Club 15%
+68,TT Colmar,Dandoy,20.0,Remises club 20% - Dandoy,4048,3,20.0,Dandoy — Club 20%
+69,TT Landrecien,Butterfly,15.0,Remises club 15% - Butterfly,4049,10,15.0,Butterfly — Club 15%
+69,TT Landrecien,Dandoy,20.0,Remises club 20% - Dandoy,4048,10,20.0,Dandoy — Club 20%
+70,UTTC,Butterfly,10.0,Remises club 10% - Butterfly,4226,1,10.0,Butterfly — Club 10%
+70,UTTC,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+71,Royale Palette Hellebecquoise,Butterfly,15.0,Remises club 15% - Butterfly,4049,72,15.0,Butterfly — Club 15%
+71,Royale Palette Hellebecquoise,Dandoy,15.0,Remises club 15% - Dandoy,3983,72,15.0,Dandoy — Club 15%
+72,Royal Andenne TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,66,15.0,Butterfly — Club 15%
+72,Royal Andenne TT,Dandoy,15.0,Remises club 15% - Dandoy,3983,66,15.0,Dandoy — Club 15%
+73,Smash'23,Butterfly,10.0,Remises club 10% - Butterfly,4226,4,10.0,Butterfly — Club 10%
+73,Smash'23,Dandoy,15.0,Remises club 15% - Dandoy,3983,4,15.0,Dandoy — Club 15%
+74,VTV Nieuwegein,Butterfly,10.0,Remises club 10% - Butterfly,4226,4,10.0,Butterfly — Club 10%
+74,VTV Nieuwegein,Dandoy,15.0,Remises club 15% - Dandoy,3983,4,15.0,Dandoy — Club 15%
+75,VDO,Butterfly,10.0,Remises club 10% - Butterfly,4226,1,10.0,Butterfly — Club 10%
+75,VDO,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+76,DTS Enschede,Butterfly,10.0,Remises club 10% - Butterfly,4226,1,10.0,Butterfly — Club 10%
+76,DTS Enschede,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+77,TTV SVE,Butterfly,10.0,Remises club 10% - Butterfly,4226,2,10.0,Butterfly — Club 10%
+77,TTV SVE,Dandoy,20.0,Remises club 20% - Dandoy,4048,2,20.0,Dandoy — Club 20%
+78,ATC Almere,Butterfly,10.0,Remises club 10% - Butterfly,4226,1,10.0,Butterfly — Club 10%
+78,ATC Almere,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+79,CTT CHAMP D'EN HAUT,Butterfly,15.0,Remises club 15% - Butterfly,4049,1,15.0,Butterfly — Club 15%
+79,CTT CHAMP D'EN HAUT,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+80,TTV Reflex Maarn,Butterfly,10.0,Remises club 10% - Butterfly,4226,8,10.0,Butterfly — Club 10%
+80,TTV Reflex Maarn,Dandoy,15.0,Remises club 15% - Dandoy,3983,8,15.0,Dandoy — Club 15%
+81,ZTTC,Butterfly,10.0,Remises club 10% - Butterfly,4226,2,10.0,Butterfly — Club 10%
+81,ZTTC,Dandoy,15.0,Remises club 15% - Dandoy,3983,2,15.0,Dandoy — Club 15%
+82,CTT FRAMERIES,Butterfly,15.0,Remises club 15% - Butterfly,4049,103,15.0,Butterfly — Club 15%
+82,CTT FRAMERIES,Dandoy,15.0,Remises club 15% - Dandoy,3983,103,15.0,Dandoy — Club 15%
+83,Preures Longfosse TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,54,15.0,Butterfly — Club 15%
+83,Preures Longfosse TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,54,20.0,Dandoy — Club 20%
+84,Trainer,Dandoy,20.0,Remises club 20% - Dandoy,4048,0,20.0,Dandoy — Club 20%
+85,TTC And Leie,Butterfly,15.0,Remises club 15% - Butterfly,4049,8,15.0,Butterfly — Club 15%
+85,TTC And Leie,Dandoy,15.0,Remises club 15% - Dandoy,3983,8,15.0,Dandoy — Club 15%
+86,TTV EDE,Butterfly,10.0,Remises club 10% - Butterfly,4226,6,10.0,Butterfly — Club 10%
+86,TTV EDE,Dandoy,15.0,Remises club 15% - Dandoy,3983,6,15.0,Dandoy — Club 15%
+87,TTV Shot Soest,Butterfly,10.0,Remises club 10% - Butterfly,4226,1,10.0,Butterfly — Club 10%
+87,TTV Shot Soest,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+88,DIEPPE UC TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,58,24.9,Butterfly — Club Premium
+88,DIEPPE UC TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,58,24.9,Butterfly — Club Premium
+88,DIEPPE UC TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,58,24.9,Butterfly — Club Premium
+88,DIEPPE UC TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,58,20.0,Dandoy — Club 20%
+89,AL Gondecourt TT (ALGTT),Butterfly,15.0,Remises club 15% - Butterfly,4049,2,24.9,Butterfly — Club Premium
+89,AL Gondecourt TT (ALGTT),Butterfly,7.0,Remises club 7% - Butterfly,7970,2,24.9,Butterfly — Club Premium
+89,AL Gondecourt TT (ALGTT),Butterfly,5.0,Remises club 5% - Butterfly,7969,2,24.9,Butterfly — Club Premium
+89,AL Gondecourt TT (ALGTT),Dandoy,20.0,Remises club 20% - Dandoy,4048,2,20.0,Dandoy — Club 20%
+90,TTV Papendrecht,Butterfly,10.0,Remises club 10% - Butterfly,4226,1,10.0,Butterfly — Club 10%
+90,TTV Papendrecht,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+91,TTV Swift Deventer,Butterfly,10.0,Remises club 10% - Butterfly,4226,2,10.0,Butterfly — Club 10%
+91,TTV Swift Deventer,Dandoy,15.0,Remises club 15% - Dandoy,3983,2,15.0,Dandoy — Club 15%
+92,TTV Amstelveen,Butterfly,10.0,Remises club 10% - Butterfly,4226,1,10.0,Butterfly — Club 10%
+92,TTV Amstelveen,Dandoy,15.0,Remises club 15% - Dandoy,3983,1,15.0,Dandoy — Club 15%
+93,TOULON LA SEYNE TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,0,24.9,Butterfly — Club Premium
+93,TOULON LA SEYNE TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,0,24.9,Butterfly — Club Premium
+93,TOULON LA SEYNE TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,0,24.9,Butterfly — Club Premium
+93,TOULON LA SEYNE TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,0,20.0,Dandoy — Club 20%
+94,TT Venizel,Dandoy,20.0,Remises club 20% - Dandoy,4048,0,20.0,Dandoy — Club 20%
+95,SC Morée TT,Butterfly,15.0,Remises club 15% - Butterfly,4049,0,24.9,Butterfly — Club Premium
+95,SC Morée TT,Butterfly,7.0,Remises club 7% - Butterfly,7970,0,24.9,Butterfly — Club Premium
+95,SC Morée TT,Butterfly,5.0,Remises club 5% - Butterfly,7969,0,24.9,Butterfly — Club Premium
+95,SC Morée TT,Dandoy,20.0,Remises club 20% - Dandoy,4048,0,20.0,Dandoy — Club 20%
+96,DT Houwald,Dandoy,15.0,Remises club 15% - Dandoy,3983,0,15.0,Dandoy — Club 15%
