@@ -30,16 +30,16 @@ Sources : `01_DATA_RAW/export_customer.csv` (`group_id`), `01_DATA_RAW/customer_
 - **88 des 93 groupes ont une remise club permanente, automatique** (Cart Price Rule
   `coupon_type=1`, sans code, sans date de fin) :
 
-| Règle Magento | Taux | Portée | # clubs |
-|---|---|---|---|
-| `Remises club 20% - Dandoy` | 20 % | Dandoy | 41 |
-| `Remises club 15% - Dandoy` | 15 % | Dandoy | 44 |
-| `Remises club 15% - Butterfly` | 15 % | Butterfly | 49 (dont 5 cumulent aussi 5 % + 7 %, voir ci-dessous) |
-| `Remises club 10% - Butterfly` | 10 % | Butterfly | 27 |
-| `Remises club 7% - Butterfly` | 7 % | Butterfly | 5 (groupes 20/88/89/93/95 — `website_id=4`/BE uniquement, pas NL) |
-| `Remises club 5% - Butterfly` | 5 % | Butterfly | 5 (mêmes 5 clubs que ci-dessus) |
-| `Remise club 5% addition STIGA` | 6,25 % | Produits STIGA uniquement | 2 (groupes 29, 62) |
-| `Sofiane Boukoula` | 30 % | Nominatif | 1 client |
+| Règle Magento | Taux | Catégories couvertes | Exclusions SKU | Portée | # clubs |
+|---|---|---|---|---|---|
+| `Remises club 20% - Dandoy` | 20 % | Rubbers, Blades, Rackets, Clothing, Shoes, Luggages, Padel | 28 | Dandoy | 41 |
+| `Remises club 15% - Dandoy` | 15 % | Rubbers, Blades, Rackets, Clothing, Shoes, Luggages, Padel | 28 | Dandoy | 44 |
+| `Remises club 15% - Butterfly` | 15 % | Clothing, Shoes, Luggages | 0 | Butterfly | 49 (dont 5 cumulent aussi 5 % + 7 %, voir ci-dessous) |
+| `Remises club 10% - Butterfly` | 10 % | Clothing, Shoes, Luggages | 0 | Butterfly | 27 |
+| `Remises club 7% - Butterfly` | 7 % | Robots | 0 | Butterfly | 5 (groupes 20/88/89/93/95 — `website_id=4`/BE uniquement, pas NL) |
+| `Remises club 5% - Butterfly` | 5 % | Rubbers, Blades, Glue, Cleaners | 5 | Butterfly | 5 (mêmes 5 clubs que ci-dessus) |
+| `Remise club 5% addition STIGA` | 6,25 % | Rubbers, Blades, Clothing, Shoes, Luggages, Padel | 0 | Dandoy | 2 (groupes 29, 62) |
+| `Sofiane Boukoula` | 30 % | Rubbers, Blades, Rackets, Clothing, Shoes, Luggages, Padel | 0 | Nominatif (Dandoy) | 1 client |
 
 **Points clés :**
 - Le taux **diffère selon la marque** pour un même club (17 clubs ont un taux Dandoy ET
@@ -47,11 +47,21 @@ Sources : `01_DATA_RAW/export_customer.csv` (`group_id`), `01_DATA_RAW/customer_
 - Ces remises club **s'additionnent** aux paliers panier génériques (`5% apd 50€`, etc.,
   eux aussi permanents et automatiques) — ce qui explique le taux de remise moyen assez
   homogène (~20-27 %) observé en analysant `export_order_all_2025_2026.csv` par groupe.
-- **Les règles club elles-mêmes s'empilent entre elles** : toutes ont
-  `stop_rules_processing=0`, donc pour les 5 clubs Butterfly avec 15 %+5 %+7 %, le taux
-  effectif combiné est **~24,9 %** (calcul multiplicatif séquentiel : `1-(0,85×0,95×0,93)`,
-  à confirmer sur une commande réelle avant de figer le taux du catalog Shopify — Magento
-  applique peut-être un cumul additif selon sa config exacte).
+- **Aucune règle club n'est une remise plate sur tout le panier.** Chacune restreint son
+  action à des catégories précises (`category_ids` dans `actions_serialized`), et les deux
+  règles Dandoy (`3983`, `4048`) excluent en plus 28 SKU parents spécifiques. Vérifié via
+  jointure avec `01_DATA_RAW/catalog_category.csv` (export `catalog_category_entity` +
+  attribut `name`).
+- **Butterfly est fortement segmenté par catégorie**, pas juste par taux : le tier
+  15 %/10 % ne couvre QUE Clothing/Shoes/Luggages ; le "+5 %" des 5 clubs Premium ne
+  s'applique QUE sur Rubbers/Blades/Glue/Cleaners ; le "+7 %" ne s'applique QUE sur Robots.
+  **Ce ne sont pas 3 taux qui se cumulent en un seul pourcentage — ce sont 3 remises
+  indépendantes sur 3 familles de produits différentes**, actives simultanément sur la même
+  commande mais jamais sur les mêmes lignes. (Correction par rapport à une estimation
+  précédente qui parlait à tort d'un taux combiné ~24,9 % sur tout le panier.)
+- Dandoy est plus généraliste (7 catégories, presque tout le catalogue produit) avec
+  seulement des exclusions SKU ponctuelles — pas de segmentation par famille comme
+  Butterfly.
 - Aucune donnée de **tier price par produit** (`catalog_product_entity_tier_price`) n'a
   été trouvée dans l'export produits — les remises sont uniquement au niveau panier/%,
   pas de grille tarifaire produit par produit à ce stade.
@@ -62,16 +72,16 @@ Sources : `01_DATA_RAW/export_customer.csv` (`group_id`), `01_DATA_RAW/customer_
 
 ### Référence — rule_id des 8 règles club
 
-| rule_id | Nom | Catalog Shopify cible |
-|---|---|---|
-| `3983` | Remises club 15% - Dandoy | `Dandoy — Club 15%` |
-| `4048` | Remises club 20% - Dandoy | `Dandoy — Club 20%` |
-| `4049` | Remises club 15% - Butterfly | `Butterfly — Club 15%` |
-| `4226` | Remises club 10% - Butterfly | `Butterfly — Club 10%` |
-| `7969` | Remises club 5% - Butterfly | `Butterfly — Club Premium` (cumulée) |
-| `7970` | Remises club 7% - Butterfly | `Butterfly — Club Premium` (cumulée) |
-| `5331` | Remise club 5% addition STIGA | cas particulier (hors catalog standard) |
-| `5695` | Sofiane Boukoula | cas particulier (hors catalog standard) |
+| rule_id | Nom | Catégories | Catalog Shopify cible |
+|---|---|---|---|
+| `3983` | Remises club 15% - Dandoy | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | `Dandoy — Club 15%` |
+| `4048` | Remises club 20% - Dandoy | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | `Dandoy — Club 20%` |
+| `4049` | Remises club 15% - Butterfly | Clothing/Shoes/Luggages | `Butterfly — Clothing/Shoes/Luggages 15%` |
+| `4226` | Remises club 10% - Butterfly | Clothing/Shoes/Luggages | `Butterfly — Clothing/Shoes/Luggages 10%` |
+| `7969` | Remises club 5% - Butterfly | Rubbers/Blades/Glue/Cleaners | `Butterfly — Rubbers/Blades/Glue/Cleaners 5%` |
+| `7970` | Remises club 7% - Butterfly | Robots | `Butterfly — Robots 7%` |
+| `5331` | Remise club 5% addition STIGA | Rubbers/Blades/Clothing/Shoes/Luggages/Padel | cas particulier (hors catalog standard) |
+| `5695` | Sofiane Boukoula | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | cas particulier (hors catalog standard) |
 
 ### Référence — paliers panier génériques (13 règles, tous plans/groupes confondus)
 
@@ -168,24 +178,32 @@ scopée sur le segment) a été écartée après comparaison :
   tags+segments maintenant serait du travail à refaire si le client valide ces pistes.
 - Net terms et Companies sont natifs sur tous les plans désormais — l'argument "Basic ne
   peut pas" ne tient plus.
-- Seule limite réelle à surveiller côté Butterfly : **3 catalogues actifs max**. En
-  recomptant les taux réels (15 %, 10 %, et le palier cumulé ~24,9 % pour 5 clubs), ça
-  tient exactement en 3 catalogues — mais toute règle supplémentaire à l'avenir dépassera
-  cette limite.
+- ⚠️ **Correction (19 août 2026) : la limite de 3 catalogues actifs sur Butterfly (Basic)
+  ne tient plus.** Le calcul précédent supposait un taux unique combiné (~24,9 %) pour les
+  5 clubs Premium. Or les 3 règles concernées (15 %, 5 %, 7 %) portent sur des **familles de
+  produits différentes** (Clothing/Shoes/Luggages, Rubbers/Blades/Glue/Cleaners, Robots) —
+  pour une fidélité complète, Butterfly a besoin de **4 catalogs distincts**, pas 3
+  (voir liste ci-dessous), ce qui **dépasse la limite Basic**. Décision à prendre avec le
+  client (voir [§4](#4-ouvert--à-valider-avec-le-client)) : simplifier (fusionner
+  Rubbers/Blades/Glue/Cleaners + Robots dans le catalog Clothing/Shoes/Luggages existant,
+  au prix d'une perte de fidélité sur ces 5 clubs) ou passer ces 5 companies sur un plan
+  supérieur.
 
-### Liste des Catalogs à créer (14 août 2026)
+### Liste des Catalogs à créer (mise à jour 19 août 2026)
 
-| Boutique | Catalog | Remise | # clubs |
-|---|---|---|---|
-| Dandoy-Sports | `Dandoy — Club 20%` | 20 % | 41 |
-| Dandoy-Sports | `Dandoy — Club 15%` | 15 % | 44 |
-| Butterfly TT | `Butterfly — Club 15%` | 15 % | 44 |
-| Butterfly TT | `Butterfly — Club 10%` | 10 % | 27 |
-| Butterfly TT | `Butterfly — Club Premium` | ~24,9 % (15 %+5 %+7 % cumulés, à confirmer) | 5 |
+| Boutique | Catalog | Remise | Catégories | # clubs |
+|---|---|---|---|---|
+| Dandoy-Sports | `Dandoy — Club 20%` | 20 % | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | 41 |
+| Dandoy-Sports | `Dandoy — Club 15%` | 15 % | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | 44 |
+| Butterfly TT | `Butterfly — Clothing/Shoes/Luggages 15%` | 15 % | Clothing, Shoes, Luggages | 49 |
+| Butterfly TT | `Butterfly — Clothing/Shoes/Luggages 10%` | 10 % | Clothing, Shoes, Luggages | 27 |
+| Butterfly TT | `Butterfly — Rubbers/Blades/Glue/Cleaners 5%` | 5 % | Rubbers, Blades, Glue, Cleaners | 5 |
+| Butterfly TT | `Butterfly — Robots 7%` | 7 % | Robots | 5 |
 
-**5 catalogs standards** (2 Dandoy + 3 Butterfly). Les deux cas particuliers (STIGA
-addition, compte nominatif Boukoula) restent **hors de cette liste** — à trancher avec le
-client avant de décider s'ils méritent un catalog dédié ou un traitement manuel.
+**6 catalogs standards** (2 Dandoy + 4 Butterfly). Dandoy (Plus, illimité) n'a aucun
+problème. **Butterfly (Basic, max 3) dépasse la limite avec 4 catalogs** — voir décision à
+prendre en §4. Les deux cas particuliers (STIGA addition, compte nominatif Boukoula)
+restent **hors de cette liste** — à trancher séparément.
 
 ### Import en masse via Matrixify
 
@@ -240,12 +258,14 @@ ajouter à `regenerate_all.sh` et à l'ordre d'import Matrixify de `CLAUDE.md` (
 ## 3. Mapping des 88 clubs (group_id → nom → taux)
 
 Généré dans `02_ANALYSIS_AND_MAPPING/club_discount_mapping.csv` (174 lignes — une ligne par
-club × règle Magento, donc plusieurs lignes par club quand plusieurs règles s'empilent, ex.
-les 5 clubs Butterfly Premium) depuis `cart_price_rules.csv` + `customer_group.csv`.
-Colonnes : `group_id`, `club_name`, `brand`, `discount_pct` (taux de la règle individuelle),
-`magento_rule`, `rule_id`, `nb_clients`, `catalog_effective_pct` (taux combiné une fois
-toutes les règles du groupe empilées), `catalog_name` (catalog Shopify cible — voir
-[liste des Catalogs](#liste-des-catalogs-à-créer-14-août-2026)).
+club × règle Magento, donc plusieurs lignes par club quand plusieurs règles s'appliquent, ex.
+les 5 clubs Butterfly Premium ont 3 lignes) depuis `cart_price_rules.csv` +
+`customer_group.csv` + `catalog_category.csv`. Colonnes : `group_id`, `club_name`, `brand`,
+`discount_pct`, `magento_rule`, `rule_id`, `nb_clients`, `categories` (familles de produits
+couvertes par la règle), `sku_exclusions` (nombre de SKU exclus), `catalog_effective_pct`
+(= `discount_pct`, une ligne = une règle = un catalog, plus de notion de taux combiné —
+voir correction en §2), `catalog_name` (catalog Shopify cible — voir
+[liste des Catalogs](#liste-des-catalogs-à-créer-mise-à-jour-19-août-2026)).
 
 Sert de base au futur `generate_companies.py` (une Company par club, un Catalog/Price list
 par palier de remise et par boutique). Contient des noms de clients réels — gitignoré comme
@@ -259,6 +279,7 @@ les autres exports bruts, pas dans les fichiers `_sample_*.csv` versionnés.
 
 | Sujet | Statut |
 |---|---|
+| **Butterfly dépasse la limite de 3 catalogs (Basic)** | 4 catalogs nécessaires pour une fidélité complète (voir [liste](#liste-des-catalogs-à-créer-mise-à-jour-19-août-2026)) — décision à prendre : fusionner 2 catalogs (perte de fidélité sur 5 clubs) ou upgrade de plan |
 | **Table `taux → nom de Catalog`** | En cours — client crée les Catalogs manuellement dans Shopify Admin et fournira les noms |
 | **Colonne Matrixify `Location: Catalogs`** | À confirmer directement dans l'app (absente du fichier demo Companies inspecté) |
 | **Adresse par club** (`Location: Shipping/Billing Address`, `City`, `Zip`, `Country Code`) | Aucune donnée d'adresse club dans les exports Magento (seulement des adresses individuelles de membres) — à demander au client, ou import avec pays seul en attendant complément manuel |
@@ -273,7 +294,7 @@ les autres exports bruts, pas dans les fichiers `_sample_*.csv` versionnés.
 | **Auto-rattachement membre → club** à la création de compte | Aujourd'hui géré via fichier Excel côté client — à voir si B2B Companies (invitation par le club) remplace ce process, ou si l'import initial suffit |
 | **Portail clubs complet** (tableau de bord, historique, statistiques par saison, sponsoring, réservation démos) | Hors périmètre migration — développement complémentaire éventuel, post-migration |
 | **Personnalisation textile par joueur** (taille/prénom/numéro/sponsor) | Existe déjà côté Custom Options (line item properties) — voir [Custom Options](./custom-options.md) — pas besoin de B2B pour ça |
-| **Produits exclusifs clubs/revendeurs** | Faisable via Catalogs B2B, sur les deux boutiques — attention à la limite de 3 catalogues actifs côté Butterfly (Basic) |
+| **Produits exclusifs clubs/revendeurs** | Faisable via Catalogs B2B, sur les deux boutiques — la limite de 3 catalogues actifs côté Butterfly (Basic) est déjà consommée par les remises club (4 nécessaires, voir ci-dessus), donc aucune marge pour un catalog supplémentaire sans upgrade |
 
 ---
 
