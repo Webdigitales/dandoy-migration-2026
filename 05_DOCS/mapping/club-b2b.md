@@ -191,14 +191,14 @@ scopée sur le segment) a été écartée après comparaison :
 
 ### Liste des Catalogs à créer (mise à jour 19 août 2026)
 
-| Boutique | Catalog | Remise | Catégories | # clubs |
-|---|---|---|---|---|
-| Dandoy-Sports | `Dandoy — Club 20%` | 20 % | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | 41 |
-| Dandoy-Sports | `Dandoy — Club 15%` | 15 % | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | 44 |
-| Butterfly TT | `Butterfly — Clothing/Shoes/Luggages 15%` | 15 % | Clothing, Shoes, Luggages | 49 |
-| Butterfly TT | `Butterfly — Clothing/Shoes/Luggages 10%` | 10 % | Clothing, Shoes, Luggages | 27 |
-| Butterfly TT | `Butterfly — Rubbers/Blades/Glue/Cleaners 5%` | 5 % | Rubbers, Blades, Glue, Cleaners | 5 |
-| Butterfly TT | `Butterfly — Robots 7%` | 7 % | Robots | 5 |
+| Boutique | Catalog | Remise | Catégories | # clubs | Statut |
+|---|---|---|---|---|---|
+| Dandoy-Sports | `Dandoy — Club 20%` | 20 % | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | 41 | ✅ Créé (19 août 2026) |
+| Dandoy-Sports | `Dandoy — Club 15%` | 15 % | Rubbers/Blades/Rackets/Clothing/Shoes/Luggages/Padel | 44 | ✅ Créé (19 août 2026) |
+| Butterfly TT | `Butterfly — Clothing/Shoes/Luggages 15%` | 15 % | Clothing, Shoes, Luggages | 49 | À créer — bloqué par la limite 3 catalogs |
+| Butterfly TT | `Butterfly — Clothing/Shoes/Luggages 10%` | 10 % | Clothing, Shoes, Luggages | 27 | À créer — bloqué par la limite 3 catalogs |
+| Butterfly TT | `Butterfly — Rubbers/Blades/Glue/Cleaners 5%` | 5 % | Rubbers, Blades, Glue, Cleaners | 5 | À créer — bloqué par la limite 3 catalogs |
+| Butterfly TT | `Butterfly — Robots 7%` | 7 % | Robots | 5 | À créer — bloqué par la limite 3 catalogs |
 
 **6 catalogs standards** (2 Dandoy + 4 Butterfly). Dandoy (Plus, illimité) n'a aucun
 problème. **Butterfly (Basic, max 3) dépasse la limite avec 4 catalogs** — voir décision à
@@ -230,28 +230,50 @@ Companies**, sinon échec (liaison par email ou ID). Implique l'ordre d'import :
 Aucune restriction de plan Matrixify spécifique aux Companies (Enterprise déjà prévu pour
 le premier mois — largement suffisant pour 88 companies).
 
-#### Catalogs — création manuelle obligatoire
+#### Catalogs — création manuelle obligatoire, contenu à générer
 
-**Matrixify ne peut pas créer de Catalog** (nom, produits, % de remise) — confirmé par le
-tutoriel Matrixify sur le pricing produit par marché/catalog : la création se fait
-uniquement dans Shopify Admin (Settings → B2B / Markets). Une fois le Catalog créé à la
-main avec sa remise en %, Matrixify peut y rattacher des produits et fixer des prix fixes
-par variante (`Included / <Catalog>`, `Price / <Catalog>` sur le sheet Products), mais pas
-poser une règle en pourcentage.
+**Matrixify ne peut pas créer de Catalog** (nom, % de remise) — confirmé par le tutoriel
+Matrixify sur le pricing produit par marché/catalog : la création se fait uniquement dans
+Shopify Admin (Settings → B2B / Markets).
 
-**Décision (14 août 2026) :** le client crée manuellement les Catalogs (un par palier de
-remise × par boutique — 2 pour Dandoy, 3 pour Butterfly, voir §1) et fournit la table
+**Shopify n'offre par ailleurs aucun filtrage par collection/catégorie à la création d'un
+Catalog** (vérifié le 19 août 2026 sur `help.shopify.com/en/manual/b2b/catalogs/creating-catalogs`)
+— seulement deux options : **"All products"** ou **"Specific products"** (sélection
+individuelle par recherche ou import CSV). Il n'y a pas d'équivalent "toutes les
+collections Rubbers+Blades+..." en un clic.
+
+**Conséquence :** le scoping par catégorie qu'on a décodé côté Magento (§1) ne se
+configure pas au niveau du Catalog lui-même — il faut fournir à Matrixify la **liste
+explicite des produits/SKU** à inclure dans chaque Catalog, via la colonne
+`Included / <Catalog>` (et `Price / <Catalog>` si prix fixe) sur le sheet **Products**, pas
+sur le sheet Companies. Ça implique un nouveau step de génération (probablement une
+extension de `magento_to_shopify.py` ou un script dédié) qui :
+1. Filtre `export_magento_products_all.csv` par la colonne `categories` (texte) pour
+   retrouver les produits de chaque famille (Rubbers, Blades, Clothing, etc.) ;
+2. Exclut les 28 SKU parents pour les deux catalogs Dandoy, et les 5 SKU pour
+   `Butterfly — Rubbers/Blades/Glue/Cleaners 5%` ;
+3. Ajoute une colonne `Included / <Catalog>` par catalog cible dans le CSV produits
+   (Dandoy : 2 colonnes, Butterfly : jusqu'à 4).
+
+Ce step est **indépendant de `generate_companies.py`** (qui ne gère que Companies/Locations/
+Contacts) — à traiter comme une deuxième brique du même chantier, pas la même génération.
+
+**Décision (14 août 2026) :** le client crée manuellement les Catalogs vides (un par palier
+de remise × par boutique — 2 pour Dandoy, 4 pour Butterfly, voir §2) et fournit la table
 `taux → nom du Catalog Shopify`. Le rattachement Company → Catalog se fait ensuite via la
-colonne `Location: Catalogs` (nom de colonne indiqué par le client) — **à confirmer** : cette
-colonne n'apparaît pas dans le fichier demo Companies inspecté (43 colonnes listées
-ci-dessus, aucune catalogue) ; il faudra vérifier son existence/format exact directement
-dans l'app Matrixify (peut-être ajoutée depuis, ou disponible sur un sheet distinct) avant
-d'écrire `generate_companies.py`.
+colonne `Location: Catalogs`, dont la valeur est le **nom du catalog** (ex.
+`Dandoy — Club 20%`) — **confirmé le 19 août 2026** dans l'app réelle (absente du fichier
+demo statique inspecté plus tôt, mais bien présente en pratique).
 
-Un nouveau script `generate_companies.py` est à prévoir (généré depuis
-`club_discount_mapping.csv` + la table de correspondance Catalogs fournie par le client), à
-ajouter à `regenerate_all.sh` et à l'ordre d'import Matrixify de `CLAUDE.md` (après
-`shopify_customers_*.csv`, avant les traductions/redirections).
+Les **2 Catalogs Dandoy sont créés** (`Dandoy — Club 20%`, `Dandoy — Club 15%`, noms
+suggérés repris tels quels). Butterfly reste bloqué par la limite de 3 catalogs (§2).
+
+Deux nouveaux scripts sont donc à prévoir : `generate_companies.py` (Companies/Locations/
+Contacts, depuis `club_discount_mapping.csv` + la table Catalogs fournie par le client) et
+un step de génération du contenu produit par catalog (`Included / <Catalog>` sur le sheet
+Products) — les deux à ajouter à `regenerate_all.sh` et à l'ordre d'import Matrixify de
+`CLAUDE.md` (Companies après `shopify_customers_*.csv` ; le contenu des catalogs peut être
+ajouté directement au CSV produits existant, avant `shopify_products_*.csv`).
 
 ---
 
@@ -280,11 +302,12 @@ les autres exports bruts, pas dans les fichiers `_sample_*.csv` versionnés.
 | Sujet | Statut |
 |---|---|
 | **Butterfly dépasse la limite de 3 catalogs (Basic)** | 4 catalogs nécessaires pour une fidélité complète (voir [liste](#liste-des-catalogs-à-créer-mise-à-jour-19-août-2026)) — décision à prendre : fusionner 2 catalogs (perte de fidélité sur 5 clubs) ou upgrade de plan |
-| **Table `taux → nom de Catalog`** | En cours — client crée les Catalogs manuellement dans Shopify Admin et fournira les noms |
-| **Colonne Matrixify `Location: Catalogs`** | À confirmer directement dans l'app (absente du fichier demo Companies inspecté) |
-| **Adresse par club** (`Location: Shipping/Billing Address`, `City`, `Zip`, `Country Code`) | Aucune donnée d'adresse club dans les exports Magento (seulement des adresses individuelles de membres) — à demander au client, ou import avec pays seul en attendant complément manuel |
-| **`Main Contact: Customer Email`** (contact principal par club) | Aucun signal exploitable dans les données — proposition : le client avec le plus d'historique de commandes dans le groupe, à valider |
-| **Valeurs exactes de `Customer: Location Role`** | Probablement `"Ordering only"` / `"Location admin"` (terminologie Shopify), non confirmées dans le fichier demo (colonne vide) — à vérifier avant génération |
+| **Génération du contenu produit par Catalog** (`Included / <Catalog>`) | Pas encore scripté — nouveau step à construire depuis `export_magento_products_all.csv` (colonne `categories`) + exclusions SKU, indépendant de `generate_companies.py` (voir ci-dessus) |
+| **Table `taux → nom de Catalog`** | ✅ Résolu côté Dandoy (19 août 2026) — les 2 Catalogs `Dandoy — Club 20%` / `Dandoy — Club 15%` créés manuellement avec les noms suggérés. Toujours en attente côté Butterfly (bloqué par la limite 3 catalogs, voir ci-dessus) |
+| **Colonne Matrixify `Location: Catalogs`** | ✅ Confirmé (19 août 2026) — colonne existe bien, valeur = nom du catalog (ex. `Dandoy — Club 20%`, `Dandoy — Club 15%`). Absente du fichier demo statique inspecté, mais présente dans l'app réelle |
+| **Adresse par club** (`Location: Shipping/Billing Address`, `City`, `Zip`, `Country Code`) | ✅ Résolu (19 août 2026) — décision du client : import sans adresse, complément manuel après migration |
+| **`Main Contact: Customer Email`** (contact principal par club) | ✅ Résolu (19 août 2026) — décision du client : import sans contact principal, complément manuel après migration |
+| **Valeurs exactes de `Customer: Location Role`** | ✅ Confirmé (19 août 2026) — deux valeurs autorisées selon la doc Matrixify : `"Ordering only"` et `"Location admin"` |
 
 ### Pistes issues de la réflexion client (hors périmètre migration actuel)
 
