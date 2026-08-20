@@ -58,5 +58,6 @@ nav:
     - Migration clients: import/customers.md
     - Historique commandes: import/orders.md
     - Chèques cadeaux (gift cards): import/gift-cards.md
+    - Identifiants API (app privée): import/api-credentials.md
   - Stock Sync:
     - Guide prestataire: stock/guide-prestataire.md

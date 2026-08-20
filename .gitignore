@@ -11,3 +11,6 @@
 .idea
 site/
 __pycache__/
+.dandoy_shopify_env
+*.env
+.~lock.*#

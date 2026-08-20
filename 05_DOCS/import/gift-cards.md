@@ -1,7 +1,8 @@
 # Migration des chèques cadeaux (gift cards)
 
-> **Statut : à faire** — analyse effectuée le 5 août 2026, aucun script de conversion écrit,
-> décision de méthode en attente.
+> **Statut : à faire** — **Option B retenue** (API, code préservé). Script écrit et testé en
+> dry-run le 5 août 2026 — migration réelle (`--execute`) pas encore lancée, en attente des
+> identifiants API des deux boutiques.
 
 ---
 
@@ -94,17 +95,64 @@ Source : [Migrate Gift Cards between Shopify stores using Gift Card Orders — M
 Sources : [giftCardCreate mutation — Shopify.dev](https://shopify.dev/docs/api/admin-graphql/latest/mutations/giftCardCreate),
 [Shopify Api Create Gift Cards — communauté Shopify](https://community.shopify.com/t/shopify-api-create-gift-cards/157529)
 
-### Recommandation
+### Décision : Option B retenue
 
 Étant donné qu'il s'agit d'argent réel déjà détenu par des clients (9 247,49 € sur 281
 cartes), **l'Option B (API, code préservé)** limite le risque support/communication client par
-rapport à l'Option A. Décision finale à valider avec le client.
+rapport à l'Option A. Retenue le 5 août 2026.
+
+---
+
+## Script de migration
+
+```bash
+# Dry-run (par défaut, rien n'est envoyé à Shopify) :
+python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/migrate_giftcards_shopify.py --shop dandoy
+python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/migrate_giftcards_shopify.py --shop butterfly
+
+# Migration réelle (nécessite les identifiants API en variables d'environnement) :
+python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/migrate_giftcards_shopify.py --shop dandoy --execute
+```
+
+- Appelle la mutation Admin GraphQL `giftCardCreate` directement (pas de CSV Matrixify — l'API
+  Gift Card n'est pas accessible via un template Matrixify).
+- **Non intégré à `regenerate_all.sh`** : contrairement aux autres scripts du pipeline, celui-ci
+  a un effet de bord réel et irréversible (création de valeur stockée réelle côté Shopify) —
+  volontairement tenu à l'écart de la régénération automatique.
+- Dry-run par défaut ; `--execute` requiert les variables d'environnement
+  `SHOPIFY_{DANDOY|BUTTERFLY}_STORE_DOMAIN` et `SHOPIFY_{DANDOY|BUTTERFLY}_ACCESS_TOKEN` — voir
+  [Identifiants API](./api-credentials.md) pour la création de l'app privée et ses scopes.
+- `--limit N` pour tester sur un petit échantillon avant la migration complète.
+- Un rapport CSV est écrit par boutique
+  (`04_SHOPIFY_IMPORTS/giftcards_migration_report_{dandoy|butterfly}.csv`, gitignoré) avec le
+  statut de chaque carte (`DRY-RUN` / `CREATED` / `ERROR`).
+- Testé en dry-run le 5 août 2026 : **276 cartes routées vers Dandoy, 10 vers Butterfly**
+  (271 Dandoy-only + 5 Butterfly-only + 5 cartes à portée mixte dupliquées dans les deux —
+  cohérent avec le tableau de répartition ci-dessus).
+- **Liaison automatique au compte client** : pour chaque carte, le script recherche un client
+  Shopify existant par email (`User Email` Magento) et attache `customerId` à la mutation si
+  trouvé, sinon la carte reste non liée (cas guest, ou client pas encore importé). Rapport
+  colonnes `recipient_email` / `matched_customer_id` pour audit.
+- **Test réel confirmé le 20 août 2026** (1 carte, `1QRKR-SJQ17-8Z7WP`, 50 €) : créée avec
+  succès côté API (`giftCardCreate` → `enabled: true`), invisible dans l'Admin au premier coup
+  d'œil car l'Admin masque/tronque le code affiché — confirmé exister via une requête
+  `giftCard(id: ...)` directe. **Non liée à un client** car la boutique de test ne contient que
+  563 clients importés (échantillon), pas les 33 357 clients Dandoy attendus.
+- ⚠️ **Ordre de migration important** : lancer la migration des gift cards **après** l'import
+  complet des clients (`shopify_customers_dandoy.csv`), sinon la quasi-totalité des cartes
+  resteront non liées à un compte alors qu'un lien existe potentiellement côté Magento.
 
 ---
 
 ## Reste à faire
 
-- [ ] Décider Option A (Matrixify, nouveaux codes) vs Option B (API, codes préservés)
-- [ ] Décider du routage des cartes à portée mixte Dandoy/Butterfly (≤5 cartes)
-- [ ] Écrire le script de conversion/migration (`magento_to_shopify_giftcards.py` ou script API dédié)
-- [ ] Tester sur un échantillon avant migration complète des 281 cartes actives
+- [x] Décider Option A (Matrixify, nouveaux codes) vs Option B (API, codes préservés) — **Option B retenue**
+- [x] Écrire le script de migration (`migrate_giftcards_shopify.py`)
+- [x] Valider le routage en dry-run (276 Dandoy / 10 Butterfly, cohérent avec l'analyse)
+- [x] Obtenir les identifiants API côté Dandoy (Authorization Code Grant — voir [Identifiants API](./api-credentials.md))
+- [x] Tester `--execute --limit 1` en réel — confirmé fonctionnel (carte créée, code + solde corrects)
+- [x] Ajouter la liaison automatique au compte client (`customerId` par email)
+- [ ] Importer les 33 357 clients Dandoy dans Shopify (prérequis pour que la liaison client fonctionne à l'échelle)
+- [ ] Obtenir les identifiants API côté Butterfly
+- [ ] Lancer la migration complète des 276 cartes Dandoy + 10 Butterfly (après import clients)
+- [ ] Vérifier dans l'Admin Shopify (Products → Gift Cards) que codes, soldes et liaisons client correspondent

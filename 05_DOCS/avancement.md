@@ -385,6 +385,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | [Historique des commandes](./import/orders.md) | Script conversion, fiscalité, Fulfillment Line, champ Note, liaisons clients, import Matrixify |
 | [Plan de migration](./import/plan-migration.md) | Plan 5 phases : foundation → theming → recette → pré-go-live → go-live |
 | [Chèques cadeaux](./import/gift-cards.md) | Analyse export 841 cartes, 281 actives (9 247,49 €), 2 méthodes de migration — à faire |
+| [Identifiants API](./import/api-credentials.md) | App privée `Migration Tooling`, scopes `write_gift_cards`/`write_discounts`, à créer dans les 2 boutiques |
 
 ---
 
@@ -422,7 +423,8 @@ surveiller si ça se reproduit à plus grande échelle.
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
 | Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2), à dupliquer sur les 2 boutiques |
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
-| Migration chèques cadeaux (281 cartes actives, 9 247,49 €) | **Haute** | **À faire** — analyse faite, méthode à décider ([Chèques cadeaux](./import/gift-cards.md)) |
+| Migration chèques cadeaux (281 cartes actives, 9 247,49 €) | **Haute** | Option B retenue, script écrit et validé en dry-run — **en attente des identifiants API** ([Chèques cadeaux](./import/gift-cards.md)) |
+| Créer l'app privée `Migration Tooling — Magento2Shopify` (2 boutiques) | **Haute** | App créée + installée sur Dandoy (5 août 2026) ; Client Credentials Grant confirmé impossible sur boutique payante (`shop_not_permitted`) ; script `get_shopify_access_token.py` écrit (Authorization Code Grant) — token permanent pas encore obtenu ; Butterfly pas commencé — [Identifiants API](./import/api-credentials.md) |
 | Pages CMS Magento | Basse | Non commencé (Phase 2) |
 | Thème Shopify + branding Butterfly | Hors périmètre data | Phase 2 — 2 thèmes à prévoir (Option B) |
 
