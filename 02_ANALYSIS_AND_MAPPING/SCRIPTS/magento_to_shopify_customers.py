@@ -13,6 +13,7 @@ their tags cover — customers who registered on both brands (tagged
 'dandoy' AND 'butterfly') are written into both stores' CSVs.
 """
 
+import argparse
 import csv
 from collections import defaultdict
 
@@ -43,6 +44,20 @@ WEBSITE_TAGS = {
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--since', metavar='YYYY-MM-DD',
+                     help="Delta mode: only customers whose 'updated_at' is on/after this date "
+                          "(new accounts AND edits to older ones — see "
+                          "05_DOCS/import/plan-migration.md, stratégie de synchro en 2 passes). "
+                          "Writes to *_since_<date>.csv instead of the default files. "
+                          "Omit for a full export.")
+    args = ap.parse_args()
+
+    output_dandoy, output_butterfly = OUTPUT_DANDOY, OUTPUT_BUTTERFLY
+    if args.since:
+        output_dandoy = output_dandoy.replace('.csv', f'_since_{args.since}.csv')
+        output_butterfly = output_butterfly.replace('.csv', f'_since_{args.since}.csv')
+
     # ------------------------------------------------------------------
     # Load customers
     # ------------------------------------------------------------------
@@ -74,6 +89,12 @@ def main():
 
     print(f"  Unique emails: {len(by_email)}")
 
+    if args.since:
+        cutoff = f"{args.since} 00:00:00"
+        before = len(by_email)
+        by_email = {e: c for e, c in by_email.items() if c.get('updated_at', '') >= cutoff}
+        print(f"  --since {args.since}: {before} -> {len(by_email)} customers (updated_at >= {cutoff})")
+
     # ------------------------------------------------------------------
     # Load addresses
     # ------------------------------------------------------------------
@@ -99,8 +120,8 @@ def main():
         'butterfly': {'customers': 0, 'with_address': 0, 'no_address': 0},
     }
 
-    with open(OUTPUT_DANDOY, 'w', newline='', encoding='utf-8') as f_dandoy, \
-         open(OUTPUT_BUTTERFLY, 'w', newline='', encoding='utf-8') as f_butterfly:
+    with open(output_dandoy, 'w', newline='', encoding='utf-8') as f_dandoy, \
+         open(output_butterfly, 'w', newline='', encoding='utf-8') as f_butterfly:
         writers = {
             'dandoy':    csv.DictWriter(f_dandoy, fieldnames=SHOPIFY_COLS),
             'butterfly': csv.DictWriter(f_butterfly, fieldnames=SHOPIFY_COLS),
@@ -169,8 +190,8 @@ def main():
         print(f"  [{store}] Customers exported : {c['customers']}")
         print(f"  [{store}] With address       : {c['with_address']}")
         print(f"  [{store}] Without address    : {c['no_address']}")
-    print(f"\nOutput → {OUTPUT_DANDOY}")
-    print(f"Output → {OUTPUT_BUTTERFLY}")
+    print(f"\nOutput → {output_dandoy}")
+    print(f"Output → {output_butterfly}")
     print(f"\n⚠  Passwords cannot be migrated — customers will need to reset via 'Forgot password'.")
 
 

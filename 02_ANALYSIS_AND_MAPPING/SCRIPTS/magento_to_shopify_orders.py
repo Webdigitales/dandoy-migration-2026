@@ -19,6 +19,7 @@ file — no duplication needed here, unlike products/customers.
 Matrixify import: Import → Orders sheet
 """
 
+import argparse
 import csv
 import sys
 from datetime import datetime
@@ -497,10 +498,24 @@ def build_rows(order):
 
 
 def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--since', metavar='YYYY-MM-DD',
+                     help="Delta mode: only orders whose 'Updated At' is on/after this date "
+                          "(new orders AND status changes on older orders — see "
+                          "05_DOCS/import/plan-migration.md, stratégie de synchro en 2 passes). "
+                          "Omit for a full export.")
+    args = ap.parse_args()
+
     print("Loading orders…")
     with open(INPUT, newline='', encoding='utf-8') as f:
         orders = list(csv.DictReader(f))
     print(f"  Input rows   : {len(orders):,}")
+
+    if args.since:
+        cutoff = f"{args.since} 00:00:00"
+        before = len(orders)
+        orders = [o for o in orders if o.get('Updated At', '') >= cutoff]
+        print(f"  --since {args.since}: {before:,} -> {len(orders):,} orders (Updated At >= {cutoff})")
 
     rows_by_store = {'dandoy': [], 'butterfly': []}
     skipped  = 0
@@ -512,6 +527,8 @@ def main():
             skipped += 1
 
     outputs = {'dandoy': OUTPUT_DANDOY, 'butterfly': OUTPUT_BUTTERFLY}
+    if args.since:
+        outputs = {store: path.replace('.csv', f'_since_{args.since}.csv') for store, path in outputs.items()}
     print(f"  Skipped      : {skipped} (no items / unknown store)")
 
     for store, all_rows in rows_by_store.items():

@@ -30,9 +30,21 @@ avant le go-live** — sûr grâce à `MERGE`, aucun calcul de delta à faire à
    (ex. 20 août 2026). Companies : pas de risque tant qu'aucun nouveau club n'a été créé côté
    Magento entre-temps (un client rejoignant un club déjà existant est un risque mineur accepté,
    couvert de toute façon par la resynchro finale).
-2. **Migration définitive (J-2 / go-live)** — régénérer **tout** (`regenerate_all.sh`) depuis un
-   export Magento frais et réimporter (MERGE) : nouveaux clients, nouvelles commandes, nouvelles
-   adhésions club depuis T sont intégrés automatiquement.
+2. **Migration définitive (J-2 / go-live)** — deux options, selon le volume accumulé depuis T :
+   - **Régénérer tout** (`regenerate_all.sh`) depuis un export Magento frais et réimporter
+     (MERGE) : le plus simple, mais réimporte l'intégralité des 33 357 clients / 39 094
+     commandes — nécessite de rester sur le plan Matrixify Enterprise pour cette 2ᵉ passe
+     (Dandoy seul dépasse déjà les limites du plan Big).
+   - **Delta ciblé** — `magento_to_shopify_customers.py --since YYYY-MM-DD` et
+     `magento_to_shopify_orders.py --since YYYY-MM-DD` ne génèrent que les clients/commandes
+     dont `updated_at` / `Updated At` est postérieur à la date donnée (colonne déjà présente
+     dans les deux exports Magento, filtrage local, aucun changement côté export). Contrairement
+     à un filtre par date de création, ça capte aussi bien les nouveaux enregistrements que les
+     changements de statut sur des enregistrements plus anciens (commande passée `Shipped`
+     après T, client ayant changé d'adresse ou rejoint un club après T). Écrit dans des fichiers
+     séparés (`*_since_<date>.csv`, jamais les fichiers complets) pour ne rien écraser par
+     erreur. Un delta de quelques centaines/milliers de lignes tient sur un plan Matrixify plus
+     bas (Basic $20 ou Big $50) — évite de repayer l'Enterprise juste pour la synchro finale.
 
 **Les chèques cadeaux suivent une logique à part** (pas de `Command: MERGE` — c'est un appel API
 direct, pas un import CSV, et une carte cadeau créée deux fois avec le même code échoue plutôt
