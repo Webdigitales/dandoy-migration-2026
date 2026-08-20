@@ -501,6 +501,28 @@ surveiller si ça se reproduit à plus grande échelle.
   pour l'instant, sur 33 357 attendus). Détail complet : `05_DOCS/import/gift-cards.md`,
   `05_DOCS/import/api-credentials.md`.
 
+### Audit documentaire approfondi (20 août 2026)
+
+Relecture complète du site MkDocs (22 pages) suite à deux semaines de travail non tracées :
+
+- Vérification systématique des liens internes (aucun cassé) et recalcul de tous les
+  chiffres depuis les CSV actuels — corrections trouvées : compteur commandes obsolète dans
+  `contraintes-techniques.md` (23 823/13 607 → 24 896/14 198), étape Companies B2B absente
+  de `quick-start.md` (ajoutée), nombre de pages MkDocs (15→22).
+- Ajout de deux contraintes techniques jamais documentées : limite de catalogues B2B
+  Butterfly (confirmée bloquante), absence de chemin CSV Matrixify pour gift cards/codes
+  promo (API obligatoire).
+- **Vérification des 3 points "à faire" les plus anciens** :
+  - **36 doublons de variantes** : confirmés inchangés — 32 produits distincts touchés
+    (0,6 % du catalogue), erreur bloquante mais localisée à la ligne.
+  - **282 Titles Butterfly en néerlandais** : **retiré, fausse alerte.** Hypothèse d'origine
+    fausse (`(base)` = anglais partout) — le NL est confirmé langue par défaut de la
+    boutique Shopify Butterfly, et 100 % des SKU Butterfly (pas seulement les 282) ont déjà
+    leur Title de base en néerlandais. Invalide aussi la recommandation "prioriser la
+    traduction NL post-migration" (couverture réelle quasi complète, pas 2 %).
+  - **88 clubs vs 85 companies générées** : expliqué, pas un bug — `generate_companies.py`
+    filtre sur `brand == 'Dandoy'`, 3 des 88 clubs n'ont une remise que côté Butterfly.
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -554,7 +576,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | Décision multi-sites (A ou B) | ~~Haute~~ | **Fait** — Option B retenue, scripts adaptés (29-30 juillet 2026) |
 | Import test complet Matrixify (produits) | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessous, sur l'ancien catalogue unique — à retester par boutique) |
 | Import test commandes Matrixify | ~~Haute~~ | **Fait** — sample confirmé fonctionnel après 5 corrections (colonnes, adresses, line items — voir ci-dessus) |
-| 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — `doublons_variantes_a_corriger.csv` |
+| 36 doublons de variantes (données Magento) | **Haute** | **Confirmés inchangés (20 août 2026)** — 32 produits distincts touchés (0,6 % du catalogue), erreur bloquante Matrixify mais localisée à la ligne, non urgent pour tester mais à corriger avant le go-live — `doublons_variantes_a_corriger.csv` |
 | 282 Titles Butterfly en néerlandais | ~~Haute~~ | **Non-problème, résolu (20 août 2026)** — hypothèse initiale fausse (`(base)` supposée EN) ; NL confirmé langue par défaut Shopify Butterfly, aucune action requise |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
@@ -586,6 +608,10 @@ surveiller si ça se reproduit à plus grande échelle.
 
 | Date | Commit | Description |
 |---|---|---|
+| 20 août | `e2015c6` | Explication écart 88 clubs vs 85 companies générées (filtre brand Dandoy) |
+| 20 août | `c9e9a0d` | Rétractation du constat "282 titres Butterfly" (NL confirmé langue par défaut) |
+| 20 août | `8a28579` | Fix chiffres commandes obsolètes + étape Companies manquante dans quick-start |
+| 20 août | `091e9d8` | Audit documentaire approfondi, resync des deux docs d'avancement |
 | 20 août | `12901d1` | Script migration gift cards (Option B, API) + workflow identifiants API |
 | 19 août | `8e9ca1f` | Ajout `generate_companies.py`, câblage dans `regenerate_all.sh` (Dandoy uniquement) |
 | 19 août | `b539a82` | Résolution blocages Companies Dandoy : catalogs, adresses, rôles |

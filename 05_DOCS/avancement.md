@@ -469,6 +469,37 @@ surveiller si ça se reproduit à plus grande échelle.
   pour l'instant).
 - Détail complet : [Chèques cadeaux](./import/gift-cards.md), [Identifiants API](./import/api-credentials.md).
 
+### Audit documentaire approfondi (20 août 2026)
+
+Relecture complète du site MkDocs (22 pages) suite à deux semaines de travail non tracées
+dans le suivi d'avancement (voir sections Companies/gift cards/redirections ci-dessus) :
+
+- **Vérification systématique des liens internes** : aucun lien cassé sur les 22 pages.
+- **Recalcul de tous les chiffres** depuis les CSV actuels plutôt que recopiés d'anciennes
+  versions — corrections trouvées : compteur de commandes obsolète dans
+  `contraintes-techniques.md` (23 823/13 607 → 24 896/14 198, dérive due aux Fulfillment
+  Lines ajoutées depuis), étape Companies B2B totalement absente de `quick-start.md`
+  (ajoutée en étape 5, renumérotation 6→9), nombre de pages MkDocs (15→22).
+- **Ajout de deux contraintes techniques jamais documentées** dans
+  `contraintes-techniques.md` : la limite de catalogues B2B Butterfly (confirmée bloquante)
+  et l'absence de tout chemin CSV Matrixify pour gift cards/codes promo (API obligatoire).
+- **Vérification des 3 points "à faire" les plus anciens du suivi** :
+  - **36 doublons de variantes** : confirmés inchangés en relançant `validate_shopify_csv.py`
+    sur les CSV actuels — 32 produits distincts touchés (0,6 % du catalogue), erreur
+    bloquante mais localisée à la ligne (le reste du produit s'importe quand même).
+  - **282 Titles Butterfly en néerlandais** : **retiré, c'était une fausse alerte.**
+    L'hypothèse d'origine (`(base)` = anglais partout) était fausse — le client a confirmé
+    que le **néerlandais est la langue par défaut de la boutique Shopify Butterfly**, et un
+    échantillon montre que 100 % des SKU Butterfly (pas seulement les 282 signalés) ont déjà
+    leur Title de base en néerlandais. Invalide au passage la recommandation "prioriser la
+    traduction NL post-migration" dans `langues.md` (couverture réelle quasi complète, pas
+    2 %). Aucun changement de script nécessaire — l'erreur était uniquement documentaire.
+  - **88 clubs vs 85 companies générées** : expliqué, pas un bug — `generate_companies.py`
+    filtre sur `brand == 'Dandoy'` (sortie Dandoy uniquement), et 3 des 88 clubs n'ont une
+    remise que côté Butterfly, donc absents à juste titre de `shopify_companies_dandoy.csv`.
+- Détail complet : [Contraintes techniques](./contraintes-techniques.md),
+  [Gestion des langues](./architecture/langues.md), [Remises club & B2B](./mapping/club-b2b.md).
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -522,7 +553,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | Décision multi-sites (A ou B) | ~~Haute~~ | **Fait** — Option B retenue, scripts adaptés (29-30 juillet 2026) |
 | Import test complet Matrixify (produits) | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessus, sur l'ancien catalogue unique — à retester par boutique) |
 | Import test commandes Matrixify | ~~Haute~~ | **Fait** — sample confirmé fonctionnel après 5 corrections (colonnes, adresses, line items — voir ci-dessus) |
-| 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — [Doublons de variantes](./mapping/doublons-variantes.md) |
+| 36 doublons de variantes (données Magento) | **Haute** | **Confirmés inchangés (20 août 2026)** — 32 produits distincts touchés (0,6 % du catalogue), erreur bloquante Matrixify mais localisée à la ligne (le reste du produit s'importe), non urgent pour tester le pipeline mais à corriger avant le go-live définitif — [Doublons de variantes](./mapping/doublons-variantes.md) |
 | 282 Titles Butterfly en néerlandais | ~~Haute~~ | **Non-problème, résolu (20 août 2026)** — hypothèse initiale fausse (`(base)` supposée EN) ; NL confirmé langue par défaut Shopify Butterfly, aucune action requise — voir [Contraintes techniques](./contraintes-techniques.md) et [Gestion des langues](./architecture/langues.md) |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
@@ -554,6 +585,10 @@ surveiller si ça se reproduit à plus grande échelle.
 
 | Date | Commit | Description |
 |---|---|---|
+| 20 août | `e2015c6` | Explication écart 88 clubs vs 85 companies générées (filtre brand Dandoy) |
+| 20 août | `c9e9a0d` | Rétractation du constat "282 titres Butterfly" (NL confirmé langue par défaut) |
+| 20 août | `8a28579` | Fix chiffres commandes obsolètes + étape Companies manquante dans quick-start |
+| 20 août | `091e9d8` | Audit documentaire approfondi, resync des deux docs d'avancement |
 | 20 août | `12901d1` | Script migration gift cards (Option B, API) + workflow identifiants API |
 | 19 août | `8e9ca1f` | Ajout `generate_companies.py`, câblage dans `regenerate_all.sh` (Dandoy uniquement) |
 | 19 août | `b539a82` | Résolution blocages Companies Dandoy : catalogs, adresses, rôles |
