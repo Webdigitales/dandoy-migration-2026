@@ -39,6 +39,7 @@ nav:
   - Quick Start: quick-start.md
   - Contraintes techniques: contraintes-techniques.md
   - Avancement: avancement.md
+  - Journal de migration: journal-migration.md
   - Données & Mapping:
     - Matrice de mapping: mapping/matrice.md
     - Metafields — Définitions: mapping/metafields-definitions.md

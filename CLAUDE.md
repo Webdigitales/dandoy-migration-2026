@@ -69,9 +69,9 @@ dandoy/
 │   │   ├── validate_shopify_csv.py         ← validation post-régénération (SKU, options, handles)
 │   │   ├── generate_companies.py           ← B2B Companies Dandoy (clubs partenaires)
 │   │   └── regenerate_all.sh               ← tout régénérer (9 étapes)
-│   ├── matrice_data_mapping_products.md
-│   └── avancement_migration.md
+│   └── matrice_data_mapping_products.md
 │
+
 ├── 03_SEO_AND_REDIRECTS/
 │   ├── shopify_redirects_dandoy.csv        (2 045 redirections, gitignoré)
 │   └── shopify_redirects_butterfly.csv     (380 redirections, gitignoré)
@@ -96,7 +96,8 @@ dandoy/
 │   └── *_PURGE.csv (×8 — produits/collections/redirections/commandes × 2 boutiques)
 │
 └── 05_DOCS/                                # Source MkDocs (GitHub Pages)
-    ├── index.md, quick-start.md, contraintes-techniques.md, avancement.md
+    ├── index.md, quick-start.md, contraintes-techniques.md
+    ├── avancement.md (état actuel), journal-migration.md (historique détaillé)
     ├── mapping/   (matrice, metafields ×3, custom-options, bundles)
     ├── architecture/  (multi-sites, langues)
     ├── import/    (matrixify, redirections, customers, orders)
