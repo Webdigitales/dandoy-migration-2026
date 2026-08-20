@@ -12,7 +12,7 @@ Ce fichier centralise le contexte, les contraintes techniques et les directives 
   - **Boutique Dandoy-Sports** : `dandoy-sports.com` (hors Union Européenne / international), `fr.dandoy-sports.eu`, `en.dandoy-sports.eu`, `nl.dandoy-sports.eu` (Dandoy EU) — Shopify Markets gère en interne la distinction hors-UE / UE (TVA différente)
   - **Boutique Butterfly TT** (plan Basic) : `be.butterfly.tt`, `nl.butterfly.tt` (Identité de marque stricte)
   - **199 produits partagés entre les deux marques (35 actifs)** : dupliqués manuellement dans les deux catalogues, tagués `dandoy` + `butterfly` dans les deux — double maintenance acceptée par le client, ainsi que le risque de survente sur ces produits (stock sync 1×/jour, deux boutiques distinctes)
-- **Outil d'import :** Matrixify (plan Enterprise requis — 41k clients + 125k commandes)
+- **Outil d'import :** Matrixify (plan Enterprise requis — 41k clients + 39k commandes)
 - **Documentation :** Site MkDocs déployé via GitHub Pages (`05_DOCS/`)
 
 ---
@@ -24,7 +24,7 @@ Ce fichier centralise le contexte, les contraintes techniques et les directives 
 - **Liaison obligatoire :** La synchronisation se fait au caractère près via le **SKU**. Interdiction stricte de modifier la structure des SKUs existants lors du mapping de données.
 - **Outil cible :** Application Shopify *Stock Sync* connectée à un serveur SFTP sécurisé.
 
-### B. Erreur d'Les commandes sont liéArchitecture Catalogue (Grouped Products)
+### B. Erreur d'Architecture Catalogue (Grouped Products)
 - **Le Problème :** Sur Magento, les produits à variantes ont été configurés en *Grouped Products* au lieu de Configurable Products.
 - **La Solution :** Le script `magento_to_shopify.py` restructure la donnée :
   - `url_key` du parent → **Handle** Shopify
@@ -57,7 +57,10 @@ dandoy/
 │   ├── export_magento_products_all.csv
 │   ├── export_customer.csv
 │   ├── export_customer_address.csv
-│   └── export_order_all_2025_2026.csv
+│   ├── export_order_all_2025_2026.csv
+│   ├── gift_cards_export_file.csv  (841 cartes, 281 actives)
+│   ├── cart_price_rules.csv, customer_group.csv  (remises club — voir 05_DOCS/mapping/club-b2b.md)
+│   └── tax_rates.csv
 │
 ├── 02_ANALYSIS_AND_MAPPING/
 │   ├── SCRIPTS/
@@ -66,12 +69,14 @@ dandoy/
 │   │   ├── generate_collections.py         ← smart collections
 │   │   ├── magento_to_shopify_customers.py ← conversion clients
 │   │   ├── magento_to_shopify_orders.py    ← conversion commandes 2025-2026
-│   │   ├── validate_shopify_csv.py         ← validation post-régénération (SKU, options, handles)
 │   │   ├── generate_companies.py           ← B2B Companies Dandoy (clubs partenaires)
+│   │   ├── build_orders_stratified_sample.py ← échantillon de test à 950 commandes (cas limites)
+│   │   ├── validate_shopify_csv.py         ← validation post-régénération (SKU, options, handles)
+│   │   ├── migrate_giftcards_shopify.py    ← migration cartes cadeaux (API, hors regenerate_all.sh)
+│   │   ├── get_shopify_access_token.py     ← obtention token API (OAuth, hors regenerate_all.sh)
 │   │   └── regenerate_all.sh               ← tout régénérer (9 étapes)
 │   └── matrice_data_mapping_products.md
 │
-
 ├── 03_SEO_AND_REDIRECTS/
 │   ├── shopify_redirects_dandoy.csv        (2 045 redirections, gitignoré)
 │   └── shopify_redirects_butterfly.csv     (380 redirections, gitignoré)
@@ -85,8 +90,11 @@ dandoy/
 │   ├── shopify_collections_butterfly.csv   (37 collections, 58 lignes)
 │   ├── shopify_customers_dandoy.csv        (33 357 clients)
 │   ├── shopify_customers_butterfly.csv     (11 404 clients)
-│   ├── shopify_orders_dandoy.csv           (71 096 lignes — 23 823 commandes)
-│   ├── shopify_orders_butterfly.csv        (28 725 lignes — 13 607 commandes)
+│   ├── shopify_companies_dandoy.csv        (85 companies — clubs partenaires, Dandoy uniquement)
+│   ├── shopify_orders_dandoy.csv           (99 510 lignes — 24 896 commandes, avec Fulfillment Lines)
+│   ├── shopify_orders_butterfly.csv        (44 159 lignes — 14 198 commandes, avec Fulfillment Lines)
+│   ├── shopify_orders_stratified_{dandoy|butterfly}.csv  ← échantillon 950 commandes (cas limites)
+│   ├── giftcards_migration_report_{dandoy|butterfly}.csv ← rapport d'audit migration gift cards
 │   ├── shopify_products_sample_dandoy.csv     (versionné)
 │   ├── shopify_products_sample_butterfly.csv  (versionné)
 │   ├── shopify_customers_sample_dandoy.csv    (versionné — 10 clients)
@@ -98,9 +106,9 @@ dandoy/
 └── 05_DOCS/                                # Source MkDocs (GitHub Pages)
     ├── index.md, quick-start.md, contraintes-techniques.md
     ├── avancement.md (état actuel), journal-migration.md (historique détaillé)
-    ├── mapping/   (matrice, metafields ×3, custom-options, bundles)
+    ├── mapping/   (matrice, metafields ×3, custom-options, bundles, club-b2b, doublons-variantes)
     ├── architecture/  (multi-sites, langues)
-    ├── import/    (matrixify, redirections, customers, orders)
+    ├── import/    (plan-migration, matrixify, redirections, customers, orders, gift-cards, api-credentials)
     └── stock/     (guide prestataire)
 ```
 
@@ -144,9 +152,13 @@ Chaque entité est scindée en deux fichiers, un par boutique (produits partagé
 | Collections | Généré depuis tags | 37 smart collections | 37 smart collections |
 | Redirections | Crawl HTTP live | 2 045 redirections 301 | 380 redirections 301 |
 | Clients | `export_customer.csv` + adresses | 33 357 (dédupliqués, dont partagés) | 11 404 (dédupliqués, dont partagés) |
-| Commandes | `export_order_all_2025_2026.csv` | 23 823 commandes → `shopify_orders_dandoy.csv` (71 096 lignes) | 13 607 commandes → `shopify_orders_butterfly.csv` (28 725 lignes) |
+| Companies B2B | `cart_price_rules.csv` + `customer_group.csv` | 85 companies (clubs partenaires) | — (bloqué, voir section 6) |
+| Commandes | `export_order_all_2025_2026.csv` | 24 896 commandes → `shopify_orders_dandoy.csv` (99 510 lignes, avec Fulfillment Lines) | 14 198 commandes → `shopify_orders_butterfly.csv` (44 159 lignes, avec Fulfillment Lines) |
+| Chèques cadeaux | `gift_cards_export_file.csv` | 281 cartes actives (9 247,49 €), migrées via API (`migrate_giftcards_shopify.py`, hors Matrixify) | idem, scindé par boutique |
 
-> 4 834 produits uniques au total (dont 199 partagés, 35 actifs) et 41 020 clients uniques au total (dont les partagés dupliqués entre les deux fichiers ci-dessus).
+> 4 834 produits uniques au total (dont 199 partagés, 35 actifs), 41 020 clients uniques au
+> total (dont les partagés dupliqués entre les deux fichiers ci-dessus), et 39 094 commandes
+> au total (24 896 + 14 198).
 
 ---
 
@@ -159,6 +171,10 @@ Chaque entité est scindée en deux fichiers, un par boutique (produits partagé
 | **Custom options** | Line item properties (natif) | Retenu — code thème à ajouter |
 | **Livraison tables** (33 produits) | App tierce | Retenu — prix variables 41–116 € |
 | **Plan Basic Butterfly** | Limitations à valider (rapports, shipping tiers calculé, comptes staff) | À vérifier avant validation finale |
+| **Companies B2B — boutiques concernées** | Dandoy seule / deux boutiques | **Deux boutiques** (13 août 2026) — Butterfly bloqué par la limite de 3 catalogues du plan Basic (4 nécessaires), décision client en attente (fusion ou upgrade) |
+| **Plan Dandoy-Sports** | — | **Shopify Plus confirmé** (19 août 2026) — catalogues B2B illimités |
+| **Migration chèques cadeaux** | Matrixify/Orders (nouveaux codes) / API (codes préservés) | **API retenue** (5 août 2026), préserve les codes existants, test live confirmé (20 août 2026) |
+| **Langue par défaut boutique Butterfly** | Anglais / Néerlandais | **Néerlandais confirmé** (20 août 2026) — Butterfly n'active pas l'anglais |
 
 ---
 
