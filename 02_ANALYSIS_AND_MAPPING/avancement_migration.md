@@ -1,6 +1,12 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **5 août 2026**
+Dernière mise à jour : **20 août 2026**
+
+> ⚠️ Ce fichier est un miroir interne de `05_DOCS/avancement.md` (source MkDocs, publiée sur
+> GitHub Pages). Les deux ont divergé entre le 5 et le 20 août 2026 — celui-ci contenait déjà
+> les sections remboursements/échantillon stratifié, le site public avait déjà gift
+> cards/identifiants API. Resynchronisés le 20 août 2026. Préférer éditer `05_DOCS/avancement.md`
+> en premier à l'avenir, puis répercuter ici.
 
 > **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées
 > (Dandoy-Sports plan complet + Butterfly TT plan Basic), et non l'instance unique (Option A)
@@ -26,8 +32,12 @@ dandoy/
 │   │   ├── generate_redirects.py                ← redirections 301
 │   │   ├── magento_to_shopify_customers.py      ← clients
 │   │   ├── magento_to_shopify_orders.py         ← commandes 2025-2026
+│   │   ├── generate_companies.py                ← B2B Companies clubs (Dandoy uniquement)
+│   │   ├── build_orders_stratified_sample.py    ← échantillon de test à 950 commandes
 │   │   ├── validate_shopify_csv.py              ← validation post-régénération (SKU, options, handles)
-│   │   └── regenerate_all.sh                    ← tout régénérer (8 étapes)
+│   │   ├── migrate_giftcards_shopify.py         ← migration cartes cadeaux (API, hors regenerate_all.sh)
+│   │   ├── get_shopify_access_token.py          ← obtention token API (OAuth, hors regenerate_all.sh)
+│   │   └── regenerate_all.sh                    ← tout régénérer (9 étapes)
 │   ├── SCREENSHOTS_CATALOGUE/                   (8 captures Magento)
 │   ├── THEME/                                   ← export thème Horizon (non versionné pour l'instant)
 │   ├── plan-matrixify.png
@@ -89,7 +99,8 @@ n'apparaît que dans un seul jeu (boutique d'origine).
 | `shopify_collections_dandoy.csv` / `_butterfly.csv` | 58 / 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects_dandoy.csv` / `_butterfly.csv` | 2 045 / 380 | Redirections 301 (produits actifs + catégories, scopées par boutique) |
 | `shopify_customers_dandoy.csv` / `_butterfly.csv` | 33 357 / 11 404 | Clients dédupliqués + adresse par défaut + tags source |
-| `shopify_orders_dandoy.csv` / `_butterfly.csv` | 74 535 / 30 027 | 24 855 / 14 196 commandes avec line items (39 051 au total, période complète jan. 2025 → aujourd'hui) |
+| `shopify_companies_dandoy.csv` | 2 086 (85 companies) | B2B Companies clubs partenaires (Dandoy uniquement) |
+| `shopify_orders_dandoy.csv` / `_butterfly.csv` | 99 510 / 44 159 | 24 896 / 14 198 commandes avec line items + Fulfillment Lines (39 094 au total) |
 | `*_PURGE.csv` (×8) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests (produits, collections, redirections, commandes × 2 boutiques) |
 | `shopify_products_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon produits (tous types) |
 | `shopify_customers_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon clients (5 avec adresse + 5 sans) |
@@ -113,7 +124,10 @@ Après mise à jour des exports Magento :
 bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 ```
 
-8 étapes : produits + traductions → collections → redirections → customers → commandes → sample → purge → validation, chacune générant les fichiers des deux boutiques.
+9 étapes : produits + traductions → collections → redirections → customers → companies
+(Dandoy uniquement) → commandes → sample → purge → validation, chacune générant les fichiers
+des deux boutiques (sauf companies). `migrate_giftcards_shopify.py` et
+`get_shopify_access_token.py` sont volontairement exclus (effets de bord réels côté API).
 
 La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font échouer un import
 Matrixify : SKU dupliqués entre produits, combinaisons de variantes dupliquées, options
@@ -439,6 +453,54 @@ surveiller si ça se reproduit à plus grande échelle.
     prend systématiquement la date de l'import. **Décision du client : archivage manuel**
     dans Shopify Admin après l'import (102 commandes, volume gérable à la main) — pas de 2ᵉ
     passe d'import à développer.
+
+### Redirections — fix colonnes Matrixify + audit URLs localisées (6–10 août 2026)
+
+- **6 août** : Matrixify rejetait le CSV de redirections (`"Cannot understand the uploaded
+  file"`) — en-têtes `Redirect From`/`Redirect To` non reconnus, corrigés vers le vrai template
+  (`ID`, `Path`, `Command`, `Target`).
+- **10 août** : audit des URLs produits localisées (FR/NL) vs l'`url_key` de base — **125 URLs
+  Butterfly FR** non couvertes par le script actuel, NL quasi pas concerné. Redirections de
+  catégories toujours en anglais uniquement (pas de colonne `categories` renseignée sur les vues
+  FR/NL dans l'export Magento). Décision : traitement manuel post-import pour les deux, pas
+  d'extension de script.
+
+### Remises club & B2B — Companies (13–19 août 2026)
+
+- **13 août** : analyse de 93 groupes clients Magento (84 utilisés) + 88 Cart Price Rules de
+  remise club permanente, sans coupon — remises segmentées par famille de produits, pas un taux
+  plat. Décision : **Companies B2B sur les deux boutiques** (Shopify a ouvert le B2B à tous les
+  plans depuis avril 2026).
+- **19 août** : **Shopify Plus confirmé pour Dandoy-Sports** (catalogues illimités) ; Butterfly
+  reste Basic (max 3 catalogues actifs). **Correction importante** : les 3 règles Butterfly
+  Premium portent sur des familles de produits différentes (pas un taux combiné) → Butterfly a
+  besoin de **4 catalogs**, pas 3 — dépasse la limite Basic, décision client à prendre (fusion ou
+  upgrade). Confirmé que Matrixify ne peut pas créer de Catalog (manuel obligatoire côté Admin) ;
+  contenu par catégorie à fournir comme liste explicite de SKU (chantier séparé, pas encore
+  scripté). Les 2 Catalogs Dandoy créés. `generate_companies.py` ajouté et câblé dans
+  `regenerate_all.sh` (étape 5/9, Dandoy uniquement) : `shopify_companies_dandoy.csv` généré
+  (85 companies, 2 086 lignes). Détail complet : `05_DOCS/mapping/club-b2b.md`.
+
+### Migration des chèques cadeaux — Option B, API, test live confirmé (5–20 août 2026)
+
+- **5 août** : export `gift_cards_export_file.csv` analysé — 841 cartes, **281 actives**
+  (9 247,49 €). **Option B (API `giftCardCreate`, codes préservés) retenue** plutôt que
+  Matrixify/Orders (qui génère de nouveaux codes, obligerait à recontacter les 281 titulaires).
+- App API `Migration Tooling — Magento2Shopify` créée et installée sur Dandoy-Sports (Dev
+  Dashboard, org Partner Quai31). **Plusieurs impasses avant la bonne méthode de token** : le
+  Client Credentials Grant échoue systématiquement (`shop_not_permitted`) sur boutique payante —
+  restriction Shopify volontaire, réservée aux boutiques de dev. Bascule vers l'**Authorization
+  Code Grant** ; `get_shopify_access_token.py` écrit (serveur de callback local temporaire, token
+  jamais affiché en clair, écrit directement dans un fichier d'env non versionné) — token
+  permanent obtenu le 20 août.
+- **Test réel confirmé le 20 août** : 1 carte cadeau créée avec succès (code préservé, solde
+  correct) — invisible au premier coup d'œil dans l'Admin (code masqué par défaut), confirmé
+  exister via requête API directe.
+- Liaison automatique au compte client ajoutée (recherche par email, attache `customerId`) —
+  nécessite l'import complet des clients au préalable (boutique de test à 563 clients seulement
+  pour l'instant, sur 33 357 attendus). Détail complet : `05_DOCS/import/gift-cards.md`,
+  `05_DOCS/import/api-credentials.md`.
+
 ### Documentation (17–24 juin 2026)
 
 | Document | Contenu |
@@ -459,6 +521,10 @@ surveiller si ça se reproduit à plus grande échelle.
 | `import/customers.md` | Migration clients : déduplication, mapping, mots de passe, post-migration |
 | `import/orders.md` | Historique commandes : script conversion, liaisons clients, import Matrixify |
 | `import/plan-migration.md` | Plan 5 phases : foundation → theming → recette → pré-go-live → go-live |
+| `import/gift-cards.md` | Migration 281 cartes actives (9 247,49 €) — Option B (API), test live confirmé |
+| `import/api-credentials.md` | App privée `Migration Tooling`, workflow Authorization Code Grant, token Dandoy obtenu |
+| `mapping/club-b2b.md` | 88 clubs, Companies B2B deux boutiques, Shopify Plus confirmé Dandoy, Butterfly bloqué |
+| `mapping/doublons-variantes.md` | 36 doublons résiduels à corriger manuellement côté Magento |
 
 ---
 
@@ -471,6 +537,11 @@ surveiller si ça se reproduit à plus grande échelle.
 | **Livraison tables** (33 produits) | App tierce / Variante Shopify | **App tierce** (prix variables 41–116 €) | Coût mensuel |
 | **Plan Basic Butterfly** | — | À valider | Limitations à vérifier (rapports pro, shipping tiers calculé, comptes staff) |
 | **Fulfillment des commandes migrées** | Fulfillment Line rows / accepter "non expédiées" | **Fulfillment Line retenu et validé en live** (4 août 2026) — 2 échecs corrigés, 3e test confirmé fonctionnel (commande WEB1-0125-17658 : "Traitée", "Livré le 15 janvier 2025") | Terminé |
+| **102 commandes physiques `Invoiced`-only** | Ignorer / marquer remboursées / archiver | **Marquées `refunded`** (5 août 2026) ; archivage manuel décidé | Terminé |
+| **Companies B2B — boutiques concernées** | Dandoy seule / deux boutiques | **Deux boutiques** (13 août 2026) | Butterfly bloqué par la limite de catalogues |
+| **Plan Dandoy-Sports** | — | **Shopify Plus confirmé** (19 août 2026) | Catalogues B2B illimités |
+| **Catalogues B2B Butterfly (Basic, max 3)** | Fusionner 2 catalogs / upgrade de plan | **À valider avec le client** | Bloque Companies Butterfly |
+| **Migration chèques cadeaux** | Matrixify/Orders / API | **Option B (API) retenue** (5 août 2026), test live confirmé (20 août 2026) | Migration complète en attente import clients |
 
 ---
 
@@ -492,11 +563,19 @@ surveiller si ça se reproduit à plus grande échelle.
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | ~~Moyenne~~ | **Fait** — valeur ajoutée aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | ~~Moyenne~~ | **Fait** — metafields configurés dans l'Admin Shopify |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
-| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (33 357 / 11 404 clients), sample testé OK |
-| Migration commandes | ~~À décider~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (24 855 / 14 196 commandes), sample testé OK |
+| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (33 357 / 11 404 clients) ; **import complet pas encore lancé** (boutique test à 563 clients) |
+| Migration commandes | ~~À décider~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (24 896 / 14 198 commandes), sample + échantillon stratifié 950 testés OK |
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
 | Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2), à dupliquer sur les 2 boutiques |
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
+| URLs Butterfly FR localisées (125) + catégories traduites | Moyenne | Traitement manuel dans Shopify Admin après import — `05_DOCS/import/redirections.md` |
+| Companies B2B Dandoy | ~~Haute~~ | **Fait** (19 août 2026) — `shopify_companies_dandoy.csv` prêt (85 companies), pas encore importé |
+| Companies B2B Butterfly | **Haute** | **Bloqué** — 4 catalogs nécessaires, limite Basic = 3, décision client à prendre |
+| Génération contenu Catalogs (`Included / <Catalog>`) | **Haute** | Pas encore scripté — chantier indépendant de `generate_companies.py` |
+| Migration chèques cadeaux (281 cartes actives, 9 247,49 €) | **Haute** | Script prêt, test live confirmé (20 août 2026) ; migration complète en attente de l'import clients |
+| App privée `Migration Tooling` + token API — Dandoy | ~~Haute~~ | **Fait** (20 août 2026) — Authorization Code Grant fonctionnel |
+| App privée `Migration Tooling` + token API — Butterfly | **Haute** | Pas commencé |
+| Codes promo / cart price rules (hors remises club) | Basse | À vérifier si des règles actives existent hors du système club |
 | Pages CMS Magento | Basse | Non commencé (Phase 2) |
 | Thème Shopify + branding Butterfly | Hors périmètre data | Phase 2 — 2 thèmes à prévoir (Option B) |
 
@@ -506,6 +585,16 @@ surveiller si ça se reproduit à plus grande échelle.
 
 | Date | Commit | Description |
 |---|---|---|
+| 20 août | `12901d1` | Script migration gift cards (Option B, API) + workflow identifiants API |
+| 19 août | `8e9ca1f` | Ajout `generate_companies.py`, câblage dans `regenerate_all.sh` (Dandoy uniquement) |
+| 19 août | `b539a82` | Résolution blocages Companies Dandoy : catalogs, adresses, rôles |
+| 19 août | `6831b72` | Correction club-b2b.md : Butterfly a besoin de 4 catalogs, pas 3 |
+| 19 août | `b34b477` | Correction cumul remises club + tous les rule_id Cart Price Rule documentés |
+| 19 août | `5388420` | Doc stratégie Companies B2B deux boutiques, Shopify Plus confirmé Dandoy |
+| 19 août | `87b03bd` | Fix noms de colonnes CSV redirections pour Matrixify |
+| 6 août | `7f49fad` | Doc analyse migration gift cards (841 cartes, 281 actives, 9 247,49 €) |
+| 5 août | `aa141a4` | Marquage commandes invoiced non expédiées comme refunded (règle client) |
+| 5 août | `86d6e89` | Doc fix Fulfillment Line cartes cadeau |
 | 30 juillet | `6e39f86` | Fix noms de colonnes Matrixify Orders — confirmé fonctionnel par tests réels |
 | 30 juillet | `25986a0` | Mapping adresses billing/shipping (colonnes ajoutées à l'export Magento) |
 | 30 juillet | `3ddbbd2` | Ajout samples clients et commandes pour tests Matrixify |
