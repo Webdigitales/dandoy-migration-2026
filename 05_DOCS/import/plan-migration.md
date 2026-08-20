@@ -14,9 +14,34 @@ partenaires — voir [Remises club & B2B](../mapping/club-b2b.md).
 Le theming et la configuration se font sur des **boutiques Shopify avec de vraies données**
 dès la Phase 1. Les scripts permettent de régénérer et réimporter à tout moment via
 `Command: MERGE` — les enregistrements existants sont mis à jour sans créer de doublons.
+**Tous les fichiers du pipeline sont en `MERGE`** (produits, collections, redirections,
+clients, commandes, companies) : un réimport complet ultérieur ne crée jamais de doublon.
 
 Le **dernier import (J-2 avant go-live)** synchronise les données finales depuis Magento.
 Les données de Phase 1 sont intentionnellement "périmées" — elles servent uniquement au theming.
+
+### Stratégie en 2 passes pour les entités sensibles au temps (décidée le 20 août 2026)
+
+Clients, commandes et Companies peuvent être importés en réel **bien avant le go-live** (une
+1ère synchro complète, données arrêtées à une date donnée) puis **resynchronisés à neuf juste
+avant le go-live** — sûr grâce à `MERGE`, aucun calcul de delta à faire à la main :
+
+1. **1ère synchro complète** — clients + commandes + companies dans leur état à une date T
+   (ex. 20 août 2026). Companies : pas de risque tant qu'aucun nouveau club n'a été créé côté
+   Magento entre-temps (un client rejoignant un club déjà existant est un risque mineur accepté,
+   couvert de toute façon par la resynchro finale).
+2. **Migration définitive (J-2 / go-live)** — régénérer **tout** (`regenerate_all.sh`) depuis un
+   export Magento frais et réimporter (MERGE) : nouveaux clients, nouvelles commandes, nouvelles
+   adhésions club depuis T sont intégrés automatiquement.
+
+**Les chèques cadeaux suivent une logique à part** (pas de `Command: MERGE` — c'est un appel API
+direct, pas un import CSV, et une carte cadeau créée deux fois avec le même code échoue plutôt
+que de fusionner) : un échantillon réduit est migré dès maintenant pour valider le mécanisme
+(déjà fait — 1 carte testée avec succès le 20 août 2026), la migration complète des 281 cartes
+actives est repoussée **au plus près possible du go-live**, sur un export gift cards fraîchement
+tiré de Magento — voir [Chèques cadeaux](./gift-cards.md) pour le détail du risque (carte
+utilisée/soldée entre l'export et l'import) et la recommandation de geler brièvement les
+gift cards côté Magento (checkout + émission) pendant la fenêtre de migration finale.
 
 ---
 
@@ -97,12 +122,14 @@ bash 02_ANALYSIS_AND_MAPPING/SCRIPTS/regenerate_all.sh
 
 | Tâche | Détail |
 |---|---|
-| Export Magento final (produits, clients) | Données fraîches J-2 |
-| Régénérer CSV (`regenerate_all.sh`) | ~10 min, génère les fichiers des 2 boutiques |
+| Export Magento final (produits, clients, commandes, clubs, gift cards) | Données fraîches J-2 |
+| Régénérer CSV (`regenerate_all.sh`) | ~10 min, génère les fichiers des 2 boutiques (hors gift cards, script API séparé) |
 | Réimporter produits — MERGE | Dans chaque boutique — met à jour prix, stocks, descriptions |
-| Réimporter clients — MERGE | Dans chaque boutique — intègre les nouveaux comptes depuis Phase 1 |
-| Import commandes 2025-2026 | `shopify_orders_dandoy.csv` (23 823) / `shopify_orders_butterfly.csv` (13 607) |
-| Import redirections 301 | `shopify_redirects_dandoy.csv` (2 045) / `shopify_redirects_butterfly.csv` (380) |
+| Réimporter clients — MERGE | Dans chaque boutique — intègre les nouveaux comptes depuis la 1ère synchro |
+| Réimporter Companies — MERGE (Dandoy uniquement) | Intègre les nouvelles adhésions club depuis la 1ère synchro — voir [Remises club & B2B](../mapping/club-b2b.md) |
+| Import commandes | `shopify_orders_dandoy.csv` (24 896) / `shopify_orders_butterfly.csv` (14 198) — MERGE, intègre les commandes passées depuis la 1ère synchro |
+| Import redirections 301 | `shopify_redirects_dandoy.csv` (2 045) / `shopify_redirects_butterfly.csv` (380) — MERGE |
+| Migration chèques cadeaux — API | `migrate_giftcards_shopify.py --execute` sur un export gift cards fraîchement tiré (281 cartes actives, ~9 250 €) — voir [Chèques cadeaux](./gift-cards.md) |
 | Abaisser le TTL DNS à 300s | Sur les 6 domaines, accélère la propagation au go-live |
 | Désactiver l'indexation Google sur les boutiques Shopify | Évite le doublon SEO avant go-live |
 | Brief équipe support | Nouveaux outils, accès Magento en lecture seule disponible |
@@ -137,15 +164,18 @@ leur boutique respective.
 | Ordre | Fichier | Quand |
 |---|---|---|
 | 1 | `shopify_products_sample_{store}.csv` | Phase 1 — test uniquement |
-| 2 | `shopify_products_{store}.csv` | Phase 1 |
-| 3 | `shopify_collections_{store}.csv` | Phase 1 |
-| 4 | `shopify_translations_{store}.csv` | Phase 1 |
-| 5 | `shopify_customers_{store}.csv` | Phase 4 (J-2) |
-| 6 | `shopify_orders_{store}.csv` | Phase 4 (J-2) |
-| 7 | `shopify_redirects_{store}.csv` | Phase 4 (J-2) |
+| 2 | `shopify_products_{store}.csv` | Phase 1, réimporté à neuf en Phase 4 (MERGE) |
+| 3 | `shopify_collections_{store}.csv` | Phase 1, réimporté à neuf en Phase 4 (MERGE) |
+| 4 | `shopify_translations_{store}.csv` | Phase 1, réimporté à neuf en Phase 4 (MERGE) |
+| 5 | `shopify_customers_{store}.csv` | 1ère synchro complète (dès que possible), resynchronisé à neuf en Phase 4 (MERGE) |
+| 6 | `shopify_companies_dandoy.csv` | 1ère synchro complète (Dandoy uniquement), resynchronisé à neuf en Phase 4 (MERGE) |
+| 7 | `shopify_orders_{store}.csv` | 1ère synchro complète, resynchronisé à neuf en Phase 4 (MERGE) |
+| 8 | `shopify_redirects_{store}.csv` | Phase 4 (J-2), MERGE |
+| 9 | Chèques cadeaux (API, `migrate_giftcards_shopify.py`) | Échantillon test dès maintenant, migration complète au plus près du go-live (pas de MERGE — code déjà pris si relancé) |
 
-Les fichiers 2–4 peuvent être réimportés autant de fois que nécessaire (MERGE).
-Les fichiers 5–7 sont importés une seule fois, au plus proche du go-live.
+Tous les fichiers CSV (2–8) peuvent être réimportés autant de fois que nécessaire (MERGE),
+y compris en Phase 4 pour synchroniser les nouveautés accumulées depuis la 1ère synchro. Seuls
+les chèques cadeaux (9) suivent une logique à part — voir ci-dessus.
 
 ---
 
@@ -157,4 +187,6 @@ Les fichiers 5–7 sont importés une seule fois, au plus proche du go-live.
 | **Plan Shopify** : Basic / Shopify / Advanced / Plus ? | **Tranché** — Dandoy-Sports Shopify Plus, Butterfly TT plan Basic |
 | **Limitations du plan Basic (Butterfly)** | À vérifier avant validation finale (rapports pro, shipping tiers calculé, comptes staff) |
 | **Thème** : thème premium du marché ou développement sur mesure ? | À décider — conditionne le planning Phase 2 (× 2 thèmes à prévoir) |
-| **Portail clubs B2B (Companies)** côté Dandoy-Sports | Piste à valider avec le client — voir [Remises club & B2B](../mapping/club-b2b.md) |
+| **Companies B2B (clubs partenaires)** | **Tranché pour Dandoy** (Shopify Plus confirmé, 85 companies prêtes) — Butterfly bloqué par la limite de 3 catalogues du plan Basic (4 nécessaires), décision client en attente — voir [Remises club & B2B](../mapping/club-b2b.md) |
+| **Migration chèques cadeaux** | **Tranché** — Option B (API, codes préservés), test live confirmé le 20 août 2026 — voir [Chèques cadeaux](./gift-cards.md) |
+| **Stratégie de synchro clients/commandes/companies en 2 passes** | **Tranché (20 août 2026)** — 1ère synchro complète dès maintenant, resynchro à neuf (MERGE) juste avant le go-live |
