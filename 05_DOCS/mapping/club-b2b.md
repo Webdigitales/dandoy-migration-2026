@@ -230,6 +230,12 @@ Companies**, sinon échec (liaison par email ou ID). Implique l'ordre d'import :
 Aucune restriction de plan Matrixify spécifique aux Companies (Enterprise déjà prévu pour
 le premier mois — largement suffisant pour 88 companies).
 
+> **88 clubs au total, 85 dans `shopify_companies_dandoy.csv`** (vérifié 20 août 2026) :
+> `generate_companies.py` filtre sur `brand == 'Dandoy'` (fichier de sortie Dandoy
+> uniquement) — **3 des 88 clubs n'ont une remise que côté Butterfly**, sans ligne Dandoy
+> dans `club_discount_mapping.csv`, donc absents de ce fichier. Ils réapparaîtront dans un
+> futur `shopify_companies_butterfly.csv` une fois le chantier Butterfly débloqué (§4).
+
 #### Catalogs — création manuelle obligatoire, contenu à générer
 
 **Matrixify ne peut pas créer de Catalog** (nom, % de remise) — confirmé par le tutoriel
