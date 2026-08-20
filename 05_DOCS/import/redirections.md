@@ -96,7 +96,7 @@ Format Matrixify Redirects — colonnes exactes attendues (voir
 |---|---|---|
 | `ID` | Vide pour une création (Matrixify assigne l'ID à l'import) | *(vide)* |
 | `Path` | Ancien chemin (relatif) | `/stiga-allround-classic-anatomic.html` |
-| `Command` | `NEW` pour les fichiers d'import, `DELETE` pour les fichiers PURGE | `NEW` |
+| `Command` | `MERGE` pour les fichiers d'import (créé si absent, matché sur `Path` sinon — réimport sûr pour une synchro en plusieurs passes), `DELETE` pour les fichiers PURGE | `MERGE` |
 | `Target` | Nouveau chemin Shopify | `/products/stiga-allround-classic` |
 
 > ⚠️ Matrixify n'utilise **pas** les en-têtes `Redirect From` / `Redirect To` (erreur

@@ -115,7 +115,7 @@ def write_store_redirects(store_name, output_path, scope_predicate, base_rows):
         writer = csv.DictWriter(f, fieldnames=REDIRECT_COLS)
         writer.writeheader()
         for old, new in redirects:
-            writer.writerow({'ID': '', 'Path': old, 'Command': 'NEW', 'Target': new})
+            writer.writerow({'ID': '', 'Path': old, 'Command': 'MERGE', 'Target': new})
 
     print(f"=== {store_name} ===")
     print(f"  Product redirects  : {product_count}")
