@@ -30,6 +30,7 @@ Cela crée dans `04_SHOPIFY_IMPORTS/`, un jeu de fichiers par boutique :
 | `shopify_translations_dandoy.csv` / `shopify_translations_butterfly.csv` | Traductions FR + NL |
 | `shopify_collections_dandoy.csv` / `shopify_collections_butterfly.csv` | 37 smart collections |
 | `shopify_customers_dandoy.csv` / `shopify_customers_butterfly.csv` | Clients dédupliqués |
+| `shopify_companies_dandoy.csv` | Companies B2B clubs partenaires (Dandoy uniquement) |
 | `shopify_orders_dandoy.csv` / `shopify_orders_butterfly.csv` | Commandes 2025-2026 |
 | `shopify_products_{dandoy\|butterfly}_PURGE.csv` | Suppression produits (pour tests) |
 | `shopify_collections_{dandoy\|butterfly}_PURGE.csv` | Suppression collections (pour tests) |
@@ -97,7 +98,25 @@ catalogue propre à chaque boutique).
 
 ---
 
-## Étape 5 — Activer les langues
+## Étape 5 — Importer les Companies B2B (Dandoy uniquement)
+
+Les Catalogs (par palier de remise club) doivent être **créés manuellement au préalable**
+dans Shopify Admin — voir [Remises club & B2B](./mapping/club-b2b.md) pour la liste et les
+noms exacts.
+
+1. Dans Matrixify, cliquer **Import**
+2. Uploader `shopify_companies_dandoy.csv`
+3. Lancer l'import
+
+> Butterfly TT n'a pas de fichier Companies pour l'instant — bloqué par la limite de 3
+> catalogues actifs du plan Basic (4 nécessaires), décision client en attente.
+
+**Vérification :** ouvrir **Customers → Companies** et vérifier qu'un club a bien sa Location
+rattachée au bon Catalog (remise visible sur un produit du club en simulant une commande).
+
+---
+
+## Étape 6 — Activer les langues
 
 1. Aller dans **Settings → Languages**
 2. Boutique Dandoy : ajouter **Français (fr)**, **Anglais (en)** et **Néerlandais (nl)**
@@ -106,7 +125,7 @@ catalogue propre à chaque boutique).
 
 ---
 
-## Étape 6 — Importer les traductions
+## Étape 7 — Importer les traductions
 
 1. Dans Matrixify, cliquer **Import**
 2. Uploader `shopify_translations_dandoy.csv` ou `shopify_translations_butterfly.csv`
@@ -116,7 +135,7 @@ catalogue propre à chaque boutique).
 
 ---
 
-## Étape 7 — Configurer les metafields
+## Étape 8 — Configurer les metafields
 
 Après l'import, Matrixify a créé les définitions automatiquement (à faire dans **chaque**
 boutique). Aller dans **Settings → Custom data → Products** pour :
@@ -133,7 +152,7 @@ Puis configurer les **filtres** dans **Search & Discovery** :
 
 ---
 
-## Étape 8 — Importer les redirections
+## Étape 9 — Importer les redirections
 
 1. Dans Matrixify, cliquer **Import**
 2. Uploader `shopify_redirects_dandoy.csv` ou `shopify_redirects_butterfly.csv` (depuis `03_SEO_AND_REDIRECTS/`)
@@ -179,6 +198,7 @@ Puis relancer les imports depuis l'étape 2, dans la boutique concernée.
         │                              │
         ├─ Produits + Tags + Metafields ┤
         ├─ Collections (37 smart)       ┤
+        ├─ Companies B2B (Dandoy only)  ┤
         ├─ Langues (FR/EN/NL vs FR/NL)  ┤
         ├─ Traductions                  ┤
         └─ Redirections (2 045 / 380)   ┘

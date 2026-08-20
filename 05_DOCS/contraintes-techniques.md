@@ -304,7 +304,38 @@ Voir [Metafields — Définitions](./mapping/metafields-definitions.md) pour la 
 
 ---
 
-## 12. Plan Matrixify
+## 12. Companies B2B — limite de catalogues Butterfly (Basic)
+
+Companies B2B est disponible sur tous les plans Shopify depuis avril 2026, mais avec une
+limite de **3 catalogues actifs simultanément** sur les plans Basic/Grow/Advanced (contre
+illimité sur Plus, confirmé pour Dandoy-Sports).
+
+Les 88 remises club Magento se traduisent en **6 catalogs cibles** (2 Dandoy + 4 Butterfly,
+un par palier de remise × famille de produits — les remises ne se combinent pas en un taux
+unique). **Butterfly (Basic) a donc besoin de 4 catalogs mais ne peut en activer que 3** —
+contrainte confirmée bloquante le 19 août 2026, décision client en attente (fusionner deux
+catalogs au prix d'une perte de fidélité pour 5 clubs, ou upgrader le plan Butterfly). Détail
+complet : [Remises club & B2B](./mapping/club-b2b.md).
+
+---
+
+## 13. Chèques cadeaux et codes promo — pas de chemin CSV Matrixify
+
+Contrairement à tout le reste du pipeline (produits, clients, commandes, collections,
+redirections, companies), **deux entités n'ont aucun template Matrixify** et doivent passer
+par l'API Admin Shopify directement (script Python dédié, hors `regenerate_all.sh`) :
+
+- **Chèques cadeaux** : l'API Gift Card n'est pas exposée via un sheet Matrixify — voir
+  [Chèques cadeaux](./import/gift-cards.md).
+- **Codes promo / cart price rules** : Shopify Discounts n'a pas de bulk import CSV natif.
+
+Nécessite une app privée avec accès API Admin (`write_gift_cards`, `write_discounts`) — voir
+[Identifiants API](./import/api-credentials.md), y compris le détail du changement de modèle
+Shopify 2026 (Dev Dashboard, Authorization Code Grant) rencontré pour l'obtenir.
+
+---
+
+## 14. Plan Matrixify
 
 Matrixify est l'outil d'import CSV utilisé pour la migration. Le choix du plan
 conditionne le nombre d'enregistrements importables par job. **Chaque boutique installe sa
@@ -320,7 +351,7 @@ entre les deux boutiques).
 | Traductions | 5 768 lignes | 1 233 lignes |
 | Redirections | 2 045 | 380 |
 | **Clients** | **33 357** | **11 404** |
-| **Commandes** | **23 823** | **13 607** |
+| **Commandes** | **24 896** | **14 198** |
 
 ### Comparaison des plans
 
@@ -335,10 +366,10 @@ entre les deux boutiques).
 
 **Enterprise ($200) pour 1 mois, sur les deux boutiques**, puis downgrader.
 
-- **Dandoy-Sports** (33 357 clients, 23 823 commandes) : dépasse largement le plan Big
+- **Dandoy-Sports** (33 357 clients, 24 896 commandes) : dépasse largement le plan Big
   (20 000 clients, 10 000 commandes) — Enterprise nécessaire.
-- **Butterfly TT** (11 404 clients, 13 607 commandes) : les clients passeraient sur Big
-  (20 000), mais les commandes (13 607) dépassent la limite Big (10 000) — Enterprise
+- **Butterfly TT** (11 404 clients, 14 198 commandes) : les clients passeraient sur Big
+  (20 000), mais les commandes (14 198) dépassent la limite Big (10 000) — Enterprise
   nécessaire aussi, même si les volumes sont plus petits.
 
 Prendre Enterprise sur les deux boutiques pour la durée de la migration (1 mois), importer
@@ -359,4 +390,5 @@ tout en une fois dans chacune, puis repasser chaque boutique sur Basic ($20) ou 
 | Option vide déclarée → erreur Matrixify | Corrigé | Variante non créée | Script corrigé (options vides omises) |
 | Produit >100 variantes | Aucune | Bloquant | Audité : max 33, pas de risque |
 | Survente produits partagés (199, Option B retenue) | Moyenne | Commande sans stock sur l'un des deux magasins | **Risque accepté par le client** — sync stock 1×/jour, à surveiller de près sur ces 199 produits après le go-live |
-| Plan Basic Butterfly insuffisant pour un besoin non anticipé | Faible-Moyenne | Fonctionnalité manquante en prod | Vérifier les limitations avant validation finale (voir [Multi-sites](./architecture/multi-sites.md)) |
+| Limite 3 catalogues B2B Butterfly (Basic) vs 4 nécessaires | **Confirmée (19 août 2026)** | 5 clubs Premium sans fidélité complète de remise | Décision client en attente — fusion de catalogs ou upgrade de plan (voir [Remises club & B2B](./mapping/club-b2b.md)) |
+| Migration gift cards par API réelle sur boutique de prod (pas de dry-run réversible) | Faible | Carte cadeau erronée créée en prod | Test `--limit N` avant migration complète, rapport d'audit par carte (voir [Chèques cadeaux](./import/gift-cards.md)) |

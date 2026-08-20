@@ -485,7 +485,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | `README.md` | Vue d'ensemble projet + commandes |
 | Site MkDocs (05_DOCS/) | 22 pages, déployé via GitHub Pages |
 | `contraintes-techniques.md` | 12 contraintes techniques (Trustpilot, Variant Image, plan Matrixify) |
-| `quick-start.md` | Mode d'emploi en 8 étapes (test sample → import → purge) |
+| `quick-start.md` | Mode d'emploi en 9 étapes (test sample → import → Companies → purge) |
 | `import/customers.md` | Migration clients : déduplication, mapping, mots de passe, post-migration |
 | [Historique des commandes](./import/orders.md) | Script conversion, fiscalité, Fulfillment Line, champ Note, liaisons clients, import Matrixify |
 | [Plan de migration](./import/plan-migration.md) | Plan 5 phases : foundation → theming → recette → pré-go-live → go-live |
