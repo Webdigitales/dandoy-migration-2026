@@ -1,8 +1,8 @@
 # Identifiants API Admin (app privée de migration)
 
-> **Statut : à faire** — app créée et installée sur Dandoy-Sports (5 août 2026), mais
-> l'obtention du token a nécessité un changement de méthode en cours de route (voir
-> ci-dessous). Token définitif pas encore généré. Butterfly TT pas encore fait.
+> **Statut : fait pour Dandoy-Sports (20 août 2026)** — app créée et installée, token
+> permanent obtenu via Authorization Code Grant, testé en réel avec succès (1 gift card
+> créée, voir [Chèques cadeaux](./gift-cards.md)). **Butterfly TT reste à faire.**
 
 ---
 
@@ -148,8 +148,9 @@ token reste valide et actif tant qu'elle n'est pas désinstallée.
       scopes Cartes-cadeaux + Réductions + Clients tous accordés (Consultation + Modification)
 - [x] Comprendre pourquoi Client Credentials Grant échoue sur boutique payante (`shop_not_permitted`)
 - [x] Écrire `get_shopify_access_token.py` (Authorization Code Grant, serveur local, token jamais affiché)
-- [ ] Enregistrer `http://localhost:8787/callback` dans les redirect URLs de l'app Dandoy
-- [ ] Lancer `get_shopify_access_token.py` pour Dandoy-Sports et obtenir le token permanent
+- [x] Enregistrer `http://localhost:8787/callback` dans les redirect URLs de l'app Dandoy
+- [x] Lancer `get_shopify_access_token.py` pour Dandoy-Sports et obtenir le token permanent (20 août 2026)
+- [x] Tester `migrate_giftcards_shopify.py --shop dandoy --execute --limit 1` en réel — confirmé
+      fonctionnel (1 gift card créée, code Magento préservé, solde correct)
 - [ ] Créer l'app + obtenir le token pour Butterfly TT
-- [ ] Lancer `migrate_giftcards_shopify.py --shop dandoy --execute --limit 5` en test
 - [ ] Désinstaller les deux apps après le go-live

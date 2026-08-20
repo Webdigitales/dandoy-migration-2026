@@ -1,8 +1,9 @@
 # Migration des chèques cadeaux (gift cards)
 
-> **Statut : à faire** — **Option B retenue** (API, code préservé). Script écrit et testé en
-> dry-run le 5 août 2026 — migration réelle (`--execute`) pas encore lancée, en attente des
-> identifiants API des deux boutiques.
+> **Statut : test live confirmé sur Dandoy (20 août 2026)** — **Option B retenue** (API, code
+> préservé). 1 carte migrée en réel avec succès. Migration complète des 276 cartes Dandoy en
+> attente de l'import des 33 357 clients (liaison par email) ; Butterfly TT pas commencé
+> (identifiants API à obtenir).
 
 ---
 
