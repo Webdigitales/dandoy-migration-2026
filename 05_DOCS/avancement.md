@@ -510,6 +510,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | **Plan Dandoy-Sports** | — | **Shopify Plus confirmé** (19 août 2026) — catalogues B2B illimités | — |
 | **Catalogues B2B Butterfly (Basic, max 3)** | Fusionner 2 catalogs (perte fidélité 5 clubs) / upgrade de plan | **À valider avec le client** | Bloque la création des Catalogs Butterfly et `generate_companies.py` côté Butterfly |
 | **Migration chèques cadeaux** | Matrixify/Orders (nouveaux codes) / API (codes préservés) | **Option B (API) retenue** (5 août 2026), test live confirmé (20 août 2026) | Script prêt, migration complète en attente de l'import clients |
+| **Langue par défaut boutique Butterfly** | Anglais (hypothèse initiale) / Néerlandais | **Néerlandais confirmé** (20 août 2026) | Invalide l'hypothèse "282 titres anglais manquants" (non-problème) et la recommandation de priorisation traduction NL — voir [Contraintes techniques](./contraintes-techniques.md), [Gestion des langues](./architecture/langues.md) |
 
 ---
 
@@ -522,7 +523,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | Import test complet Matrixify (produits) | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessus, sur l'ancien catalogue unique — à retester par boutique) |
 | Import test commandes Matrixify | ~~Haute~~ | **Fait** — sample confirmé fonctionnel après 5 corrections (colonnes, adresses, line items — voir ci-dessus) |
 | 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — [Doublons de variantes](./mapping/doublons-variantes.md) |
-| 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
+| 282 Titles Butterfly en néerlandais | ~~Haute~~ | **Non-problème, résolu (20 août 2026)** — hypothèse initiale fausse (`(base)` supposée EN) ; NL confirmé langue par défaut Shopify Butterfly, aucune action requise — voir [Contraintes techniques](./contraintes-techniques.md) et [Gestion des langues](./architecture/langues.md) |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
 | Vérifier en base (`sales_order_payment.additional_information`) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |

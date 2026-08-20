@@ -542,6 +542,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | **Plan Dandoy-Sports** | — | **Shopify Plus confirmé** (19 août 2026) | Catalogues B2B illimités |
 | **Catalogues B2B Butterfly (Basic, max 3)** | Fusionner 2 catalogs / upgrade de plan | **À valider avec le client** | Bloque Companies Butterfly |
 | **Migration chèques cadeaux** | Matrixify/Orders / API | **Option B (API) retenue** (5 août 2026), test live confirmé (20 août 2026) | Migration complète en attente import clients |
+| **Langue par défaut boutique Butterfly** | Anglais (hypothèse initiale) / Néerlandais | **Néerlandais confirmé** (20 août 2026) | Invalide l'hypothèse "282 titres anglais manquants" et la priorisation traduction NL |
 
 ---
 
@@ -554,7 +555,7 @@ surveiller si ça se reproduit à plus grande échelle.
 | Import test complet Matrixify (produits) | ~~Haute~~ | **Fait** — 272/25 514 échecs, tous identifiés (voir ci-dessous, sur l'ancien catalogue unique — à retester par boutique) |
 | Import test commandes Matrixify | ~~Haute~~ | **Fait** — sample confirmé fonctionnel après 5 corrections (colonnes, adresses, line items — voir ci-dessus) |
 | 36 doublons de variantes (données Magento) | **Haute** | À corriger manuellement — `doublons_variantes_a_corriger.csv` |
-| 282 Titles Butterfly en néerlandais | **Haute** | Traduction EN manquante — action requise côté Butterfly avant go-live |
+| 282 Titles Butterfly en néerlandais | ~~Haute~~ | **Non-problème, résolu (20 août 2026)** — hypothèse initiale fausse (`(base)` supposée EN) ; NL confirmé langue par défaut Shopify Butterfly, aucune action requise |
 | Vérifier limitations plan Basic (Butterfly) | **Haute** | À faire avant validation finale de l'Option B |
 | Ajouter `Updated At` + point relais (bpost/DPD/Sendcloud) + `mollie_transaction_id` à l'export Magento | ~~Haute~~ | **Fait** (4 août 2026) — export mis à jour, mappé dans le script (`Fulfillment: Processed At` + champ `Note`) |
 | Vérifier en base (table `sales_order_payment.additional_information`, pas exposée comme attribut order) si un ID de transaction existe pour PayPlug, PayPal Express et Klarna (~2 850 commandes, 7,3%) — **confirmé absent** de la liste d'attributs order Magento Admin (vérifié 4 août 2026, seul `mollie_transaction_id` y figure) | Moyenne | À vérifier directement en base — à défaut, `Note` restera vide pour ces commandes |

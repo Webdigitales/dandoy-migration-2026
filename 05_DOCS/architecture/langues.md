@@ -101,9 +101,15 @@ Field = metafield.custom.blade_category
 
 ### Étape 1 — Import produits (fichier principal)
 
-`shopify_products_dandoy.csv` / `shopify_products_butterfly.csv` importent les produits en
-**anglais** (langue par défaut) dans leur boutique respective. Butterfly n'a pas de traduction
-EN propre (voir ci-dessous) — l'anglais n'est de toute façon pas activé dans cette boutique.
+`shopify_products_dandoy.csv` / `shopify_products_butterfly.csv` importent les produits dans
+le champ `Title` non traduit de leur boutique respective. **Pour Dandoy, ce contenu est en
+anglais** (langue par défaut confirmée). **Pour Butterfly, ce même champ est en réalité déjà
+en néerlandais** dans la source Magento (vue `(base)`) — cohérent avec la décision client
+(20 août 2026) : **le néerlandais est la langue par défaut de la boutique Shopify Butterfly**,
+qui n'active de toute façon pas l'anglais. Vérifié : 100 % des SKU du périmètre Butterfly
+(5 291/5 291) ont un Title de base rempli — ce contenu néerlandais couvre donc déjà
+l'essentiel du catalogue sans dépendre des traductions NL explicites (voir couverture
+ci-dessous, à relire à la baisse de son importance).
 
 ### Étape 2 — Export traductions (fichier séparé, par boutique)
 
@@ -127,8 +133,10 @@ au format Matrixify Translations.
 
 ### Étape 3 — Import dans Shopify (dans chaque boutique)
 
-1. Importer `shopify_products_{store}.csv` (produits en anglais + metafields)
-2. Activer les langues FR et NL (+ EN pour Dandoy) dans **Settings → Languages**
+1. Importer `shopify_products_{store}.csv` (produits + metafields — Title en anglais pour
+   Dandoy, déjà en néerlandais pour Butterfly, voir ci-dessus)
+2. Activer les langues FR et NL (+ EN pour Dandoy) dans **Settings → Languages** —
+   **définir le néerlandais comme langue par défaut de la boutique Butterfly**
 3. Importer `shopify_translations_{store}.csv` (traductions FR + NL)
 
 ---
@@ -155,12 +163,19 @@ sans conflit sur les 199 produits partagés (chacun a sa version dans son propre
 
 ### Ce qui restera en anglais / non traduit (fallback)
 
-- Dandoy : ~327 produits sans traduction FR, ~766 sans traduction NL → affichés dans la langue par défaut
-- Butterfly : ~40 produits sans traduction FR, ~830 sans traduction NL (attendu, voir note ci-dessus) — Butterfly n'active pas l'anglais, ces produits nécessitent une traduction manuelle prioritaire
+- Dandoy : ~327 produits sans traduction FR, ~766 sans traduction NL → affichés dans la langue par défaut (anglais)
+- Butterfly : ~40 produits sans traduction FR → affichés dans la langue par défaut (anglais, cas résiduel)
 - Métadonnées SEO (meta_title, meta_description) → quasi vides dans toutes les langues, non exportées
 
-> **Action post-migration :** prioriser la traduction NL des produits actifs Butterfly
-> (product_online = 1), c'est le point de couverture le plus faible des deux boutiques.
+> **Correction (20 août 2026) — l'ancien avertissement "830 produits Butterfly sans
+> traduction NL, à prioriser en post-migration" était fondé sur une hypothèse fausse.**
+> Le tableau ci-dessus (19/849, 2%) ne mesure que les traductions NL **explicites**
+> (`shopify_translations_butterfly.csv`, sourcées depuis `eu_nl`) — il ne compte pas le
+> contenu déjà en néerlandais dans le `Title` de base des produits Butterfly (100% des
+> SKU du périmètre, voir ci-dessus), qui sert de facto de contenu NL puisque le
+> néerlandais est la langue par défaut de cette boutique. **La couverture NL réelle est
+> donc quasi complète, pas 2%** — aucune priorisation de traduction NL post-migration
+> nécessaire pour Butterfly.
 
 ---
 
