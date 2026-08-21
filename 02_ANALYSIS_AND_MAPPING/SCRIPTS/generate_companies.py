@@ -5,11 +5,20 @@ Club discount mapping + Magento customers  →  Shopify B2B Companies CSV (Matri
 Dandoy-Sports only. Butterfly is blocked (needs 4 Catalogs, Basic plan caps at 3 —
 see 05_DOCS/mapping/club-b2b.md §2/§4).
 
-One Company per club (group_id), one Location per Company, one Catalog assigned
-(Dandoy — Club 20% / Dandoy — Club 15%, created manually in Shopify Admin — see
+One Company per club (group_id), one Catalog assigned (Dandoy — Club 20% /
+Dandoy — Club 15%, created manually in Shopify Admin — see
 05_DOCS/mapping/club-b2b.md). All club members are linked as contacts with the
 "Ordering only" role — no main contact and no address are set on import; the
 client will complete both manually after migration (decision 19 August 2026).
+
+Clubs over 50 members get multiple Locations under the same Company, all
+carrying the same Catalog — confirmed via a live Matrixify import (21 August
+2026): a Company Location tops out at 50 customer assignments, and Matrixify
+fails EVERY contact row for that location (not just the ones past 50) when
+the cap would be exceeded. 16 of 84 clubs are affected (up to 206 members).
+The discount is unaffected either way since it's the Catalog, not the
+Location, that carries it — splitting one club's members across several
+Locations changes nothing about who gets the discount.
 
 Prerequisite: shopify_customers_dandoy.csv must be imported into Shopify before
 this file, since Matrixify links contacts by email and fails the row otherwise.
@@ -17,6 +26,11 @@ this file, since Matrixify links contacts by email and fails the row otherwise.
 
 import csv
 from collections import defaultdict
+
+# Shopify hard limit: a Company Location can have at most 50 customer role
+# assignments (confirmed via a live Matrixify import, 21 August 2026 — see
+# module docstring above).
+MAX_CONTACTS_PER_LOCATION = 50
 
 INPUT_MAPPING   = '/home/gregory/Documents/Labo/dandoy/02_ANALYSIS_AND_MAPPING/club_discount_mapping.csv'
 INPUT_CUSTOMERS = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_customer.csv'
@@ -80,8 +94,10 @@ def main():
     # ------------------------------------------------------------------
     print("Writing Companies CSV…")
     n_companies = 0
+    n_locations = 0
     n_contacts = 0
     n_empty_companies = 0
+    n_split_companies = 0
 
     with open(OUTPUT_DANDOY, 'w', newline='', encoding='utf-8') as f:
         w = csv.DictWriter(f, fieldnames=COMPANY_COLS)
@@ -91,36 +107,46 @@ def main():
             group_id = club['group_id']
             club_name = club['club_name'].strip()
             catalog_name = club['catalog_name']
-
-            base = {col: '' for col in COMPANY_COLS}
-            base['Name'] = club_name
-            base['Command'] = 'MERGE'
-            base['External ID'] = f'magento-club-{group_id}'
-            base['Location: Name'] = club_name
-            base['Location: Command'] = 'MERGE'
-            base['Location: External ID'] = f'magento-club-{group_id}-loc1'
-            base['Location: Catalogs'] = catalog_name
-            base['Customer: Command'] = 'MERGE'
-            base['Customer: Location Role'] = 'Ordering only'
-
-            emails = sorted(set(emails_by_group.get(group_id, [])))
             n_companies += 1
 
-            if not emails:
-                # Still create the Company + Location even with no linked member found.
-                w.writerow(base)
-                n_empty_companies += 1
-                continue
+            emails = sorted(set(emails_by_group.get(group_id, [])))
 
-            for email in emails:
-                row = dict(base)
-                row['Customer: Email'] = email
-                w.writerow(row)
-                n_contacts += 1
+            chunks = [emails[i:i + MAX_CONTACTS_PER_LOCATION]
+                      for i in range(0, len(emails), MAX_CONTACTS_PER_LOCATION)] or [[]]
+            if len(chunks) > 1:
+                n_split_companies += 1
+
+            for loc_idx, chunk in enumerate(chunks, start=1):
+                base = {col: '' for col in COMPANY_COLS}
+                base['Name'] = club_name
+                base['Command'] = 'MERGE'
+                base['External ID'] = f'magento-club-{group_id}'
+                base['Location: Name'] = club_name if loc_idx == 1 else f'{club_name} ({loc_idx})'
+                base['Location: Command'] = 'MERGE'
+                base['Location: External ID'] = f'magento-club-{group_id}-loc{loc_idx}'
+                base['Location: Catalogs'] = catalog_name
+                base['Customer: Command'] = 'MERGE'
+                base['Customer: Location Role'] = 'Ordering only'
+                n_locations += 1
+
+                if not chunk:
+                    # Still create the Company + Location even with no linked member found.
+                    w.writerow(base)
+                    n_empty_companies += 1
+                    continue
+
+                for email in chunk:
+                    row = dict(base)
+                    row['Customer: Email'] = email
+                    w.writerow(row)
+                    n_contacts += 1
 
     print("\nDone.")
     print(f"  Companies written : {n_companies}")
+    print(f"  Locations written : {n_locations}")
     print(f"  Contacts written  : {n_contacts}")
+    if n_split_companies:
+        print(f"  ⚠ Companies split across multiple Locations (>{MAX_CONTACTS_PER_LOCATION} members) : {n_split_companies}")
     if n_empty_companies:
         print(f"  ⚠ Companies with no matched Dandoy customer: {n_empty_companies}")
     print(f"\nOutput → {OUTPUT_DANDOY}")

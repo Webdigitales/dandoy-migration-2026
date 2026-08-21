@@ -63,7 +63,7 @@ dandoy/
 │   ├── shopify_collections_butterfly.csv        (37 collections)
 │   ├── shopify_customers_dandoy.csv             (30 941 clients)
 │   ├── shopify_customers_butterfly.csv          (11 558 clients)
-│   ├── shopify_companies_dandoy.csv             (85 companies — clubs partenaires, Dandoy uniquement)
+│   ├── shopify_companies_dandoy.csv             (85 companies, 109 locations — clubs partenaires, Dandoy uniquement)
 │   ├── shopify_orders_dandoy.csv                (102 815 lignes — 25 716 commandes, avec Fulfillment Lines)
 │   ├── shopify_orders_butterfly.csv             (46 308 lignes — 14 887 commandes, avec Fulfillment Lines)
 │   ├── shopify_orders_stratified_{dandoy|butterfly}.csv  ← échantillon 950 commandes (cas limites, test Matrixify)
@@ -102,7 +102,7 @@ deux jeux ; chaque commande n'apparaît que dans un seul jeu (boutique d'origine
 | `shopify_collections_dandoy.csv` / `_butterfly.csv` | 58 / 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects_dandoy.csv` / `_butterfly.csv` | 2 045 / 380 | Redirections 301 (produits actifs + catégories, scopées par boutique) |
 | `shopify_customers_dandoy.csv` / `_butterfly.csv` | 30 941 / 11 558 | Clients dédupliqués + adresse par défaut + tags source (téléphone/province/pays nettoyés, comptes spam exclus — voir [Migration clients](./import/customers.md#nettoyage-des-données-téléphone-province-pays-noms)) |
-| `shopify_companies_dandoy.csv` | 2 086 (85 companies) | B2B Companies clubs partenaires (Dandoy uniquement — Butterfly bloqué, voir [Remises club & B2B](./mapping/club-b2b.md)) |
+| `shopify_companies_dandoy.csv` | 2 115 (85 companies, 109 locations) | B2B Companies clubs partenaires (Dandoy uniquement — Butterfly bloqué, voir [Remises club & B2B](./mapping/club-b2b.md)) |
 | `shopify_orders_dandoy.csv` / `_butterfly.csv` | 102 815 / 46 308 | 25 716 / 14 887 commandes avec line items + Fulfillment Lines (40 603 au total) |
 | `shopify_orders_stratified_dandoy.csv` / `_butterfly.csv` | — | Échantillon de test à 950 commandes ciblant les cas limites (devise, paiement pending, expédition partielle, grosses commandes, tous stores/passerelles) |
 | `*_PURGE.csv` (×8) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests (produits, collections, redirections, commandes × 2 boutiques) |
@@ -230,7 +230,7 @@ commande est fulfilled.
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |
 | 102 commandes physiques `Invoiced`-only | ~~Haute~~ | **Fait** (5 août 2026) — marquées `refunded`, archivage manuel post-import décidé |
 | URLs Butterfly FR localisées (125) + catégories traduites | Moyenne | À traiter manuellement dans Shopify Admin après import (pas de source de données pour automatiser) — [Redirections 301](./import/redirections.md) |
-| Companies B2B Dandoy | ~~Haute~~ | **Fait** (19 août 2026) — `shopify_companies_dandoy.csv` prêt (85 companies), pas encore importé |
+| Companies B2B Dandoy | ~~Haute~~ | **Fait** (19 août 2026, fix limite 50 contacts/location le 21 août) — `shopify_companies_dandoy.csv` prêt (85 companies, 109 locations), import réel testé (1 577 échecs → 0 après fix) |
 | Companies B2B Butterfly | **Haute** | **Bloqué** — 4 catalogs nécessaires, limite Basic = 3 ; décision client à prendre (fusion ou upgrade plan) |
 | Génération contenu Catalogs (`Included / <Catalog>` sur sheet Products) | **Haute** | Pas encore scripté — nouveau step indépendant de `generate_companies.py`, voir [Remises club & B2B](./mapping/club-b2b.md) |
 | Migration chèques cadeaux (281 cartes actives, 9 247,49 €) | **Haute** | Script prêt, test live confirmé (20 août 2026, 1 carte) ; **migration complète en attente de l'import clients** (liaison par email sinon inefficace) — [Chèques cadeaux](./import/gift-cards.md) |

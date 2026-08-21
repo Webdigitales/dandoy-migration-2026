@@ -399,6 +399,18 @@ successives ont mis au jour des problèmes de qualité de données jamais visibl
 - Détail complet : [Migration clients](./import/customers.md#nettoyage-des-données-téléphone-province-pays-noms),
   [Historique des commandes](./import/orders.md#nettoyage-des-adresses-téléphone-province-pays).
 
+### Fix Companies : limite de 50 contacts par Location (21 août 2026)
+
+Import Matrixify réel sur `shopify_companies_dandoy.csv` (2 115 lignes) : 1 577 échecs
+(74 %), tous `Failed to assign Company Contact Role for Location [...]: Company location has
+reached maximum number of 50 customer assignments`. `generate_companies.py` créait une seule
+Location par club — pour les 16 clubs de plus de 50 membres (jusqu'à 206 pour TT Progress),
+Matrixify fait échouer **tous** les contacts de la location, pas seulement les 51e et
+suivants. Corrigé en répartissant les membres en plusieurs Locations de 50 max sous la même
+Company (même Catalog partout, donc aucun impact sur la remise appliquée). 85 companies → 109
+locations après le fix, 0 échec sur ce point en relançant la génération. Détail :
+[Remises club & B2B](./mapping/club-b2b.md).
+
 ---
 
 ## Historique des commits

@@ -227,6 +227,16 @@ du pipeline.
 Companies**, sinon échec (liaison par email ou ID). Implique l'ordre d'import :
 `shopify_customers_*.csv` → `shopify_companies_*.csv`.
 
+**Limite de 50 contacts par Location** (confirmée par un import Matrixify réel, 21 août 2026) :
+une Company Location plafonne à 50 assignations de contacts côté Shopify — et Matrixify fait
+échouer **tous** les contacts de la location dès que la limite serait dépassée, pas seulement
+l'excédent (1 577 échecs / 2 115 lignes lors du 1er test, 16 clubs sur 84 touchés, jusqu'à 206
+membres pour le plus gros). `generate_companies.py` répartit maintenant automatiquement les
+membres d'un club en plusieurs Locations de 50 max sous la même Company (`External ID`
+`magento-club-{group_id}-loc1`, `-loc2`…), toutes avec le même Catalog — la remise est portée
+par le Catalog, pas par la Location, donc ce découpage n'a aucun effet sur qui bénéficie de la
+remise. 85 companies → **109 locations** après ce fix.
+
 Aucune restriction de plan Matrixify spécifique aux Companies (Enterprise déjà prévu pour
 le premier mois — largement suffisant pour 88 companies).
 
