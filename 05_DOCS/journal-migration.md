@@ -356,6 +356,49 @@ dans le suivi d'avancement (voir sections Companies/gift cards/redirections ci-d
 - Détail complet : [Contraintes techniques](./contraintes-techniques.md),
   [Gestion des langues](./architecture/langues.md), [Remises club & B2B](./mapping/club-b2b.md).
 
+### 1ère synchro complète clients/commandes + fix qualité données (21 août 2026)
+
+Premier import Matrixify réel sur le fichier clients complet (33 770 clients, contre 563 sur
+la boutique de test jusque-là) — la stratégie en 2 passes du 20 août ([Plan de
+migration](./import/plan-migration.md)) démarre officiellement. Deux campagnes de test live
+successives ont mis au jour des problèmes de qualité de données jamais visibles sur les petits
+échantillons testés jusqu'ici :
+
+- **1er import (13 588 échecs / 33 770 clients, 40 %)** : `Phone is invalid` (1 949+),
+  `Province is invalid`, `"Address: Country Code" is not valid`, `First/Last name cannot
+  contain URL` — Magento n'a jamais imposé de format sur téléphone/région/nom, Shopify/
+  Matrixify si. Root-caused et corrigé dans `magento_to_shopify_customers.py` :
+  - Téléphones normalisés en E.164 via la lib `phonenumbers` (nouvelle dépendance externe,
+    la première du pipeline — jusque-là 100 % stdlib Python).
+  - Province envoyée uniquement pour les adresses avec un `region_id` Magento réel (pas de
+    texte libre placeholder).
+  - Pays non vendables par Shopify (`AN`, `AQ`, `TF`, `HM`…) : adresse ignorée.
+  - 2 919 comptes bot historiques (spam/liens dans les champs nom) détectés et exclus
+    entièrement du CSV.
+- **2e import (231 échecs / 30 941, 0,75 %)** : régression du 1er round de correction —
+  ma détection "province si `region_id` réel" ne suffisait pas (Shopify n'a **aucune** liste
+  de provinces pour la Belgique/Pays-Bas/Luxembourg, même avec un vrai `region_id`), et des
+  pays réels mais mal orthographiés côté Magento (`Bucureşti`, `Aiti` pour Aichi, `Yukon
+  Territory` au lieu de `Yukon`) échouaient aussi pour d'autres pays (Roumanie, Japon, Canada,
+  Mexique, Pérou). Décision (validée avec le client) : **Province envoyée uniquement pour les
+  US**, seul pays sans aucun échec observé sur les deux campagnes — partout ailleurs, vidée
+  plutôt que de parier sur la correspondance exacte avec la liste Shopify. Complété par :
+  `PR`/`GU`/`AS` ajoutés aux pays non supportés (Shopify les traite comme des états US, pas
+  des pays), troncature `Address1` à 255 caractères (limite Matrixify), et un filtre sur les
+  indicatifs téléphoniques non-géographiques (ex. `+979`) que `phonenumbers` validait à tort.
+- **Limitation résiduelle documentée, non corrigeable depuis le CSV seul** : 15
+  `Phone has already been taken` — deux comptes différents partageant un numéro déjà présent
+  côté Shopify suite à l'import Phase 1 ; indétectable sans interroger l'API Shopify live.
+- Même nettoyage appliqué à `magento_to_shopify_orders.py` (adresses billing/shipping) en
+  réutilisant les mêmes fonctions plutôt que de dupliquer la logique — 24 commandes avec un
+  pays non supporté en billing **et** shipping (23× `TF`, 1× `AQ`) laissées telles quelles et
+  signalées à l'exécution, faute de pouvoir deviner un remplacement fiable.
+- Les 4 règles (téléphone, province, pays, nom spam) ajoutées à `validate_shopify_csv.py`
+  pour qu'un futur export Magento qui réintroduirait les mêmes problèmes soit détecté
+  automatiquement à la régénération, sans attendre un nouvel import Matrixify réel.
+- Détail complet : [Migration clients](./import/customers.md#nettoyage-des-données-téléphone-province-pays-noms),
+  [Historique des commandes](./import/orders.md#nettoyage-des-adresses-téléphone-province-pays).
+
 ---
 
 ## Historique des commits

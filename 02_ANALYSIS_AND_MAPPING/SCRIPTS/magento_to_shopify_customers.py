@@ -15,12 +15,65 @@ their tags cover — customers who registered on both brands (tagged
 
 import argparse
 import csv
+import re
 from collections import defaultdict
+
+import phonenumbers
 
 INPUT_CUSTOMERS  = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_customer.csv'
 INPUT_ADDRESSES  = '/home/gregory/Documents/Labo/dandoy/01_DATA_RAW/export_customer_address.csv'
 OUTPUT_DANDOY    = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_customers_dandoy.csv'
 OUTPUT_BUTTERFLY = '/home/gregory/Documents/Labo/dandoy/04_SHOPIFY_IMPORTS/shopify_customers_butterfly.csv'
+
+# Not in Shopify's list of sellable/shippable countries: either obsolete/
+# uninhabited ISO territories, or (PR/GU/AS) US territories that Shopify
+# represents as a US state rather than a top-level country — confirmed by
+# the client's Matrixify import report ('"Address: Country Code" is not
+# valid'). Addresses in these countries are dropped rather than sent to
+# Matrixify with a Country Code it will reject outright.
+UNSUPPORTED_COUNTRIES = {'AN', 'AQ', 'BV', 'GS', 'HM', 'PN', 'TF', 'UM', 'EH', 'PR', 'GU', 'AS'}
+
+# Shopify's province/state list only reliably matched Magento's free-text
+# 'region' for US addresses across two live Matrixify import rounds —
+# BE/NL/LU have no province list at all, and even countries that DO have
+# one (Romania, Japan, Canada, Mexico, Peru...) failed on spelling/
+# diacritics mismatches Magento's export doesn't normalize ('Bucureşti',
+# 'Aiti' for Aichi, 'Yukon Territory' instead of 'Yukon', 'Distrito
+# Federal' instead of 'Ciudad de México'...). Without Shopify's canonical
+# per-country subdivision list to match against, sending Province for any
+# country outside this set is a coin flip on the next import — so it's
+# just dropped (customer/order still import fine without it).
+PROVINCE_SAFE_COUNTRIES = {'US'}
+
+# Matrixify rejects First/Last Name containing links or markup outright
+# ('First name cannot contain URL' etc.) — these are bot signups (spam
+# 'investment opportunity' text dropped straight into the name fields on
+# the old Magento site), not real customers, so the whole row is skipped
+# rather than just blanking the name.
+SPAM_NAME_RE = re.compile(r'https?://|www\.|<[a-z]+[ >/]', re.I)
+
+
+def clean_phone(raw, country_id):
+    """Normalize a Magento free-text phone into E.164 via phonenumbers
+    (libphonenumber), or '' if it isn't a real, dialable number — Matrixify
+    rejects the row outright on 'Phone is invalid' rather than just dropping
+    the field, so a best-effort guess is worse than leaving it blank. A
+    syntactically plausible '+'-prefixed regex match isn't enough: real
+    validation catches things like a bad area code or a double-prefixed
+    country code ('44 7763233455' misread as local -> '+44447763233455')."""
+    raw = (raw or '').strip()
+    if not raw:
+        return ''
+    region = country_id if country_id and re.fullmatch(r'[A-Z]{2}', country_id) else None
+    try:
+        num = phonenumbers.parse(raw, region)
+    except phonenumbers.NumberParseException:
+        return ''
+    if not phonenumbers.is_valid_number(num):
+        return ''
+    if phonenumbers.region_code_for_number(num) == '001':
+        return ''  # non-geographic calling code (e.g. +979) — not a real dialable number
+    return phonenumbers.format_number(num, phonenumbers.PhoneNumberFormat.E164)
 
 SHOPIFY_COLS = [
     'Command',
@@ -116,9 +169,13 @@ def main():
     # ------------------------------------------------------------------
     print("Writing Shopify CSVs…")
     counters = {
-        'dandoy':    {'customers': 0, 'with_address': 0, 'no_address': 0},
-        'butterfly': {'customers': 0, 'with_address': 0, 'no_address': 0},
+        'dandoy':    {'customers': 0, 'with_address': 0, 'no_address': 0,
+                      'phone_dropped': 0, 'phone_deduped': 0, 'country_dropped': 0},
+        'butterfly': {'customers': 0, 'with_address': 0, 'no_address': 0,
+                      'phone_dropped': 0, 'phone_deduped': 0, 'country_dropped': 0},
     }
+    seen_phones = {'dandoy': set(), 'butterfly': set()}
+    spam_skipped = 0
 
     with open(output_dandoy, 'w', newline='', encoding='utf-8') as f_dandoy, \
          open(output_butterfly, 'w', newline='', encoding='utf-8') as f_butterfly:
@@ -130,10 +187,21 @@ def main():
             w.writeheader()
 
         for email, cust in by_email.items():
+            firstname = cust.get('firstname', '').strip()
+            lastname = cust.get('lastname', '').strip()
+            if SPAM_NAME_RE.search(firstname) or SPAM_NAME_RE.search(lastname):
+                spam_skipped += 1
+                continue
+
             tags = sorted(cust.get('_tags', set()))
 
-            # Find best address: prefer default billing, then default shipping
-            addresses = addr_by_email.get(email, [])
+            # Find best address: prefer default billing, then default shipping,
+            # skipping addresses in countries Shopify doesn't support (Matrixify
+            # rejects the Country Code outright, so keeping such an address is
+            # worse than falling back to the next one / no address at all).
+            addresses = [a for a in addr_by_email.get(email, [])
+                         if a.get('country_id', '').strip() not in UNSUPPORTED_COUNTRIES]
+            country_dropped = len(addr_by_email.get(email, [])) > len(addresses)
             best_addr = None
             for a in addresses:
                 if a.get('_address_default_billing_') == '1':
@@ -149,47 +217,80 @@ def main():
 
             out = {col: '' for col in SHOPIFY_COLS}
             out['Command'] = 'MERGE'
-            out['First Name'] = cust.get('firstname', '').strip()
-            out['Last Name'] = cust.get('lastname', '').strip()
+            out['First Name'] = firstname
+            out['Last Name'] = lastname
             out['Email'] = email
             out['Accepts Email Marketing'] = 'yes' if cust.get('is_review_booster_subscriber') == '1' else 'no'
             out['Tags'] = ','.join(tags)
             out['Tax Exempt'] = ''
 
             has_address = bool(best_addr)
+            phone_dropped = False
             if best_addr:
                 street = best_addr.get('street', '')
                 lines = street.split('\n') if '\n' in street else [street]
+                country_id = best_addr.get('country_id', '').strip()
+                region_id = best_addr.get('region_id', '').strip()
+                region = best_addr.get('region', '').strip()
+                addr_phone = clean_phone(best_addr.get('telephone', ''), country_id)
+                if best_addr.get('telephone', '').strip() and not addr_phone:
+                    phone_dropped = True
 
-                out['Address First Name'] = best_addr.get('firstname', '').strip()
-                out['Address Last Name'] = best_addr.get('lastname', '').strip()
+                addr_first = best_addr.get('firstname', '').strip()
+                addr_last = best_addr.get('lastname', '').strip()
+                out['Address First Name'] = '' if SPAM_NAME_RE.search(addr_first) else addr_first
+                out['Address Last Name'] = '' if SPAM_NAME_RE.search(addr_last) else addr_last
                 out['Address Company'] = best_addr.get('company', '').strip()
-                out['Address1'] = lines[0].strip() if lines else ''
+                # Matrixify caps Address1 at 255 chars — a handful of rows
+                # have ad/spam text glued onto the street line, well past
+                # that limit.
+                out['Address1'] = (lines[0].strip() if lines else '')[:255]
                 out['Address2'] = lines[1].strip() if len(lines) > 1 else ''
                 out['Address City'] = best_addr.get('city', '').strip()
-                out['Address Province'] = best_addr.get('region', '').strip()
-                out['Address Country Code'] = best_addr.get('country_id', '').strip()
+                # See PROVINCE_SAFE_COUNTRIES above — only US region text
+                # has proven to reliably match Shopify's province list.
+                if (region and region_id not in ('', '0')
+                        and country_id in PROVINCE_SAFE_COUNTRIES):
+                    out['Address Province'] = region
+                out['Address Country Code'] = country_id
                 out['Address Zip'] = best_addr.get('postcode', '').strip()
-                out['Address Phone'] = best_addr.get('telephone', '').strip()
+                out['Address Phone'] = addr_phone
                 out['Address Default'] = 'TRUE'
 
-            # Phone from address if available
+            # Phone from address if available; deduped per store since
+            # Shopify enforces a unique Customer.phone (Address Phone isn't
+            # constrained the same way).
             if not out['Phone'] and best_addr:
-                out['Phone'] = best_addr.get('telephone', '').strip()
+                out['Phone'] = addr_phone
 
             for store in tags:
                 if store not in writers:
                     continue
-                writers[store].writerow(out)
+                row = dict(out)
+                if row['Phone']:
+                    if row['Phone'] in seen_phones[store]:
+                        row['Phone'] = ''
+                        counters[store]['phone_deduped'] += 1
+                    else:
+                        seen_phones[store].add(row['Phone'])
+                writers[store].writerow(row)
                 counters[store]['customers'] += 1
                 counters[store]['with_address' if has_address else 'no_address'] += 1
+                if phone_dropped:
+                    counters[store]['phone_dropped'] += 1
+                if country_dropped:
+                    counters[store]['country_dropped'] += 1
 
     print(f"\nDone.")
     for store in ('dandoy', 'butterfly'):
         c = counters[store]
-        print(f"  [{store}] Customers exported : {c['customers']}")
-        print(f"  [{store}] With address       : {c['with_address']}")
-        print(f"  [{store}] Without address    : {c['no_address']}")
+        print(f"  [{store}] Customers exported      : {c['customers']}")
+        print(f"  [{store}] With address            : {c['with_address']}")
+        print(f"  [{store}] Without address         : {c['no_address']}")
+        print(f"  [{store}] Unparseable phone dropped : {c['phone_dropped']}")
+        print(f"  [{store}] Duplicate phone blanked   : {c['phone_deduped']}")
+        print(f"  [{store}] Unsupported-country addr  : {c['country_dropped']}")
+    print(f"\n  Spam accounts skipped (URL/HTML in name) : {spam_skipped}")
     print(f"\nOutput → {output_dandoy}")
     print(f"Output → {output_butterfly}")
     print(f"\n⚠  Passwords cannot be migrated — customers will need to reset via 'Forgot password'.")

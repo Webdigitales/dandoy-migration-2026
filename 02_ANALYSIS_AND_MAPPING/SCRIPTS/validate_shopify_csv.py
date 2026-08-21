@@ -5,8 +5,10 @@ Validation post-régénération des CSV d'import Shopify (Matrixify).
 Rejoue en local les règles qui font échouer un import Matrixify avant même
 d'ouvrir l'admin Shopify : handles dupliqués entre produits distincts,
 options incohérentes ou dupliquées au sein d'un même produit, limite des
-100 variantes, champs obligatoires vides, SKU dupliqués, et handles
-orphelins référencés depuis les traductions/redirections.
+100 variantes, champs obligatoires vides, SKU dupliqués, handles orphelins
+référencés depuis les traductions/redirections, et — pour les clients et
+commandes — téléphones invalides, provinces envoyées pour un pays sans
+liste Shopify, pays non supportés par Shopify, et noms spam (URL/HTML).
 
 Ne modifie aucun fichier. Sort avec le code 1 si des erreurs bloquantes
 (niveau Matrixify) sont trouvées, 0 sinon (les warnings n'y changent rien).
@@ -16,24 +18,32 @@ import csv
 import os
 import sys
 
+import phonenumbers
+
+from magento_to_shopify_customers import PROVINCE_SAFE_COUNTRIES, UNSUPPORTED_COUNTRIES, SPAM_NAME_RE
+
 DIR      = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 IMPORTS  = os.path.join(DIR, '04_SHOPIFY_IMPORTS')
 REDIRECTS_DIR = os.path.join(DIR, '03_SEO_AND_REDIRECTS')
 
 # Two Shopify stores (Option B): each has its own products/translations/
-# collections/redirects CSV, validated independently.
+# collections/redirects/customers/orders CSV, validated independently.
 STORES = [
     ('Dandoy-Sports', {
         'products':     os.path.join(IMPORTS, 'shopify_products_dandoy.csv'),
         'translations': os.path.join(IMPORTS, 'shopify_translations_dandoy.csv'),
         'collections':  os.path.join(IMPORTS, 'shopify_collections_dandoy.csv'),
         'redirects':    os.path.join(REDIRECTS_DIR, 'shopify_redirects_dandoy.csv'),
+        'customers':    os.path.join(IMPORTS, 'shopify_customers_dandoy.csv'),
+        'orders':       os.path.join(IMPORTS, 'shopify_orders_dandoy.csv'),
     }),
     ('Butterfly TT', {
         'products':     os.path.join(IMPORTS, 'shopify_products_butterfly.csv'),
         'translations': os.path.join(IMPORTS, 'shopify_translations_butterfly.csv'),
         'collections':  os.path.join(IMPORTS, 'shopify_collections_butterfly.csv'),
         'redirects':    os.path.join(REDIRECTS_DIR, 'shopify_redirects_butterfly.csv'),
+        'customers':    os.path.join(IMPORTS, 'shopify_customers_butterfly.csv'),
+        'orders':       os.path.join(IMPORTS, 'shopify_orders_butterfly.csv'),
     }),
 ]
 
@@ -151,6 +161,71 @@ def validate_collections(rows):
     return errors
 
 
+def _phone_valid(phone):
+    try:
+        return phonenumbers.is_valid_number(phonenumbers.parse(phone, None))
+    except phonenumbers.NumberParseException:
+        return False
+
+
+def validate_customers(rows):
+    """Same rules magento_to_shopify_customers.py applies at generation
+    time — kept here too as a regression check for whenever the CSV gets
+    hand-edited or regenerated from a fresh Magento export that reintroduces
+    the same data-quality issues (see 2026-08-21 Matrixify import report:
+    'Phone is invalid', 'Province is invalid', 'Country Code is not valid',
+    'First/Last name cannot contain URL')."""
+    errors = []
+    if rows is None:
+        return errors
+    for r in rows:
+        who = r.get('Email', '') or '(email vide)'
+        for col in ('Phone', 'Address Phone'):
+            phone = r.get(col, '')
+            if phone and not _phone_valid(phone):
+                errors.append(f"[{who}] '{col}' invalide : {phone!r}")
+        for col in ('First Name', 'Last Name', 'Address First Name', 'Address Last Name'):
+            val = r.get(col, '')
+            if val and SPAM_NAME_RE.search(val):
+                errors.append(f"[{who}] '{col}' contient une URL/du HTML (spam probable) : {val[:60]!r}")
+        country = r.get('Address Country Code', '')
+        if country in UNSUPPORTED_COUNTRIES:
+            errors.append(f"[{who}] 'Address Country Code' non supporté par Shopify : {country!r}")
+        if country not in PROVINCE_SAFE_COUNTRIES and r.get('Address Province', ''):
+            errors.append(
+                f"[{who}] 'Address Province' renseignée ({r['Address Province']!r}) pour un pays "
+                f"hors de la liste des pays fiables pour la Province Shopify ({country})")
+    return errors
+
+
+def validate_orders(rows):
+    """Same rules magento_to_shopify_orders.py applies at generation time —
+    see validate_customers() above for why this check is kept here too.
+    Only order header rows carry Billing/Shipping fields (line item and
+    fulfillment rows don't), so rows without either Country are skipped."""
+    errors = []
+    if rows is None:
+        return errors
+    for r in rows:
+        if not r.get('Billing Country', '') and not r.get('Shipping Country', ''):
+            continue
+        name = r.get('Name', '') or '(sans nom)'
+        for col in ('Billing Phone', 'Shipping Phone'):
+            phone = r.get(col, '')
+            if phone and not _phone_valid(phone):
+                errors.append(f"[{name}] '{col}' invalide : {phone!r}")
+        for prefix in ('Billing', 'Shipping'):
+            country = r.get(f'{prefix} Country', '')
+            province = r.get(f'{prefix} Province', '')
+            if country in UNSUPPORTED_COUNTRIES:
+                errors.append(f"[{name}] '{prefix} Country' non supporté par Shopify : {country!r}")
+            if country not in PROVINCE_SAFE_COUNTRIES and province:
+                errors.append(
+                    f"[{name}] '{prefix} Province' renseignée ({province!r}) pour un pays "
+                    f"hors de la liste des pays fiables pour la Province Shopify ({country})")
+    return errors
+
+
 def validate_store(store_name, paths):
     products = load_rows(paths['products'])
     if products is None:
@@ -160,20 +235,28 @@ def validate_store(store_name, paths):
     translations = load_rows(paths['translations'])
     collections  = load_rows(paths['collections'])
     redirects    = load_rows(paths['redirects'])
+    customers    = load_rows(paths['customers'])
+    orders       = load_rows(paths['orders'])
 
     print(f"=== {store_name} ===\n")
 
     prod_errors, prod_warnings, product_handles = validate_products(products)
-    tr_errors  = validate_translations(translations, product_handles)
-    rd_errors  = validate_redirects(redirects, product_handles)
-    col_errors = validate_collections(collections)
+    tr_errors   = validate_translations(translations, product_handles)
+    rd_errors   = validate_redirects(redirects, product_handles)
+    col_errors  = validate_collections(collections)
+    cust_errors = validate_customers(customers)
+    ord_errors  = validate_orders(orders)
 
-    all_errors = prod_errors + tr_errors + rd_errors + col_errors
+    all_errors = prod_errors + tr_errors + rd_errors + col_errors + cust_errors + ord_errors
 
     print(f"Produits      : {len(product_handles)} handles, {len(products)} lignes")
     print(f"Traductions   : {len(translations) if translations is not None else 0} lignes")
     print(f"Collections   : {len(collections) if collections is not None else 0} lignes")
     print(f"Redirections  : {len(redirects) if redirects is not None else 0} lignes")
+    print(f"Clients       : {len(customers) if customers is not None else 0} lignes"
+          + ("" if customers is not None else " (fichier introuvable, non vérifié)"))
+    print(f"Commandes     : {len(orders) if orders is not None else 0} lignes"
+          + ("" if orders is not None else " (fichier introuvable, non vérifié)"))
     print()
 
     if all_errors:

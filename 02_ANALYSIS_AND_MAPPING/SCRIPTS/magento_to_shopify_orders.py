@@ -25,6 +25,8 @@ import sys
 from datetime import datetime
 from itertools import count
 
+from magento_to_shopify_customers import clean_phone, PROVINCE_SAFE_COUNTRIES, UNSUPPORTED_COUNTRIES
+
 # Line: ID must be a unique number per line item row (Matrixify requirement,
 # not per-order) — a single counter shared across every order keeps that
 # true regardless of how orders get split across the two store output files.
@@ -320,15 +322,27 @@ def address_fields(row, prefix):
     column (not a separate 'Country Code' column — that name isn't part of
     the Orders template and gets silently ignored, leaving 'Country' empty
     and the whole address rejected as invalid even though every other
-    field is present)."""
+    field is present).
+
+    Province and Phone go through the same cleanup as
+    magento_to_shopify_customers.py, for the same reasons (see
+    PROVINCE_SAFE_COUNTRIES there): only US region text has proven to
+    reliably match Shopify's province list across live Matrixify import
+    rounds, so Province is dropped for every other country rather than
+    gamble on the next 'Province is invalid'. Local-format phone numbers
+    need real E.164 validation too, not just a '+'-prefixed regex match."""
     city = row.get(f'{prefix}.City', '').strip()
+    country = row.get(f'{prefix}.Country Id', '').strip()
+    region = row.get(f'{prefix}.Region', '').strip()
+    province = region if region and country in PROVINCE_SAFE_COUNTRIES else ''
     return {
-        'Address1': clean_street(row.get(f'{prefix}.Street', ''), city),
+        # Matrixify caps Address 1 at 255 chars.
+        'Address1': clean_street(row.get(f'{prefix}.Street', ''), city)[:255],
         'City':     city,
-        'Province': row.get(f'{prefix}.Region', '').strip(),
+        'Province': province,
         'Zip':      row.get(f'{prefix}.Postcode', '').strip(),
-        'Country':  row.get(f'{prefix}.Country Id', '').strip(),
-        'Phone':    row.get(f'{prefix}.Telephone', '').strip(),
+        'Country':  country,
+        'Phone':    clean_phone(row.get(f'{prefix}.Telephone', ''), country),
     }
 
 
@@ -516,6 +530,18 @@ def main():
         before = len(orders)
         orders = [o for o in orders if o.get('Updated At', '') >= cutoff]
         print(f"  --since {args.since}: {before:,} -> {len(orders):,} orders (Updated At >= {cutoff})")
+
+    unsupported_country = [
+        o['Increment Id'].strip() for o in orders
+        if o.get('BillingAddress.Country Id', '').strip() in UNSUPPORTED_COUNTRIES
+        and o.get('ShippingAddress.Country Id', '').strip() in UNSUPPORTED_COUNTRIES
+    ]
+    if unsupported_country:
+        print(f"\n⚠ {len(unsupported_country)} commande(s) avec un pays non supporté par "
+              f"Shopify en billing ET shipping (ex. TF/AQ) — laissées telles quelles, à "
+              f"vérifier manuellement avant import :")
+        print(f"  {', '.join(unsupported_country[:20])}"
+              f"{' …' if len(unsupported_country) > 20 else ''}")
 
     rows_by_store = {'dandoy': [], 'butterfly': []}
     skipped  = 0

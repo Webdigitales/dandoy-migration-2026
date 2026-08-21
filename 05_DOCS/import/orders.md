@@ -103,11 +103,12 @@ correspondante** (une commande `shopify_orders_dandoy.csv` se lie à un client p
 python3 02_ANALYSIS_AND_MAPPING/SCRIPTS/magento_to_shopify_orders.py
 ```
 
-Inclus dans `regenerate_all.sh` (étape 5/8). Génère les deux fichiers de sortie en une seule exécution.
+Inclus dans `regenerate_all.sh` (étape 6/9). Génère les deux fichiers de sortie en une seule exécution.
+Nécessite `phonenumbers` (voir [Nettoyage des adresses](#nettoyage-des-adresses-téléphone-province-pays) ci-dessous).
 
 Sortie :
-- `04_SHOPIFY_IMPORTS/shopify_orders_dandoy.csv` — **99 294 lignes** (24 896 commandes)
-- `04_SHOPIFY_IMPORTS/shopify_orders_butterfly.csv` — **44 154 lignes** (14 198 commandes)
+- `04_SHOPIFY_IMPORTS/shopify_orders_dandoy.csv` — **102 815 lignes** (25 716 commandes)
+- `04_SHOPIFY_IMPORTS/shopify_orders_butterfly.csv` — **46 308 lignes** (14 887 commandes)
 
 Format long Matrixify, 1 ligne par item + 1 ligne `Fulfillment Line` par commande expédiée
 (voir [Fulfillment des commandes expédiées](#fulfillment-des-commandes-expédiées)).
@@ -128,6 +129,26 @@ mélange deux conventions selon les champs (voir commentaire en tête de
 | `item N(Tax Percent)` | `Line: Taxable` | `TRUE` si taux > 0 |
 | `item N(Tax Amount)` | `Line: Tax 1 Title/Rate/Price` | Repris tel quel par item (voir Fiscalité ci-dessous) |
 | `BillingAddress.*` / `ShippingAddress.*` | `Billing: *` / `Shipping: *` | Rue multi-lignes nettoyée (dédoublonnage ville), code pays ISO dans `Country` (pas de colonne `Country Code` dans le template Orders) |
+
+### Nettoyage des adresses (téléphone, province, pays)
+
+Mêmes règles que [la conversion clients](customers.md#nettoyage-des-données-téléphone-province-pays-noms),
+réutilisées depuis `magento_to_shopify_customers.py` (`clean_phone()`, `PROVINCE_SAFE_COUNTRIES`,
+`UNSUPPORTED_COUNTRIES`) plutôt que dupliquées :
+
+| Champ | Traitement |
+|---|---|
+| `Billing/Shipping Phone` | Validation réelle via `phonenumbers` (E.164), champ vidé si non récupérable — un numéro Magento brut ne bloque plus l'import de toute la commande. |
+| `Billing/Shipping Province` | Envoyée uniquement pour les commandes en **US** — partout ailleurs vidée (voir justification détaillée côté clients). Pas de `region_id` disponible ici contrairement à l'export clients : le filtrage anti-placeholder (`-`, vide…) est donc appliqué à tous les pays, pas seulement BE/NL/LU. |
+| `Billing/Shipping Country` | Adresse ignorée si le pays n'est pas supporté par Shopify (territoires obsolètes/inhabités, ou `PR`/`GU`/`AS` traités comme des états US). |
+| `Billing: Address 1` / `Shipping: Address 1` | Troncature à 255 caractères (limite Matrixify). |
+
+**Limitation connue :** 24 commandes (21 août 2026) ont un pays non supporté en billing **et**
+en shipping (23× `TF`, 1× `AQ`) — trop peu fiable pour deviner un remplacement automatique
+(probablement `FR` mal sélectionné dans un vieux formulaire Magento). Le script les laisse
+telles quelles et affiche la liste des numéros de commande en avertissement à l'exécution, à
+vérifier manuellement avant import. `validate_shopify_csv.py` les remonte aussi comme erreurs
+bloquantes.
 
 ### Fiscalité, remises et devise
 

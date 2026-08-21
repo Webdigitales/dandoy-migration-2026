@@ -1,6 +1,6 @@
 # Avancement Migration Magento → Shopify — Dandoy-Sports / Butterfly TT
 
-Dernière mise à jour : **20 août 2026**
+Dernière mise à jour : **21 août 2026**
 
 > **Décision client (29 juillet 2026) : Option B retenue** — deux boutiques Shopify séparées
 > (Dandoy-Sports plan complet + Butterfly TT plan Basic), et non l'instance unique (Option A)
@@ -61,11 +61,11 @@ dandoy/
 │   ├── shopify_translations_butterfly.csv       (1 233 lignes)
 │   ├── shopify_collections_dandoy.csv           (37 collections)
 │   ├── shopify_collections_butterfly.csv        (37 collections)
-│   ├── shopify_customers_dandoy.csv             (33 357 clients)
-│   ├── shopify_customers_butterfly.csv          (11 404 clients)
+│   ├── shopify_customers_dandoy.csv             (30 941 clients)
+│   ├── shopify_customers_butterfly.csv          (11 558 clients)
 │   ├── shopify_companies_dandoy.csv             (85 companies — clubs partenaires, Dandoy uniquement)
-│   ├── shopify_orders_dandoy.csv                (99 510 lignes — 24 896 commandes, avec Fulfillment Lines)
-│   ├── shopify_orders_butterfly.csv             (44 159 lignes — 14 198 commandes, avec Fulfillment Lines)
+│   ├── shopify_orders_dandoy.csv                (102 815 lignes — 25 716 commandes, avec Fulfillment Lines)
+│   ├── shopify_orders_butterfly.csv             (46 308 lignes — 14 887 commandes, avec Fulfillment Lines)
 │   ├── shopify_orders_stratified_{dandoy|butterfly}.csv  ← échantillon 950 commandes (cas limites, test Matrixify)
 │   ├── giftcards_migration_report_{dandoy|butterfly}.csv ← rapport d'audit migration gift cards (non versionné)
 │   ├── shopify_products_sample_dandoy.csv       (versionné)
@@ -101,9 +101,9 @@ deux jeux ; chaque commande n'apparaît que dans un seul jeu (boutique d'origine
 | `shopify_translations_dandoy.csv` / `_butterfly.csv` | 5 768 / 1 233 | Traductions FR/NL |
 | `shopify_collections_dandoy.csv` / `_butterfly.csv` | 58 / 58 | 37 smart collections (16 top-level + 21 sous-catégories) |
 | `shopify_redirects_dandoy.csv` / `_butterfly.csv` | 2 045 / 380 | Redirections 301 (produits actifs + catégories, scopées par boutique) |
-| `shopify_customers_dandoy.csv` / `_butterfly.csv` | 33 357 / 11 404 | Clients dédupliqués + adresse par défaut + tags source |
+| `shopify_customers_dandoy.csv` / `_butterfly.csv` | 30 941 / 11 558 | Clients dédupliqués + adresse par défaut + tags source (téléphone/province/pays nettoyés, comptes spam exclus — voir [Migration clients](./import/customers.md#nettoyage-des-données-téléphone-province-pays-noms)) |
 | `shopify_companies_dandoy.csv` | 2 086 (85 companies) | B2B Companies clubs partenaires (Dandoy uniquement — Butterfly bloqué, voir [Remises club & B2B](./mapping/club-b2b.md)) |
-| `shopify_orders_dandoy.csv` / `_butterfly.csv` | 99 510 / 44 159 | 24 896 / 14 198 commandes avec line items + Fulfillment Lines (39 094 au total) |
+| `shopify_orders_dandoy.csv` / `_butterfly.csv` | 102 815 / 46 308 | 25 716 / 14 887 commandes avec line items + Fulfillment Lines (40 603 au total) |
 | `shopify_orders_stratified_dandoy.csv` / `_butterfly.csv` | — | Échantillon de test à 950 commandes ciblant les cas limites (devise, paiement pending, expédition partielle, grosses commandes, tous stores/passerelles) |
 | `*_PURGE.csv` (×8) | — | Fichiers de suppression Matrixify pour repartir à zéro entre tests (produits, collections, redirections, commandes × 2 boutiques) |
 | `shopify_products_sample_dandoy.csv` / `_butterfly.csv` | — | Échantillon produits (tous types) |
@@ -139,9 +139,11 @@ pas de simple génération de fichier local.
 
 La validation (`validate_shopify_csv.py`) rejoue en local les règles qui font échouer un
 import Matrixify : SKU dupliqués entre produits, combinaisons de variantes dupliquées,
-options incohérentes, plafond des 100 variantes, prix manquant/négatif, handles orphelins.
-Sort en erreur (code 1) sans empêcher la génération des autres fichiers. Validée
-indépendamment pour chaque boutique.
+options incohérentes, plafond des 100 variantes, prix manquant/négatif, handles orphelins —
+et, côté clients/commandes, téléphone invalide, province envoyée pour un pays sans liste
+Shopify, pays non supporté, nom contenant une URL/du HTML (spam). Sort en erreur (code 1)
+sans empêcher la génération des autres fichiers. Validée indépendamment pour chaque boutique.
+Nécessite `phonenumbers` (`pip3 install -r 02_ANALYSIS_AND_MAPPING/SCRIPTS/requirements.txt`).
 
 ### Purge (pour repartir à zéro entre tests)
 
@@ -221,8 +223,8 @@ commande est fulfilled.
 | `custom.blade_layers = "4"` refusé (7 produits Tibhar) | ~~Moyenne~~ | **Fait** — valeur ajoutée aux choix prédéfinis dans l'Admin Shopify |
 | Configuration metafields (choix prédéfinis) | ~~Moyenne~~ | **Fait** — metafields configurés dans l'Admin Shopify |
 | Configuration Search & Discovery (filtres) | Moyenne | Documenté — Phase 1 |
-| Migration clients | ~~À évaluer~~ | **Fait** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (33 357 / 11 404 clients), sample testé OK ; **import complet pas encore lancé** (boutique test à 563 clients seulement) |
-| Migration commandes | ~~À évaluer~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (24 896 / 14 198 commandes), sample + échantillon stratifié 950 testés OK |
+| Migration clients | ~~À évaluer~~ | **1ère synchro complète lancée (21 août 2026)** — `shopify_customers_{dandoy\|butterfly}.csv` prêts (30 941 / 11 558 clients), import réel testé sur le fichier complet, 2 campagnes de correction (téléphone/province/pays/spam — voir [journal](./journal-migration.md#1ère-synchro-complète-clientscommandes--fix-qualité-données-21-août-2026)), 0 échec résiduel sur ces règles |
+| Migration commandes | ~~À évaluer~~ | **Fait** — `shopify_orders_{dandoy\|butterfly}.csv` prêts (25 716 / 14 887 commandes), mêmes corrections d'adresse appliquées ; 24 commandes en pays non supporté (TF/AQ) à vérifier manuellement avant import |
 | Plan Matrixify | ~~À évaluer~~ | **Enterprise ($200/mois)** — 1 mois, puis Basic |
 | Stock Sync (config SFTP + mapping SKU) | **Haute** | **Documenté** — guide prestataire prêt (Phase 2), à dupliquer sur les 2 boutiques |
 | Bundle products (105) | ~~Moyenne~~ | **Documenté** — remises auto Shopify (Phase 2) |

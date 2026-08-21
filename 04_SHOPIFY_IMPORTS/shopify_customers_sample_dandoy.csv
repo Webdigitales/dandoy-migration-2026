@@ -1,9 +1,9 @@
 Command,First Name,Last Name,Email,Phone,Accepts Email Marketing,Tags,Tax Exempt,Tax Exemptions,Address First Name,Address Last Name,Address Company,Address1,Address2,Address City,Address Province,Address Province Code,Address Country,Address Country Code,Address Zip,Address Phone,Address Default
-MERGE,Jacques,Van Mirlo,jacques_vm@yahoo.com,0498299393,yes,"butterfly,dandoy",,,Jacques,Van Mirlo,,Zonnedauwlaan 20,,Schoten,Antwerpen,,,BE,2900,0498299393,TRUE
-MERGE,Noël,Gourmet,noel.gourmet@skynet.be,0496/285743,no,dandoy,,,Noël,Gourmet,TT.Ochamps,rue Rhenauterme 57a,,ochamps,-,,,BE,6890,0496/285743,TRUE
-MERGE,Sylvain,Blavier,sblavier@prodware.be,0497/45.30.43,yes,dandoy,,,Sylvain,BLAVIER,,"Route de frasne, 340",,Mainvault,,,,BE,7812,0497/45.30.43,TRUE
-MERGE,Éric,DEBLED,eric.debled@fisconseils.be,0497708860,no,dandoy,,,Éric,DEBLED,,Rue de Bertransart 61,,GERPINNES,-,,,BE,6280,0497708860,TRUE
-MERGE,Dirk,Levens,dirk.levens@gmail.com,0476321870,yes,"butterfly,dandoy",,,Dirk,Levens,,Zemstbaan 61,,Mechelen,Antwerpen,,,BE,2800,0476321870,TRUE
+MERGE,Jacques,Van Mirlo,jacques_vm@yahoo.com,+32498299393,yes,"butterfly,dandoy",,,Jacques,Van Mirlo,,Zonnedauwlaan  20,,Schoten,,,,BE,2900,+32498299393,TRUE
+MERGE,Noël,Gourmet,noel.gourmet@skynet.be,+32496285743,no,dandoy,,,Noël,Gourmet,TT.Ochamps,rue Rhenauterme 57a,,ochamps,,,,BE,6890,+32496285743,TRUE
+MERGE,Sylvain,Blavier,sblavier@prodware.be,+32497453043,yes,dandoy,,,Sylvain,BLAVIER,,"Route de frasne, 340",,Mainvault,,,,BE,7812,+32497453043,TRUE
+MERGE,Éric,DEBLED,eric.debled@fisconseils.be,+32497708860,no,dandoy,,,Éric,DEBLED,,Rue de Bertransart 61,,GERPINNES,,,,BE,6280,+32497708860,TRUE
+MERGE,Dirk,Levens,dirk.levens@gmail.com,+32476321870,yes,"butterfly,dandoy",,,Dirk,Levens,,Zemstbaan 61,,Mechelen,,,,BE,2800,+32476321870,TRUE
 MERGE,david,dubois,leborin19@hotmail.com,,no,dandoy,,,,,,,,,,,,,,,
 MERGE,regis,wintquin,regis.win@hotmail.com,,no,dandoy,,,,,,,,,,,,,,,
 MERGE,Kimberly,Van Hecke,kimberlyvanhecke20@hotmail.com,,yes,"butterfly,dandoy",,,,,,,,,,,,,,,
