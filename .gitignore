@@ -1,4 +1,5 @@
 01_DATA_RAW/*.csv
+01_DATA_RAW/*/*.csv
 04_SHOPIFY_IMPORTS/*.csv
 04_SHOPIFY_IMPORTS/ERRORS
 !04_SHOPIFY_IMPORTS/shopify_products_sample_dandoy.csv
